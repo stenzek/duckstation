@@ -1,15 +1,15 @@
-// SPDX-FileCopyrightText: 2019-2024 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2026 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #pragma once
 
-#include "controller.h"
+#include "config_mode_controller.h"
 
 #include <memory>
 
 class ForceFeedbackDevice;
 
-class JogCon final : public Controller
+class JogCon final : public ConfigModeController
 {
 public:
   enum class Button : u8
@@ -57,32 +57,9 @@ public:
   void SetBindState(u32 index, float value) override;
   u32 GetButtonStateBits() const override;
 
-  void ResetTransferState() override;
-  bool Transfer(const u8 data_in, u8* data_out) override;
-
   void LoadSettings(const SettingsInterface& si, const char* section, bool initial) override;
 
 private:
-  enum class Command : u8
-  {
-    Idle,
-    Ready,
-    ReadPad,
-    SetMode,
-    GetAnalogMode,
-    SetAnalogMode,
-    GetSetRumble,
-    Command46,
-    Command47,
-    Command4C,
-  };
-
-  enum : u8
-  {
-    LargeMotor = 0,
-    SmallMotor = 1
-  };
-
   enum : u8
   {
     MOTOR_COMMAND_STOP = 0x0,
@@ -103,20 +80,18 @@ private:
 
   static const Controller::ControllerBindingInfo s_binding_info[];
 
-  u8 GetIDByte() const;
-  u8 GetModeID() const;
+  u8 GetAnalogModeID() const override;
+  u8 GetNumMotors() const override;
+  u8 GetCommand45Actuators() const override;
+  void PatchCommand4C(u8 param) override;
+  bool HasLegacyRumble() const override;
+  bool CanEnterConfigMode() const override;
+  u32 GetMotorBindIndex(u32 motor) const override;
+  void SetMotorState(u32 motor, u8 value) override;
+  void Poll() override;
 
-  // Get number of response halfwords (excluding the initial controller info halfword)
-  u8 GetResponseNumHalfwords() const;
-
-  void Poll();
   void UpdateSteeringHold();
-
-  void SetMotorState(u8 value);
   void SetMotorDirection(u8 direction_command, u8 strength);
-  void ResetMotorConfig();
-
-  void SetJogConMode(bool enabled, bool show_message);
 
   // buttons are active low
   u16 m_button_state = UINT16_C(0xFFFF);
@@ -125,26 +100,10 @@ private:
   // both directions of axis state, merged to m_steering_state
   std::array<u8, static_cast<u32>(HalfAxis::MaxCount)> m_half_axis_state{};
 
-  Command m_command = Command::Idle;
-  u8 m_command_step = 0;
-  u8 m_response_length = 0;
-  u8 m_status_byte = 0x5A;
-
   s8 m_last_steering_state = 0;
   u8 m_last_motor_command = 0;
   s8 m_steering_hold_position = 0;
   u8 m_steering_hold_strength = 0;
-
-  bool m_configuration_mode = false;
-  bool m_jogcon_mode = false;
-  bool m_mode_toggle_queued = false;
-
-  std::array<u8, 6> m_rumble_config{};
-
-  // Transmit and receive buffers, not including the first Hi-Z/ack response byte
-  static constexpr u32 MAX_RESPONSE_LENGTH = 8;
-  std::array<u8, MAX_RESPONSE_LENGTH> m_rx_buffer;
-  std::array<u8, MAX_RESPONSE_LENGTH> m_tx_buffer;
 
   s8 m_steering_hold_deadzone = 0;
 

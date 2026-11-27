@@ -39,25 +39,12 @@ public:
 
   void LoadSettings(const SettingsInterface& si, const char* section, bool initial) override;
 
-  void ResetTransferState() override;
-  bool Transfer(const u8 data_in, u8* data_out) override;
-
 private:
-  enum class TransferState : u8
-  {
-    Idle,
-    Ready,
-    IDMSB,
-    ButtonsLSB,
-    ButtonsMSB,
-    XLSB,
-    XMSB,
-    YLSB,
-    YMSB
-  };
-
   static constexpr s8 DEFAULT_LINE_OFFSET = 0;
   static constexpr s16 DEFAULT_TICK_OFFSET = -140;
+
+  u8 GetIDByte() const override;
+  bool BeginCommand(u8 command) override;
 
   void SetShootOffscreen(bool pressed) override;
   void UpdatePosition();
@@ -68,6 +55,4 @@ private:
   u16 m_position_x = 0;
   u16 m_position_y = 0;
   bool m_shoot_offscreen = false;
-
-  TransferState m_transfer_state = TransferState::Idle;
 };

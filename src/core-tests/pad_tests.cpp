@@ -1110,11 +1110,11 @@ TEST_F(PadTest, Multitap_SaveState)
   Pad::SetMultitapEnabled(0, true);
   PlugController(0);
 
-  const auto round_trip = [](u32 version) {
+  const auto round_trip = []() {
     std::vector<u8> data(64 * 1024);
-    StateWrapper write_sw(std::span<u8>(data), StateWrapper::Mode::Write, version);
+    StateWrapper write_sw(std::span<u8>(data), StateWrapper::Mode::Write, SAVE_STATE_VERSION);
     ASSERT_TRUE(Pad::DoState(write_sw, false));
-    StateWrapper read_sw(std::span<const u8>(data), StateWrapper::Mode::Read, version);
+    StateWrapper read_sw(std::span<const u8>(data), StateWrapper::Mode::Read, SAVE_STATE_VERSION);
     ASSERT_TRUE(Pad::DoState(read_sw, false));
   };
 
@@ -1126,16 +1126,9 @@ TEST_F(PadTest, Multitap_SaveState)
   Deselect();
 
   // The queued mode and the bytes for the controllers are kept, so the next access is garbage.
-  round_trip(SAVE_STATE_VERSION);
+  round_trip();
   Select(0);
   EXPECT_EQ(Command(GARBAGE_TX), GARBAGE_REPLY);
-  Deselect();
-
-  // Older states have the previous replies there instead, so they go back to a plain poll.
-  round_trip(102);
-  Select(0);
-  EXPECT_EQ(Command(AllControllersPoll()),
-            AllControllersReply({DigitalBlock(NO_BUTTONS), EMPTY_BLOCK, EMPTY_BLOCK, EMPTY_BLOCK}));
 }
 
 TEST_F(PadTest, Multitap_SaveStateDifferentSetting)

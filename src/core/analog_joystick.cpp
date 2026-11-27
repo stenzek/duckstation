@@ -36,37 +36,31 @@ ControllerType AnalogJoystick::GetType() const
 
 void AnalogJoystick::Reset()
 {
-  m_transfer_state = TransferState::Idle;
+  ResetTransferState();
   m_analog_mode = true;
   InputManager::SetPadLEDState(m_index, 1.0f);
 }
 
 bool AnalogJoystick::DoState(StateWrapper& sw, bool apply_input_state)
 {
-  const bool old_analog_mode = m_analog_mode;
+  if (sw.GetVersion() >= 105 && !Controller::DoState(sw, apply_input_state))
+    return false;
 
   sw.Do(&m_analog_mode);
 
-  u16 button_state = m_button_state;
-  auto axis_state = m_axis_state;
-  sw.Do(&button_state);
-  sw.Do(&axis_state);
-
-  if (apply_input_state)
+  if (sw.IsWriting() || apply_input_state)
   {
-    m_button_state = button_state;
-    m_axis_state = axis_state;
+    sw.Do(&m_button_state);
+    sw.Do(&m_axis_state);
+  }
+  else
+  {
+    sw.SkipBytes(sizeof(m_button_state) + sizeof(m_axis_state));
   }
 
-  sw.Do(&m_transfer_state, TransferState::LeftAxisY);
+  if (sw.GetVersion() < 105)
+    SkipLegacyTransferState(sw);
 
-  if (sw.IsReading() && (old_analog_mode != m_analog_mode))
-  {
-    Host::AddIconOSDMessage(
-      OSDMessageType::Quick, fmt::format("analog_mode_toggle_{}", m_index), ICON_FA_GAMEPAD,
-      m_analog_mode ? fmt::format(TRANSLATE_FS("Controller", "Controller {} switched to analog mode."), m_index + 1u) :
-                      fmt::format(TRANSLATE_FS("Controller", "Controller {} switched to digital mode."), m_index + 1u));
-  }
   return true;
 }
 
@@ -109,52 +103,19 @@ void AnalogJoystick::SetBindState(u32 index, float value)
     // Both axes of the stick are updated, since the deadzone may have centred the other one.
     if (static_cast<HalfAxis>(sub_index) < HalfAxis::RLeft)
     {
-      m_axis_state[static_cast<u8>(Axis::LeftX)] = ControllerHelpers::MergeHalfAxes(
+      ControllerHelpers::UpdateStickAxes(
         m_half_axis_state[static_cast<size_t>(HalfAxis::LLeft)],
-        m_half_axis_state[static_cast<size_t>(HalfAxis::LRight)], (m_invert_left_stick & 1));
-      m_axis_state[static_cast<u8>(Axis::LeftY)] = ControllerHelpers::MergeHalfAxes(
-        m_half_axis_state[static_cast<size_t>(HalfAxis::LUp)], m_half_axis_state[static_cast<size_t>(HalfAxis::LDown)],
-        (m_invert_left_stick & 2));
+        m_half_axis_state[static_cast<size_t>(HalfAxis::LRight)], m_half_axis_state[static_cast<size_t>(HalfAxis::LUp)],
+        m_half_axis_state[static_cast<size_t>(HalfAxis::LDown)], m_invert_left_stick, m_analog_deadzone,
+        &m_axis_state[static_cast<u8>(Axis::LeftX)], &m_axis_state[static_cast<u8>(Axis::LeftY)]);
     }
     else
     {
-      m_axis_state[static_cast<u8>(Axis::RightX)] = ControllerHelpers::MergeHalfAxes(
+      ControllerHelpers::UpdateStickAxes(
         m_half_axis_state[static_cast<size_t>(HalfAxis::RLeft)],
-        m_half_axis_state[static_cast<size_t>(HalfAxis::RRight)], (m_invert_right_stick & 1));
-      m_axis_state[static_cast<u8>(Axis::RightY)] = ControllerHelpers::MergeHalfAxes(
-        m_half_axis_state[static_cast<size_t>(HalfAxis::RUp)], m_half_axis_state[static_cast<size_t>(HalfAxis::RDown)],
-        (m_invert_right_stick & 2));
-    }
-
-    if (m_analog_deadzone > 0.0f)
-    {
-      float pos_x, pos_y;
-      if (static_cast<HalfAxis>(sub_index) < HalfAxis::RLeft)
-      {
-        pos_x = ControllerHelpers::MergeHalfAxesToFloat(m_half_axis_state[static_cast<size_t>(HalfAxis::LLeft)],
-                                                        m_half_axis_state[static_cast<size_t>(HalfAxis::LRight)],
-                                                        (m_invert_left_stick & 1));
-        pos_y = ControllerHelpers::MergeHalfAxesToFloat(m_half_axis_state[static_cast<size_t>(HalfAxis::LUp)],
-                                                        m_half_axis_state[static_cast<size_t>(HalfAxis::LDown)],
-                                                        (m_invert_left_stick & 2));
-      }
-      else
-      {
-        pos_x = ControllerHelpers::MergeHalfAxesToFloat(m_half_axis_state[static_cast<size_t>(HalfAxis::RLeft)],
-                                                        m_half_axis_state[static_cast<size_t>(HalfAxis::RRight)],
-                                                        (m_invert_right_stick & 1));
-        pos_y = ControllerHelpers::MergeHalfAxesToFloat(m_half_axis_state[static_cast<size_t>(HalfAxis::RUp)],
-                                                        m_half_axis_state[static_cast<size_t>(HalfAxis::RDown)],
-                                                        (m_invert_right_stick & 2));
-      }
-
-      if (ControllerHelpers::InCircularDeadzone(m_analog_deadzone, pos_x, pos_y))
-      {
-        if (static_cast<HalfAxis>(sub_index) < HalfAxis::RLeft)
-          m_axis_state[static_cast<u8>(Axis::LeftX)] = m_axis_state[static_cast<u8>(Axis::LeftY)] = AXIS_CENTER;
-        else
-          m_axis_state[static_cast<u8>(Axis::RightX)] = m_axis_state[static_cast<u8>(Axis::RightY)] = AXIS_CENTER;
-      }
+        m_half_axis_state[static_cast<size_t>(HalfAxis::RRight)], m_half_axis_state[static_cast<size_t>(HalfAxis::RUp)],
+        m_half_axis_state[static_cast<size_t>(HalfAxis::RDown)], m_invert_right_stick, m_analog_deadzone,
+        &m_axis_state[static_cast<u8>(Axis::RightX)], &m_axis_state[static_cast<u8>(Axis::RightY)]);
     }
 
     if (std::memcmp(m_axis_state.data(), prev_axis_state.data(), m_axis_state.size()) != 0)
@@ -163,22 +124,7 @@ void AnalogJoystick::SetBindState(u32 index, float value)
     return;
   }
 
-  const u16 bit = u16(1) << static_cast<u8>(index);
-
-  if (value >= 0.5f)
-  {
-    if (m_button_state & bit)
-      System::SetRunaheadReplayFlag(false);
-
-    m_button_state &= ~(bit);
-  }
-  else
-  {
-    if (!(m_button_state & bit))
-      System::SetRunaheadReplayFlag(false);
-
-    m_button_state |= bit;
-  }
+  SetButtonPressed(m_button_state, u16(1) << static_cast<u8>(index), (value >= 0.5f));
 }
 
 u32 AnalogJoystick::GetButtonStateBits() const
@@ -188,21 +134,31 @@ u32 AnalogJoystick::GetButtonStateBits() const
 
 std::optional<u32> AnalogJoystick::GetAnalogInputBytes() const
 {
-  return m_axis_state[static_cast<size_t>(Axis::LeftY)] << 24 | m_axis_state[static_cast<size_t>(Axis::LeftX)] << 16 |
-         m_axis_state[static_cast<size_t>(Axis::RightY)] << 8 | m_axis_state[static_cast<size_t>(Axis::RightX)];
+  return (m_axis_state[static_cast<u8>(Axis::LeftY)] << 24 | m_axis_state[static_cast<u8>(Axis::LeftX)] << 16 |
+          m_axis_state[static_cast<u8>(Axis::RightY)] << 8 | m_axis_state[static_cast<u8>(Axis::RightX)]);
 }
 
-void AnalogJoystick::ResetTransferState()
+u8 AnalogJoystick::GetIDByte() const
 {
-  m_transfer_state = TransferState::Idle;
+  return m_analog_mode ? 0x53 : 0x41;
 }
 
-u16 AnalogJoystick::GetID() const
+bool AnalogJoystick::BeginCommand(u8 command)
 {
-  static constexpr u16 DIGITAL_MODE_ID = 0x5A41;
-  static constexpr u16 ANALOG_MODE_ID = 0x5A53;
+  if (command != 0x42)
+    return false;
 
-  return m_analog_mode ? ANALOG_MODE_ID : DIGITAL_MODE_ID;
+  // L3/R3 are only sent in analog mode.
+  const u16 l3r3_released =
+    m_analog_mode ? 0 : static_cast<u16>((1u << static_cast<u8>(Button::L3)) | (1u << static_cast<u8>(Button::R3)));
+  const u16 button_state = m_button_state | l3r3_released;
+  m_tx_buffer[2] = Truncate8(m_disable_socd ? ControllerHelpers::RemoveOpposingDirections(button_state) : button_state);
+  m_tx_buffer[3] = Truncate8(m_button_state >> 8);
+  m_tx_buffer[4] = m_axis_state[static_cast<u8>(Axis::RightX)];
+  m_tx_buffer[5] = m_axis_state[static_cast<u8>(Axis::RightY)];
+  m_tx_buffer[6] = m_axis_state[static_cast<u8>(Axis::LeftX)];
+  m_tx_buffer[7] = m_axis_state[static_cast<u8>(Axis::LeftY)];
+  return true;
 }
 
 void AnalogJoystick::ToggleAnalogMode()
@@ -216,98 +172,6 @@ void AnalogJoystick::ToggleAnalogMode()
     OSDMessageType::Quick, fmt::format("analog_mode_toggle_{}", m_index), ICON_FA_GAMEPAD,
     m_analog_mode ? fmt::format(TRANSLATE_FS("Controller", "Controller {} switched to analog mode."), m_index + 1u) :
                     fmt::format(TRANSLATE_FS("Controller", "Controller {} switched to digital mode."), m_index + 1u));
-}
-
-bool AnalogJoystick::Transfer(const u8 data_in, u8* data_out)
-{
-  switch (m_transfer_state)
-  {
-    case TransferState::Idle:
-    {
-      *data_out = 0xFF;
-
-      if (data_in == 0x01)
-      {
-        m_transfer_state = TransferState::Ready;
-        return true;
-      }
-      return false;
-    }
-
-    case TransferState::Ready:
-    {
-      if (data_in == 0x42)
-      {
-        *data_out = Truncate8(GetID());
-        m_transfer_state = TransferState::IDMSB;
-        return true;
-      }
-
-      // The ID is sent while the command byte is received, so it's still there for unknown commands.
-      *data_out = Truncate8(GetID());
-      return false;
-    }
-
-    case TransferState::IDMSB:
-    {
-      *data_out = Truncate8(GetID() >> 8);
-      m_transfer_state = TransferState::ButtonsLSB;
-      return true;
-    }
-
-    case TransferState::ButtonsLSB:
-    {
-      // L3/R3 are only sent in analog mode.
-      const u16 l3r3_released =
-        m_analog_mode ? 0 : static_cast<u16>((1u << static_cast<u8>(Button::L3)) | (1u << static_cast<u8>(Button::R3)));
-      const u16 button_state = m_button_state | l3r3_released;
-      *data_out = Truncate8(m_disable_socd ? ControllerHelpers::RemoveOpposingDirections(button_state) : button_state);
-      m_transfer_state = TransferState::ButtonsMSB;
-      return true;
-    }
-
-    case TransferState::ButtonsMSB:
-    {
-      *data_out = Truncate8(m_button_state >> 8);
-
-      m_transfer_state = m_analog_mode ? TransferState::RightAxisX : TransferState::Idle;
-      return m_analog_mode;
-    }
-
-    case TransferState::RightAxisX:
-    {
-      *data_out = Truncate8(m_axis_state[static_cast<u8>(Axis::RightX)]);
-      m_transfer_state = TransferState::RightAxisY;
-      return true;
-    }
-
-    case TransferState::RightAxisY:
-    {
-      *data_out = Truncate8(m_axis_state[static_cast<u8>(Axis::RightY)]);
-      m_transfer_state = TransferState::LeftAxisX;
-      return true;
-    }
-
-    case TransferState::LeftAxisX:
-    {
-      *data_out = Truncate8(m_axis_state[static_cast<u8>(Axis::LeftX)]);
-      m_transfer_state = TransferState::LeftAxisY;
-      return true;
-    }
-
-    case TransferState::LeftAxisY:
-    {
-      *data_out = Truncate8(m_axis_state[static_cast<u8>(Axis::LeftY)]);
-      m_transfer_state = TransferState::Idle;
-      return false;
-    }
-
-    default:
-    {
-      UnreachableCode();
-      return false;
-    }
-  }
 }
 
 std::unique_ptr<AnalogJoystick> AnalogJoystick::Create(u32 index)

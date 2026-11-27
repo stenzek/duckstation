@@ -4,7 +4,6 @@
 #include "controller_test_utils.h"
 
 #include "core/negcon.h"
-#include "core/negcon_base.h"
 #include "core/negcon_rumble.h"
 #include "core/settings.h"
 
@@ -22,8 +21,8 @@
 // These tests check what is currently emulated. Comments starting with "Current behaviour:" mark things that look
 // questionable, and may change.
 
-static_assert(std::is_base_of_v<NegConBase, NeGcon>);
-static_assert(std::is_base_of_v<NegConBase, NeGconRumble>);
+static_assert(std::is_same_v<NeGcon::HalfAxis, NeGconInputs::HalfAxis>);
+static_assert(std::is_same_v<NeGconRumble::HalfAxis, NeGconInputs::HalfAxis>);
 static_assert(static_cast<u32>(NeGcon::Button::Count) == 8);
 static_assert(static_cast<u32>(NeGconRumble::Button::Analog) == 8);
 static_assert(static_cast<u32>(NeGconRumble::Button::Count) == 9);
@@ -34,7 +33,7 @@ namespace {
 
 static constexpr const char* SECTION = "Pad1";
 
-/// Bit in the button state for each NegConBase::Button.
+/// Bit in the button state for each NeGconInputs::Button.
 static constexpr u8 BUTTON_BITS[] = {3, 4, 5, 6, 7, 11, 12, 13};
 
 template<typename E>
@@ -61,7 +60,7 @@ static std::vector<u8> WithStatus(std::vector<u8> reply, u8 status)
 
 } // namespace
 
-TEST(NegConBase, BindingIndices)
+TEST(NeGconInputs, BindingIndices)
 {
   const Controller::ControllerBindingInfo* negcon_steering_left = FindBinding(NeGcon::INFO, "SteeringLeft");
   const Controller::ControllerBindingInfo* rumble_analog = FindBinding(NeGconRumble::INFO, "Analog");
@@ -81,7 +80,7 @@ TEST(NegConBase, BindingIndices)
   EXPECT_EQ(rumble_mode_led->bind_index, 16u);
 }
 
-TEST(NegConBase, CommonButtonMappings)
+TEST(NeGconInputs, CommonButtonMappings)
 {
   NeGcon negcon(0);
   NeGconRumble rumble(0);
@@ -98,10 +97,12 @@ TEST(NegConBase, CommonButtonMappings)
   EXPECT_EQ(rumble.GetBindState(static_cast<u32>(NeGconRumble::Button::Analog)), 0.0f);
 }
 
-TEST(NegConBase, DefaultAxisModifiers)
+TEST(NeGconInputs, DefaultAxisModifiers)
 {
   NeGcon negcon(0);
   NeGconRumble rumble(0);
+  LoadDefaultSettings(negcon);
+  LoadDefaultSettings(rumble);
   constexpr u32 negcon_axis_start = static_cast<u32>(NeGcon::Button::Count);
   constexpr u32 rumble_axis_start = static_cast<u32>(NeGconRumble::Button::Count);
 
@@ -118,7 +119,7 @@ TEST(NegConBase, DefaultAxisModifiers)
   EXPECT_EQ(rumble.GetBindState(rumble_axis_start + static_cast<u32>(NeGconRumble::HalfAxis::SteeringRight)), 1.0f);
 }
 
-TEST(NegConBase, ConfiguredAxisModifiers)
+TEST(NeGconInputs, ConfiguredAxisModifiers)
 {
   INISettingsInterface si;
   si.SetFloatValue("Controller", "SteeringDeadzone", 0.2f);
@@ -156,7 +157,7 @@ TEST(NegConBase, ConfiguredAxisModifiers)
   EXPECT_EQ(negcon.GetAnalogInputBytes().value(), UINT32_C(0x408020A0));
 }
 
-TEST(NegConBase, RumbleSettings)
+TEST(NeGconInputs, RumbleSettings)
 {
   EXPECT_TRUE(HasSetting(NeGconRumble::INFO, "SteeringDeadzone"));
   EXPECT_TRUE(HasSetting(NeGconRumble::INFO, "SteeringSaturation"));
@@ -177,7 +178,7 @@ TEST(NegConBase, RumbleSettings)
   EXPECT_FALSE(HasSetting(NeGconRumble::INFO, "SteeringSensitivity"));
 }
 
-TEST(NegConBase, DeviceProtocols)
+TEST(NeGconInputs, DeviceProtocols)
 {
   NeGcon negcon(0);
   negcon.SetBindState(static_cast<u32>(NeGcon::Button::A), 1.0f);
@@ -261,7 +262,7 @@ TEST(NeGcon, Buttons)
 TEST(NeGcon, RejectedBytes)
 {
   const auto negcon = MakeNeGcon();
-  ExpectRejectedBytes(*negcon, {0x00, 0x43, 0x44, 0x45, 0x4D}, 0xFF, LONG_POLL, NegReply(NO_BUTTONS));
+  ExpectRejectedBytes(*negcon, {0x00, 0x43, 0x44, 0x45, 0x4D}, 0x23, LONG_POLL, NegReply(NO_BUTTONS));
 }
 
 TEST(NeGcon, ResetTransferState)
@@ -307,7 +308,7 @@ TEST(NeGcon, SaveState)
   // Partway through a poll, the rest of it continues after loading.
   ExpectResumesAfterLoad(*negcon, MakeNeGcon, LONG_POLL, NegReply(NegPressed({NeGconButton::R})));
 
-  // Input state is only loaded if asked to. Current behaviour: the axes aren't saved.
+  // Input state, including the axes, is only loaded if asked to.
   negcon->SetBindState(NeGconHalfAxis(NeGcon::HalfAxis::I), 1.0f);
   const std::vector<u8> state = SaveState(*negcon);
   const auto loaded = MakeNeGcon();
@@ -316,7 +317,7 @@ TEST(NeGcon, SaveState)
   LoadState(*loaded, state, false);
   EXPECT_EQ(TransferCommand(*loaded, LONG_POLL), NegReply(NegPressed({NeGconButton::A}), 0x80, 0x00, 0x00, 0xFF));
   LoadState(*loaded, state, true);
-  EXPECT_EQ(TransferCommand(*loaded, LONG_POLL), NegReply(NegPressed({NeGconButton::R}), 0x80, 0x00, 0x00, 0xFF));
+  EXPECT_EQ(TransferCommand(*loaded, LONG_POLL), NegReply(NegPressed({NeGconButton::R}), 0x80, 0xFF, 0x00, 0x00));
 }
 
 namespace {
@@ -505,6 +506,7 @@ TEST_F(NeGconRumbleTest, SetAnalogMode)
 TEST_F(NeGconRumbleTest, SetAnalogModeLock)
 {
   // 03h locks the mode, so the button does nothing.
+  SetCanStartInAnalogMode(true);
   EnterAnalogMode(m_rumble);
   ToggleAnalog();
   EXPECT_TRUE(ModeLED());
@@ -736,6 +738,7 @@ TEST_F(NeGconRumbleTest, AnalogButton)
 
 TEST_F(NeGconRumbleTest, AnalogButton_ResetsRumble)
 {
+  SetCanStartInAnalogMode(true);
   SetupDualShock(true);
   EXPECT_EQ(Transfer(RumblePoll({0x01, 0xFF})), RumbleReply(NO_BUTTONS));
   EXPECT_EQ(SmallMotor(), 1.0f);
@@ -751,6 +754,7 @@ TEST_F(NeGconRumbleTest, AnalogButton_ResetsRumble)
 TEST_F(NeGconRumbleTest, AnalogButton_StatusByte)
 {
   // After DualShock mode is enabled, toggling with the button clears the status byte until config mode is entered.
+  SetCanStartInAnalogMode(true);
   SetupDualShock(true);
   ToggleAnalog();
   EXPECT_EQ(Transfer(POLL), WithStatus(PollReply(NO_BUTTONS), 0x00));
@@ -761,17 +765,31 @@ TEST_F(NeGconRumbleTest, AnalogButton_StatusByte)
   EXPECT_EQ(Transfer(LONG_POLL), RumbleReply(NO_BUTTONS));
 
   // Not without DualShock mode.
+  SetCanStartInAnalogMode(false);
   m_rumble.Reset();
   ToggleAnalog();
   EXPECT_EQ(Transfer(LONG_POLL), RumbleReply(NO_BUTTONS));
 }
 
+TEST_F(NeGconRumbleTest, AnalogButton_LeavesDualShockMode)
+{
+  // If the game can't start in analog mode, switching to digital mode leaves config and DualShock mode.
+  SetupDualShock(true);
+  ToggleAnalog();
+  EXPECT_FALSE(ModeLED());
+  EXPECT_EQ(Transfer(POLL), PollReply(NO_BUTTONS));
+  EXPECT_EQ(Transfer(RumblePoll({0x40, 0x01}, 5)), PollReply(NO_BUTTONS));
+  EXPECT_EQ(SmallMotor(), 1.0f);
+}
+
 TEST_F(NeGconRumbleTest, Reset)
 {
+  SetCanStartInAnalogMode(true);
   SetupDualShock(true);
   EXPECT_EQ(Transfer(RumblePoll({0x01, 0xFF})), RumbleReply(NO_BUTTONS));
   ToggleAnalog();
   EXPECT_EQ(Transfer(EnterConfigModeCommand()), WithStatus(PollReply(NO_BUTTONS), 0x00));
+  SetCanStartInAnalogMode(false);
 
   // Clears the modes, the motors, the mapping and the status byte. Without CanStartInAnalogMode(), it's digital.
   m_rumble.Reset();
@@ -818,10 +836,16 @@ TEST_F(NeGconRumbleTest, DisableSOCD)
 
 TEST_F(NeGconRumbleTest, SaveState)
 {
-  // Current behaviour: the command step and response length aren't saved, so a state saved partway through a command
-  // can't be loaded into a new controller (it divides by zero). Only states between commands are checked.
   SetupDualShock(true);
   Press(RumbleButton::Start);
+
+  // Partway through a command, the rest of it continues after loading.
+  ExpectResumesAfterLoad(m_rumble, MakeRumble, RumblePoll({0x00, 0x00}),
+                         RumbleReply(NegPressed({RumbleButton::Start})));
+  ExpectResumesAfterLoad(m_rumble, MakeRumble, ENTER_CONFIG_LONG, RumbleReply(NegPressed({RumbleButton::Start})));
+  EXPECT_EQ(Transfer(ENTER_CONFIG_LONG), RumbleReply(NegPressed({RumbleButton::Start})));
+  ExpectResumesAfterLoad(m_rumble, MakeRumble, ExitConfigModeCommand(), ANALOG_CONFIG_REPLY);
+  EXPECT_EQ(Transfer(ExitConfigModeCommand()), ANALOG_CONFIG_REPLY);
   EXPECT_EQ(Transfer(RumblePoll({0x01, 0x80})), RumbleReply(NegPressed({RumbleButton::Start})));
 
   const std::vector<u8> state = SaveState(m_rumble);
@@ -835,17 +859,17 @@ TEST_F(NeGconRumbleTest, SaveState)
     EXPECT_EQ(loaded->GetBindState(GetBindIndex(NeGconRumble::INFO, "LargeMotor")), 1.0f);
   }
 
-  // Input state, including the mode, is only loaded if asked to.
+  // Input state is only loaded if asked to, but the mode is always loaded.
   {
     const auto loaded = MakeRumble();
     loaded->SetBindState(static_cast<u32>(RumbleButton::B), 1.0f);
     LoadState(*loaded, state, false);
-    EXPECT_EQ(loaded->GetBindState(GetBindIndex(NeGconRumble::INFO, "ModeLED")), 0.0f);
-    EXPECT_EQ(TransferCommand(*loaded, RumblePoll({0x01, 0x00}, 5)), PollReply(NegPressed({RumbleButton::B})));
+    EXPECT_EQ(loaded->GetBindState(GetBindIndex(NeGconRumble::INFO, "ModeLED")), 1.0f);
+    EXPECT_EQ(TransferCommand(*loaded, RumblePoll({0x01, 0x00})), RumbleReply(NegPressed({RumbleButton::B})));
     EXPECT_EQ(loaded->GetBindState(GetBindIndex(NeGconRumble::INFO, "SmallMotor")), 1.0f);
   }
 
-  // Current behaviour: the lock isn't saved.
+  // The lock is saved too.
   EXPECT_EQ(Transfer(ENTER_CONFIG_LONG), RumbleReply(NegPressed({RumbleButton::Start})));
   EXPECT_EQ(Transfer(SetAnalogModeCommand(0x01, 0x01, 0x03)), ANALOG_CONFIG_REPLY);
   EXPECT_EQ(Transfer(ExitConfigModeCommand()), ANALOG_CONFIG_REPLY);
@@ -854,6 +878,44 @@ TEST_F(NeGconRumbleTest, SaveState)
     const auto loaded = MakeRumble();
     LoadState(*loaded, locked_state, true);
     loaded->SetBindState(static_cast<u32>(RumbleButton::Analog), 1.0f);
-    EXPECT_EQ(loaded->GetBindState(GetBindIndex(NeGconRumble::INFO, "ModeLED")), 0.0f);
+    EXPECT_EQ(loaded->GetBindState(GetBindIndex(NeGconRumble::INFO, "ModeLED")), 1.0f);
   }
+}
+
+TEST(NeGcon, LegacyState)
+{
+  // Saved by version 104 partway through a poll, with R pressed. Inputs aren't loaded from older states.
+  static const std::vector<u8> state = {0xFF, 0xF7, 0x03};
+  const auto negcon = MakeNeGcon();
+  LoadState(*negcon, state, true, 104);
+
+  // The transfer starts again from idle.
+  EXPECT_EQ(TransferCommand(*negcon, LONG_POLL), NegReply(NO_BUTTONS));
+}
+
+TEST_F(NeGconRumbleTest, LegacyState)
+{
+  // Saved by version 104 in analog mode with both motors mapped, Start pressed and the large motor on. Inputs aren't
+  // loaded from older states.
+  static const std::vector<u8> state = {0x01, 0x01, 0x00, 0x5A, 0xF7, 0xFF, 0x02, 0x00, 0x01, 0xFF, 0xFF, 0xFF,
+                                        0xFF, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x80, 0x00};
+  LoadState(m_rumble, state, true, 104);
+  EXPECT_TRUE(ModeLED());
+  EXPECT_EQ(SmallMotor(), 0.0f);
+  EXPECT_FLOAT_EQ(LargeMotor(), MotorStrength(0x80 + 8));
+
+  EXPECT_EQ(Transfer(RumblePoll({0x01, 0x00})), RumbleReply(NO_BUTTONS));
+  EXPECT_EQ(SmallMotor(), 1.0f);
+  EXPECT_EQ(LargeMotor(), 0.0f);
+}
+
+TEST_F(NeGconRumbleTest, LegacyState_Version44)
+{
+  // Before version 45, without the status byte, the mapping, the motor indices or the queued toggle. The large motor
+  // was first.
+  static const std::vector<u8> state = {0x01, 0x01, 0x00, 0xFF, 0xFF, 0x00, 0x40, 0x00};
+  LoadState(m_rumble, state, true, 44);
+  EXPECT_TRUE(ModeLED());
+  EXPECT_FLOAT_EQ(LargeMotor(), MotorStrength(0x40 + 8));
+  EXPECT_EQ(Transfer(LONG_POLL), RumbleReply(NO_BUTTONS));
 }

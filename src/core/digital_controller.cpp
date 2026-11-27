@@ -27,17 +27,22 @@ ControllerType DigitalController::GetType() const
 
 void DigitalController::Reset()
 {
-  m_transfer_state = TransferState::Idle;
+  ResetTransferState();
 }
 
 bool DigitalController::DoState(StateWrapper& sw, bool apply_input_state)
 {
-  u16 button_state = m_button_state;
-  sw.Do(&button_state);
-  if (apply_input_state)
-    m_button_state = button_state;
+  if (sw.GetVersion() >= 105 && !Controller::DoState(sw, apply_input_state))
+    return false;
 
-  sw.Do(&m_transfer_state, TransferState::ButtonsMSB);
+  if (sw.IsWriting() || apply_input_state)
+    sw.Do(&m_button_state);
+  else
+    sw.SkipBytes(sizeof(m_button_state));
+
+  if (sw.GetVersion() < 105)
+    SkipLegacyTransferState(sw);
+
   return true;
 }
 
@@ -58,22 +63,7 @@ void DigitalController::SetBindState(u32 index, float value)
   if (index >= static_cast<u32>(Button::Count))
     return;
 
-  const bool pressed = (value >= 0.5f);
-  const u16 bit = u16(1) << static_cast<u8>(index);
-  if (pressed)
-  {
-    if (m_button_state & bit)
-      System::SetRunaheadReplayFlag(false);
-
-    m_button_state &= ~bit;
-  }
-  else
-  {
-    if (!(m_button_state & bit))
-      System::SetRunaheadReplayFlag(false);
-
-    m_button_state |= bit;
-  }
+  SetButtonPressed(m_button_state, u16(1) << static_cast<u8>(index), (value >= 0.5f));
 }
 
 u32 DigitalController::GetButtonStateBits() const
@@ -81,71 +71,22 @@ u32 DigitalController::GetButtonStateBits() const
   return m_button_state ^ 0xFFFF;
 }
 
-void DigitalController::ResetTransferState()
+u8 DigitalController::GetIDByte() const
 {
-  m_transfer_state = TransferState::Idle;
+  return 0x41;
 }
 
-bool DigitalController::Transfer(const u8 data_in, u8* data_out)
+bool DigitalController::BeginCommand(u8 command)
 {
-  static constexpr u16 ID = 0x5A41;
+  if (command != 0x42)
+    return false;
 
-  switch (m_transfer_state)
-  {
-    case TransferState::Idle:
-    {
-      *data_out = 0xFF;
-
-      if (data_in == 0x01)
-      {
-        m_transfer_state = TransferState::Ready;
-        return true;
-      }
-      return false;
-    }
-
-    case TransferState::Ready:
-    {
-      if (data_in == 0x42)
-      {
-        *data_out = Truncate8(ID);
-        m_transfer_state = TransferState::IDMSB;
-        return true;
-      }
-
-      // The ID is sent while the command byte is received, so it's still there for unknown commands.
-      *data_out = Truncate8(ID);
-      return false;
-    }
-
-    case TransferState::IDMSB:
-    {
-      *data_out = Truncate8(ID >> 8);
-      m_transfer_state = TransferState::ButtonsLSB;
-      return true;
-    }
-
-    case TransferState::ButtonsLSB:
-    {
-      *data_out =
-        Truncate8((m_disable_socd ? ControllerHelpers::RemoveOpposingDirections(m_button_state) : m_button_state) &
-                  m_button_mask);
-      m_transfer_state = TransferState::ButtonsMSB;
-      return true;
-    }
-
-    case TransferState::ButtonsMSB:
-    {
-      // Can skip opposing directions here since they're all in the LSB.
-      const u16 buttons_to_send = m_button_state & m_button_mask;
-      *data_out = Truncate8(buttons_to_send >> 8);
-      m_transfer_state = TransferState::Idle;
-      return false;
-    }
-
-    default:
-      UnreachableCode();
-  }
+  // Can skip opposing directions in the MSB since they're all in the LSB.
+  const u16 button_state = m_button_state & m_button_mask;
+  m_tx_buffer[2] = Truncate8(
+    (m_disable_socd ? ControllerHelpers::RemoveOpposingDirections(m_button_state) : m_button_state) & m_button_mask);
+  m_tx_buffer[3] = Truncate8(button_state >> 8);
+  return true;
 }
 
 void DigitalController::LoadSettings(const SettingsInterface& si, const char* section, bool initial)

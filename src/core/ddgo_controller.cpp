@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2025 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2026 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "ddgo_controller.h"
@@ -26,7 +26,7 @@ ControllerType DDGoController::GetType() const
 
 void DDGoController::Reset()
 {
-  m_transfer_state = TransferState::Idle;
+  ResetTransferState();
   m_power_transition_frames_remaining = 0;
   UpdatePowerBits();
   m_brake_transition_frames_remaining = 0;
@@ -35,29 +35,31 @@ void DDGoController::Reset()
 
 bool DDGoController::DoState(StateWrapper& sw, bool apply_input_state)
 {
-  u16 button_state = m_button_state;
-  u8 power_level = m_power_level;
-  u8 power_transition_frames_remaining = m_power_transition_frames_remaining;
-  u8 brake_level = m_brake_level;
-  u8 brake_transition_frames_remaining = m_brake_transition_frames_remaining;
-  sw.Do(&button_state);
-  sw.Do(&power_level);
-  sw.Do(&power_transition_frames_remaining);
-  sw.Do(&brake_level);
-  sw.Do(&brake_transition_frames_remaining);
+  if (sw.GetVersion() >= 105 && !Controller::DoState(sw, apply_input_state))
+    return false;
 
-  if (apply_input_state)
+  if (sw.IsWriting() || apply_input_state)
   {
-    m_button_state = button_state;
-    m_power_level = power_level;
-    m_power_transition_frames_remaining = power_transition_frames_remaining;
-    m_brake_level = brake_level;
-    m_brake_transition_frames_remaining = brake_transition_frames_remaining;
-    UpdatePowerBits();
-    UpdateBrakeBits();
+    sw.Do(&m_button_state);
+    sw.Do(&m_power_level);
+    sw.Do(&m_power_transition_frames_remaining);
+    sw.Do(&m_brake_level);
+    sw.Do(&m_brake_transition_frames_remaining);
+    if (sw.IsReading())
+    {
+      UpdatePowerBits();
+      UpdateBrakeBits();
+    }
+  }
+  else
+  {
+    sw.SkipBytes(sizeof(m_button_state) + sizeof(m_power_level) + sizeof(m_power_transition_frames_remaining) +
+                 sizeof(m_brake_level) + sizeof(m_brake_transition_frames_remaining));
   }
 
-  sw.Do(&m_transfer_state, TransferState::ButtonsMSB);
+  if (sw.GetVersion() < 105)
+    SkipLegacyTransferState(sw);
+
   return true;
 }
 
@@ -106,22 +108,7 @@ void DDGoController::SetBindState(u32 index, float value)
     return;
   }
 
-  const bool pressed = (value >= 0.5f);
-  const u16 bit = u16(1) << static_cast<u8>(index);
-  if (pressed)
-  {
-    if (m_button_state & bit)
-      System::SetRunaheadReplayFlag(false);
-
-    m_button_state &= ~bit;
-  }
-  else
-  {
-    if (!(m_button_state & bit))
-      System::SetRunaheadReplayFlag(false);
-
-    m_button_state |= bit;
-  }
+  SetButtonPressed(m_button_state, u16(1) << static_cast<u8>(index), (value >= 0.5f));
 }
 
 u32 DDGoController::GetButtonStateBits() const
@@ -129,79 +116,34 @@ u32 DDGoController::GetButtonStateBits() const
   return m_button_state ^ 0xFFFF;
 }
 
-void DDGoController::ResetTransferState()
+u8 DDGoController::GetIDByte() const
 {
-  m_transfer_state = TransferState::Idle;
+  return 0x41;
 }
 
-bool DDGoController::Transfer(const u8 data_in, u8* data_out)
+bool DDGoController::BeginCommand(u8 command)
 {
-  static constexpr u16 ID = 0x5A41;
+  if (command != 0x42)
+    return false;
 
-  switch (m_transfer_state)
+  m_tx_buffer[2] = Truncate8(m_button_state & BUTTON_MASK);
+  m_tx_buffer[3] = Truncate8((m_button_state & BUTTON_MASK) >> 8);
+  return true;
+}
+
+void DDGoController::EndCommand()
+{
+  // handle transition time, after the poll so that it's seen for the full count
+  if (m_power_transition_frames_remaining > 0)
   {
-    case TransferState::Idle:
-    {
-      *data_out = 0xFF;
+    m_power_transition_frames_remaining--;
+    UpdatePowerBits();
+  }
 
-      if (data_in == 0x01)
-      {
-        m_transfer_state = TransferState::Ready;
-        return true;
-      }
-      return false;
-    }
-
-    case TransferState::Ready:
-    {
-      if (data_in == 0x42)
-      {
-        *data_out = Truncate8(ID);
-        m_transfer_state = TransferState::IDMSB;
-        return true;
-      }
-
-      *data_out = 0xFF;
-      return false;
-    }
-
-    case TransferState::IDMSB:
-    {
-      *data_out = Truncate8(ID >> 8);
-      m_transfer_state = TransferState::ButtonsLSB;
-      return true;
-    }
-
-    case TransferState::ButtonsLSB:
-    {
-      *data_out = Truncate8(m_button_state & BUTTON_MASK);
-      m_transfer_state = TransferState::ButtonsMSB;
-      return true;
-    }
-
-    case TransferState::ButtonsMSB:
-    {
-      *data_out = Truncate8((m_button_state & BUTTON_MASK) >> 8);
-      m_transfer_state = TransferState::Idle;
-
-      // handle transition time, after the poll so that it's seen for the full count
-      if (m_power_transition_frames_remaining > 0)
-      {
-        m_power_transition_frames_remaining--;
-        UpdatePowerBits();
-      }
-
-      if (m_brake_transition_frames_remaining > 0)
-      {
-        m_brake_transition_frames_remaining--;
-        UpdateBrakeBits();
-      }
-
-      return false;
-    }
-
-    default:
-      UnreachableCode();
+  if (m_brake_transition_frames_remaining > 0)
+  {
+    m_brake_transition_frames_remaining--;
+    UpdateBrakeBits();
   }
 }
 

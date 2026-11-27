@@ -1051,3 +1051,48 @@ TEST_F(AnalogControllerTest, SaveState_InputState)
   LoadState(loaded, state, true);
   EXPECT_EQ(TransferCommand(loaded, LONG_POLL), AnalogPollReply(Pressed({Button::Cross}), 0x7F, 0x7F, 0xFF, 0x7F));
 }
+
+TEST_F(AnalogControllerTest, LegacyState)
+{
+  // Saved by version 104 partway through a poll, in locked analog mode with both motors mapped, Cross pressed, the
+  // left stick left and the large motor on. Inputs aren't loaded from older states.
+  static const std::vector<u8> state = {0x02, 0x03, 0x08, 0x42, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x73, 0x5A,
+                                        0xFF, 0xBF, 0x7F, 0x7F, 0x00, 0x7F, 0x01, 0x01, 0x01, 0x00, 0x00, 0x01, 0xFF,
+                                        0xFF, 0xFF, 0xFF, 0x5A, 0x00, 0x7F, 0x7F, 0x7F, 0xFF, 0xBF, 0x00, 0x80};
+  LoadState(m_controller, state, true, 104);
+  EXPECT_TRUE(AnalogLED());
+  EXPECT_EQ(SmallMotor(), 0.0f);
+  EXPECT_FLOAT_EQ(LargeMotor(), MotorStrength(0x80 + 8));
+
+  // The transfer starts again from idle.
+  EXPECT_EQ(Transfer(LONG_POLL), AnalogPollReply(NO_BUTTONS));
+  EXPECT_EQ(Transfer(RumblePoll({0x01, 0x00})), AnalogPollReply(NO_BUTTONS));
+  EXPECT_EQ(SmallMotor(), 1.0f);
+  EXPECT_EQ(LargeMotor(), 0.0f);
+
+  // The lock is kept.
+  ToggleAnalog();
+  EXPECT_TRUE(AnalogLED());
+}
+
+TEST_F(AnalogControllerTest, LegacyState_Version75)
+{
+  // Before version 76, without the transfer buffers: analog mode, DualShock, config mode, the status byte, Square
+  // pressed (not loaded), then the mapping and motors.
+  static const std::vector<u8> state = {0x01, 0x01, 0x00, 0x00, 0x00, 0x5A, 0xFF, 0x7F, 0x02, 0x00, 0x01, 0xFF, 0xFF,
+                                        0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x00, 0x00, 0x40};
+  LoadState(m_controller, state, true, 75);
+  EXPECT_TRUE(AnalogLED());
+  EXPECT_FLOAT_EQ(LargeMotor(), MotorStrength(0x40 + 8));
+  EXPECT_EQ(Transfer(LONG_POLL), AnalogPollReply(NO_BUTTONS));
+}
+
+TEST_F(AnalogControllerTest, LegacyState_Version44)
+{
+  // Before version 45, without the status byte, the mapping, the motor indices or the queued toggle.
+  static const std::vector<u8> state = {0x01, 0x01, 0x00, 0x00, 0x00, 0xFF, 0xFF, 0x00, 0x00, 0x40};
+  LoadState(m_controller, state, true, 44);
+  EXPECT_TRUE(AnalogLED());
+  EXPECT_FLOAT_EQ(LargeMotor(), MotorStrength(0x40 + 8));
+  EXPECT_EQ(Transfer(LONG_POLL), AnalogPollReply(NO_BUTTONS));
+}

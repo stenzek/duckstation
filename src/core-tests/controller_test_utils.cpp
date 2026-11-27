@@ -159,9 +159,9 @@ std::vector<u8> SaveState(Controller& controller)
   return data;
 }
 
-void LoadState(Controller& controller, const std::vector<u8>& data, bool apply_input_state)
+void LoadState(Controller& controller, const std::vector<u8>& data, bool apply_input_state, u32 version)
 {
-  StateWrapper sw(std::span<const u8>(data), StateWrapper::Mode::Read, SAVE_STATE_VERSION);
+  StateWrapper sw(std::span<const u8>(data), StateWrapper::Mode::Read, version);
   EXPECT_TRUE(controller.DoState(sw, apply_input_state));
   EXPECT_FALSE(sw.HasError());
   EXPECT_EQ(sw.GetPosition(), data.size());

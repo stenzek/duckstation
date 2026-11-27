@@ -231,4 +231,23 @@ TEST(DigitalController, SaveState)
   EXPECT_EQ(TransferCommand(loaded, POLL), PollReply(Pressed({Button::Square})));
   LoadState(loaded, state, true);
   EXPECT_EQ(TransferCommand(loaded, POLL), PollReply(Pressed({Button::Circle})));
+
+  // A transfer step past the end of the reply restarts the transfer from idle.
+  TransferBytes(controller, {0x01, 0x42});
+  std::vector<u8> bad_state = SaveState(controller);
+  bad_state[1] = 0xFF;
+  LoadState(loaded, bad_state, true);
+  EXPECT_EQ(TransferCommand(loaded, POLL), PollReply(Pressed({Button::Circle})));
+}
+
+TEST(DigitalController, LegacyState)
+{
+  // Saved by version 104 partway through a poll, with Circle pressed.
+  static const std::vector<u8> state = {0xFF, 0xDF, 0x03};
+  DigitalController controller(0, 0xFFFF);
+  LoadDefaultSettings(controller);
+  LoadState(controller, state, true, 104);
+
+  // The transfer starts again from idle.
+  EXPECT_EQ(TransferCommand(controller, POLL), PollReply(Pressed({Button::Circle})));
 }

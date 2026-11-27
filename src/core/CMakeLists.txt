@@ -27,6 +27,8 @@ add_library(core
   cheats.cpp
   cheats.h
   cheats_private.h
+  config_mode_controller.cpp
+  config_mode_controller.h
   controller.cpp
   controller.h
   controller_helpers.h
@@ -115,8 +117,6 @@ add_library(core
   mips_encoder.h
   negcon.cpp
   negcon.h
-  negcon_base.cpp
-  negcon_base.h
   negcon_rumble.cpp
   negcon_rumble.h
   pad.cpp

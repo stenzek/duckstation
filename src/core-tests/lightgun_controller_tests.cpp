@@ -28,8 +28,8 @@ public:
 
   ControllerType GetType() const override { return ControllerType::None; }
   void Reset() override {}
-  void ResetTransferState() override {}
-  bool Transfer(const u8, u8*) override { return false; }
+  u8 GetIDByte() const override { return 0x41; }
+  bool BeginCommand(u8) override { return false; }
 
   bool GetLastShootOffscreenState() const { return m_last_shoot_offscreen_state; }
   u32 GetShootOffscreenCallCount() const { return m_shoot_offscreen_call_count; }
@@ -209,7 +209,7 @@ TEST(GunCon, Poll)
 TEST(GunCon, RejectedBytes)
 {
   const auto guncon = MakeGunCon();
-  ExpectRejectedBytes(*guncon, {0x00, 0x43, 0x44, 0x45, 0x4D}, 0xFF, LONG_POLL, GunConReply(NO_BUTTONS));
+  ExpectRejectedBytes(*guncon, {0x00, 0x43, 0x44, 0x45, 0x4D}, 0x63, LONG_POLL, GunConReply(NO_BUTTONS));
 }
 
 TEST(GunCon, ResetTransferState)
@@ -304,27 +304,12 @@ TEST(Justifier, Poll)
   EXPECT_EQ(TransferCommand(*justifier, POLL), JustifierReply(NO_BUTTONS));
   PressBinding(*justifier, static_cast<u32>(Justifier::Binding::Start));
   EXPECT_EQ(TransferCommand(*justifier, {0x01, 0x42, 0xFF, 0x5A, 0x01}), JustifierReply(Low(JUSTIFIER_START_BIT)));
-
-  // Current behaviour: 01h is ACKed but doesn't change anything, so 42h works without it, or after several.
-  EXPECT_EQ(TransferCommand(*justifier, {0x42, 0x00, 0x00, 0x00}),
-            (std::vector<u8>{0x31, 0x5A, Truncate8(Low(JUSTIFIER_START_BIT)), 0xFF}));
-  EXPECT_EQ(TransferCommand(*justifier, {0x01, 0x01, 0x42, 0x00, 0x00, 0x00}),
-            (std::vector<u8>{0xFF, 0xFF, 0x31, 0x5A, Truncate8(Low(JUSTIFIER_START_BIT)), 0xFF}));
 }
 
 TEST(Justifier, RejectedBytes)
 {
   const auto justifier = MakeJustifier();
-  for (const u8 first : {0x00, 0x02, 0x43, 0x81, 0xFF})
-  {
-    EXPECT_EQ(TransferCommand(*justifier, {first}), std::vector<u8>{0xFF}) << std::hex << u32(first);
-    EXPECT_EQ(TransferCommand(*justifier, POLL), JustifierReply(NO_BUTTONS));
-  }
-  for (const u8 command : {0x00, 0x43, 0x44, 0x4D})
-  {
-    EXPECT_EQ(TransferCommand(*justifier, {0x01, command}), (std::vector<u8>{0xFF, 0xFF})) << std::hex << u32(command);
-    EXPECT_EQ(TransferCommand(*justifier, POLL), JustifierReply(NO_BUTTONS));
-  }
+  ExpectRejectedBytes(*justifier, {0x00, 0x43, 0x44, 0x4D}, 0x31, POLL, JustifierReply(NO_BUTTONS));
 }
 
 TEST(Justifier, ResetTransferState)
@@ -434,6 +419,28 @@ TEST(Justifier, ShootOffscreen)
               JustifierReply(pressed ? Low(JUSTIFIER_TRIGGER_BIT) : NO_BUTTONS))
       << poll;
   }
+
+  // With no trigger frames, the trigger isn't pressed.
+  si.SetIntValue("Pad1", "OffscreenTriggerFrames", 0);
+  short_justifier->LoadSettings(si, "Pad1", false);
+  PressBinding(*short_justifier, offscreen);
+  for (u32 poll = 1; poll <= 5; poll++)
+    EXPECT_EQ(TransferCommand(*short_justifier, POLL), JustifierReply(NO_BUTTONS)) << poll;
+  EXPECT_EQ(short_justifier->GetBindState(trigger), 0.0f);
+
+  // The release frames are at least 1, so the trigger is released.
+  si.SetIntValue("Pad1", "OffscreenTriggerFrames", 2);
+  si.SetIntValue("Pad1", "OffscreenReleaseFrames", 0);
+  short_justifier->LoadSettings(si, "Pad1", false);
+  PressBinding(*short_justifier, offscreen);
+  for (u32 poll = 1; poll <= 5; poll++)
+  {
+    const bool pressed = (poll >= 2 && poll <= 3);
+    EXPECT_EQ(TransferCommand(*short_justifier, POLL),
+              JustifierReply(pressed ? Low(JUSTIFIER_TRIGGER_BIT) : NO_BUTTONS))
+      << poll;
+  }
+  EXPECT_EQ(short_justifier->GetBindState(trigger), 0.0f);
 }
 
 TEST(Justifier, MemberDefaults)
@@ -498,5 +505,33 @@ TEST(Justifier, SaveState)
       EXPECT_EQ(TransferCommand(*loaded, POLL), JustifierReply((poll == 6) ? Low(JUSTIFIER_TRIGGER_BIT) : NO_BUTTONS))
         << poll;
     }
+  }
+}
+
+TEST(GunCon, LegacyState)
+{
+  // Saved by version 104 partway through a poll, with the trigger pressed.
+  static const std::vector<u8> state = {0xFF, 0xDF, 0x00, 0x00, 0x00, 0x00, 0x03};
+  const auto guncon = MakeGunCon();
+  LoadState(*guncon, state, true, 104);
+
+  // The transfer starts again from idle.
+  EXPECT_EQ(TransferCommand(*guncon, LONG_POLL), GunConReply(Low(GUNCON_TRIGGER_BIT)));
+}
+
+TEST(Justifier, LegacyState)
+{
+  // Saved by version 104 partway through a poll, with Start pressed, four polls into an off-screen shot.
+  static const std::vector<u8> state = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xF7, 0xFF, 0x0B, 0x00, 0x00, 0x02};
+  const auto justifier = MakeJustifier();
+  LoadState(*justifier, state, true, 104);
+
+  // The transfer starts again from idle, and the shot continues.
+  for (u32 poll = 5; poll <= 12; poll++)
+  {
+    const bool pressed = (poll >= 6 && poll <= 10);
+    EXPECT_EQ(TransferCommand(*justifier, POLL),
+              JustifierReply(Low(JUSTIFIER_START_BIT | (pressed ? JUSTIFIER_TRIGGER_BIT : 0))))
+      << poll;
   }
 }

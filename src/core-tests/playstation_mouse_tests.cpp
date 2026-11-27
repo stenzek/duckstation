@@ -67,7 +67,7 @@ TEST(PlayStationMouse, RejectedBytes)
 {
   PlayStationMouse mouse(0);
   LoadDefaultSettings(mouse);
-  ExpectRejectedBytes(mouse, {0x00, 0x43, 0x44, 0x45, 0x4D}, 0xFF, MOUSE_POLL, MouseReply(NO_BUTTONS));
+  ExpectRejectedBytes(mouse, {0x00, 0x43, 0x44, 0x45, 0x4D}, 0x12, MOUSE_POLL, MouseReply(NO_BUTTONS));
 }
 
 TEST(PlayStationMouse, ResetTransferState)
@@ -148,13 +148,15 @@ TEST(PlayStationMouse, Deltas)
   EXPECT_EQ(TransferCommand(mouse, MOUSE_POLL), MouseReply(NO_BUTTONS, 127, -128));
   EXPECT_EQ(TransferCommand(mouse, MOUSE_POLL), MouseReply(NO_BUTTONS, 0, 0));
 
-  // The movement is only consumed when its byte is sent.
+  // The movement is consumed by 42h, so it's lost if the poll is aborted.
   Move(mouse, 2.0f, 3.0f);
-  TransferBytes(mouse, {0x01, 0x42, 0x00, 0x00});
+  TransferBytes(mouse, {0x01, 0x42});
   mouse.ResetTransferState();
-  TransferBytes(mouse, {0x01, 0x42, 0x00, 0x00, 0x00, 0x00});
+  EXPECT_EQ(TransferCommand(mouse, MOUSE_POLL), MouseReply(NO_BUTTONS, 0, 0));
+  Move(mouse, 2.0f, 3.0f);
+  TransferBytes(mouse, {0x01});
   mouse.ResetTransferState();
-  EXPECT_EQ(TransferCommand(mouse, MOUSE_POLL), MouseReply(NO_BUTTONS, 0, 3));
+  EXPECT_EQ(TransferCommand(mouse, MOUSE_POLL), MouseReply(NO_BUTTONS, 2, 3));
 }
 
 TEST(PlayStationMouse, Sensitivity)
@@ -201,4 +203,17 @@ TEST(PlayStationMouse, SaveState)
     LoadState(*loaded, state, false);
     EXPECT_EQ(TransferCommand(*loaded, MOUSE_POLL), MouseReply(static_cast<u16>(~LEFT_BIT), 1, 2));
   }
+}
+
+TEST(PlayStationMouse, LegacyState)
+{
+  // Saved by version 104 partway through a poll, with Right pressed and a movement of 5.5,-1.5.
+  static const std::vector<u8> state = {0xFF, 0xFB, 0x00, 0x00, 0xB0, 0x40, 0x00, 0x00, 0xC0, 0xBF, 0x03};
+  const auto mouse = MakeMouse();
+  LoadState(*mouse, state, true, 104);
+
+  // The transfer starts again from idle.
+  EXPECT_EQ(TransferCommand(*mouse, MOUSE_POLL), MouseReply(static_cast<u16>(~RIGHT_BIT), 5, -2));
+  Move(*mouse, 0.5f, 0.5f);
+  EXPECT_EQ(TransferCommand(*mouse, MOUSE_POLL), MouseReply(static_cast<u16>(~RIGHT_BIT), 1, 1));
 }

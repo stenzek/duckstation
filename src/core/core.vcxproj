@@ -11,6 +11,7 @@
     <ClCompile Include="cdrom_async_reader.cpp" />
     <ClCompile Include="cdrom_subq_replacement.cpp" />
     <ClCompile Include="cheats.cpp" />
+    <ClCompile Include="config_mode_controller.cpp" />
     <ClCompile Include="core.cpp" />
     <ClCompile Include="cpu_call_stack.cpp" />
     <ClCompile Include="cpu_core.cpp" />
@@ -71,7 +72,6 @@
     <ClCompile Include="memory_scanner.cpp" />
     <ClCompile Include="guncon.cpp" />
     <ClCompile Include="negcon.cpp" />
-    <ClCompile Include="negcon_base.cpp" />
     <ClCompile Include="negcon_rumble.cpp" />
     <ClCompile Include="pad.cpp" />
     <ClCompile Include="controller.cpp" />
@@ -103,6 +103,7 @@
     <ClInclude Include="cdrom_async_reader.h" />
     <ClInclude Include="cdrom_subq_replacement.h" />
     <ClInclude Include="cheats.h" />
+    <ClInclude Include="config_mode_controller.h" />
     <ClInclude Include="cheats_private.h" />
     <ClInclude Include="achievements.h" />
     <ClInclude Include="controller_helpers.h" />
@@ -168,7 +169,6 @@
     <ClInclude Include="memory_scanner.h" />
     <ClInclude Include="guncon.h" />
     <ClInclude Include="negcon.h" />
-    <ClInclude Include="negcon_base.h" />
     <ClInclude Include="negcon_rumble.h" />
     <ClInclude Include="pad.h" />
     <ClInclude Include="controller.h" />

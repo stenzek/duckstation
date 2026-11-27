@@ -118,7 +118,7 @@ TEST(DDGoController, Poll)
 TEST(DDGoController, RejectedBytes)
 {
   const auto controller = MakeController();
-  ExpectRejectedBytes(*controller, {0x00, 0x43, 0x44, 0x45, 0x4D}, 0xFF, POLL, PollReply(LevelState(0, EMERGENCY)));
+  ExpectRejectedBytes(*controller, {0x00, 0x43, 0x44, 0x45, 0x4D}, 0x41, POLL, PollReply(LevelState(0, EMERGENCY)));
 }
 
 TEST(DDGoController, ResetTransferState)
@@ -336,4 +336,18 @@ TEST(DDGoController, SaveState)
     EXPECT_EQ(TransferCommand(*loaded, POLL), PollReply(State({}, BRAKE_LEVEL_BITS[2], {Bind::C})));
     EXPECT_EQ(TransferCommand(*loaded, POLL), PollReply(LevelState(4, 2, {Bind::C})));
   }
+}
+
+TEST(DDGoController, LegacyState)
+{
+  // Saved by version 104 partway through a poll, with C pressed, power 4 three frames into its transition, and
+  // brake 2.
+  static const std::vector<u8> state = {0xFF, 0xD5, 0x04, 0x03, 0x02, 0x00, 0x03};
+  const auto controller = MakeInstantController();
+  LoadState(*controller, state, true, 104);
+
+  // The transfer starts again from idle, and the transition continues.
+  for (u32 i = 0; i < 3; i++)
+    EXPECT_EQ(TransferCommand(*controller, POLL), PollReply(State({}, BRAKE_LEVEL_BITS[2], {Bind::C}))) << i;
+  EXPECT_EQ(TransferCommand(*controller, POLL), PollReply(LevelState(4, 2, {Bind::C})));
 }

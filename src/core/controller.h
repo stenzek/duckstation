@@ -64,13 +64,15 @@ public:
   virtual ControllerType GetType() const = 0;
 
   virtual void Reset() = 0;
-  virtual bool DoState(StateWrapper& sw, bool apply_input_state) = 0;
+
+  /// Saves/loads the transfer state. Derived classes call this before their own state.
+  virtual bool DoState(StateWrapper& sw, bool apply_input_state);
 
   // Resets all state for the transferring to/from the device.
-  virtual void ResetTransferState() = 0;
+  virtual void ResetTransferState();
 
   // Returns the value of ACK, as well as filling out_data.
-  virtual bool Transfer(const u8 data_in, u8* data_out) = 0;
+  bool Transfer(const u8 data_in, u8* data_out);
 
   /// Changes the specified axis state. Values are normalized from -1..1.
   virtual float GetBindState(u32 index) const = 0;
@@ -126,6 +128,40 @@ public:
   /// Returns true if automatic analog mode can be used.
   static bool CanStartInAnalogMode(ControllerType ctype);
 
+  /// Updates an active low button bit, flagging a runahead replay if it changed.
+  static void SetButtonPressed(u16& state, u16 bit, bool pressed);
+
 protected:
+  enum class TransferState : u8
+  {
+    Idle,
+    Ready,
+    Command,
+  };
+
+  /// Transmit and receive buffers, not including the first Hi-Z/ack response byte.
+  static constexpr u32 MAX_RESPONSE_LENGTH = 8;
+
+  /// Returns the ID byte sent for a command. The low nibble is the number of halfwords after the ID halfword.
+  virtual u8 GetIDByte() const = 0;
+
+  /// Starts a command, filling the reply after the ID byte. Returns false if the command isn't supported.
+  virtual bool BeginCommand(u8 command) = 0;
+
+  /// Called for each byte after the command byte, before its reply is sent.
+  virtual void ProcessCommandByte(u32 step, u8 data_in);
+
+  /// Called after the last byte of a command.
+  virtual void EndCommand();
+
+  /// Skips the per-byte transfer state of states before version 105, and resets the transfer.
+  void SkipLegacyTransferState(StateWrapper& sw);
+
   u32 m_index;
+
+  TransferState m_transfer_state = TransferState::Idle;
+  u8 m_command_step = 0;
+  u8 m_response_length = 0;
+  std::array<u8, MAX_RESPONSE_LENGTH> m_rx_buffer{};
+  std::array<u8, MAX_RESPONSE_LENGTH> m_tx_buffer{};
 };

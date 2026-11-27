@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2025 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2026 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #include "jogcon.h"
@@ -18,9 +18,11 @@
 #include "IconsPromptFont.h"
 #include "fmt/format.h"
 
+#include <algorithm>
+
 LOG_CHANNEL(Controller);
 
-JogCon::JogCon(u32 index) : Controller(index)
+JogCon::JogCon(u32 index) : ConfigModeController(index)
 {
 }
 
@@ -34,13 +36,15 @@ ControllerType JogCon::GetType() const
 void JogCon::Reset()
 {
   // Reset starts in jogcon mode?
-  SetJogConMode(true, false);
-  ResetTransferState();
-  ResetMotorConfig();
+  ResetConfigState();
+  SetAnalogMode(true, false);
 }
 
 bool JogCon::DoState(StateWrapper& sw, bool apply_input_state)
 {
+  if (sw.GetVersion() >= 105 && !ConfigModeController::DoState(sw, apply_input_state))
+    return false;
+
   u16 button_state = m_button_state;
   s8 steering_state = m_steering_state;
   sw.Do(&button_state);
@@ -51,8 +55,20 @@ bool JogCon::DoState(StateWrapper& sw, bool apply_input_state)
     m_steering_state = steering_state;
   }
 
-  sw.Do(&m_command);
-  sw.Do(&m_command_step);
+  if (sw.GetVersion() >= 105)
+  {
+    sw.Do(&m_last_steering_state);
+    sw.Do(&m_last_motor_command);
+    sw.Do(&m_steering_hold_position);
+    sw.Do(&m_steering_hold_strength);
+    return !sw.HasError();
+  }
+
+  // The transfer restarts from idle, so the old transfer state is skipped.
+  u8 unused_command = 0;
+  u8 unused_step = 0;
+  sw.Do(&unused_command);
+  sw.Do(&unused_step);
   sw.Do(&m_status_byte);
   sw.Do(&m_last_steering_state);
   sw.Do(&m_last_motor_command);
@@ -61,22 +77,37 @@ bool JogCon::DoState(StateWrapper& sw, bool apply_input_state)
 
   sw.Do(&m_configuration_mode);
 
-  bool jogcon_mode = m_jogcon_mode;
+  bool jogcon_mode = m_analog_mode;
   sw.Do(&jogcon_mode);
-  if (jogcon_mode != m_jogcon_mode)
-    SetJogConMode(jogcon_mode, true);
 
-  sw.Do(&m_rx_buffer);
-  sw.Do(&m_tx_buffer);
+  std::array<u8, MAX_RESPONSE_LENGTH> unused_buffer;
+  sw.Do(&unused_buffer);
+  sw.Do(&unused_buffer);
   sw.Do(&m_rumble_config);
 
-  return true;
+  // Only the first five motor bytes could be mapped, the motor worked without DualShock mode, and there was no lock.
+  if (sw.IsReading())
+  {
+    m_rumble_config[5] = 0xFF;
+    m_dualshock_enabled =
+      m_configuration_mode || (std::find(m_rumble_config.begin(), m_rumble_config.end(), 0) != m_rumble_config.end());
+    m_analog_locked = false;
+    // The old force wasn't saved, so the motor stops, and a hold is applied by the next poll.
+    m_motor_state[0] =
+      (m_steering_hold_strength != 0) ? static_cast<u8>((MOTOR_COMMAND_HOLD << 4) | m_steering_hold_strength) : 0;
+    SetMotorDirection(MOTOR_COMMAND_STOP, 0);
+
+    Controller::ResetTransferState();
+    FinishLoadState(jogcon_mode, m_motor_state);
+  }
+
+  return !sw.HasError();
 }
 
 float JogCon::GetBindState(u32 index) const
 {
   if (index >= LED_BIND_START_INDEX)
-    return BoolToFloat(index == LED_BIND_START_INDEX && m_jogcon_mode);
+    return BoolToFloat(index == LED_BIND_START_INDEX && m_analog_mode);
   else if (index >= MOTOR_BIND_START_INDEX)
     return m_last_strength;
   else if (index >= HALFAXIS_BIND_START_INDEX)
@@ -93,12 +124,7 @@ void JogCon::SetBindState(u32 index, float value)
   {
     // analog toggle
     if (value >= m_button_deadzone)
-    {
-      if (m_command == Command::Idle)
-        SetJogConMode(!m_jogcon_mode, true);
-      else
-        m_mode_toggle_queued = true;
-    }
+      ToggleAnalogMode();
 
     return;
   }
@@ -126,22 +152,7 @@ void JogCon::SetBindState(u32 index, float value)
       System::SetRunaheadReplayFlag(true);
   }
 
-  const u16 bit = u16(1) << static_cast<u8>(index);
-
-  if (value >= m_button_deadzone)
-  {
-    if (m_button_state & bit)
-      System::SetRunaheadReplayFlag(false);
-
-    m_button_state &= ~(bit);
-  }
-  else
-  {
-    if (!(m_button_state & bit))
-      System::SetRunaheadReplayFlag(false);
-
-    m_button_state |= bit;
-  }
+  SetButtonPressed(m_button_state, u16(1) << static_cast<u8>(index), (value >= m_button_deadzone));
 }
 
 u32 JogCon::GetButtonStateBits() const
@@ -149,58 +160,46 @@ u32 JogCon::GetButtonStateBits() const
   return m_button_state ^ 0xFFFF;
 }
 
-void JogCon::ResetTransferState()
+u8 JogCon::GetAnalogModeID() const
 {
-  if (m_mode_toggle_queued)
-  {
-    SetJogConMode(!m_jogcon_mode, true);
-    m_mode_toggle_queued = false;
-  }
-
-  m_command = Command::Idle;
-  m_command_step = 0;
+  return 0xE;
 }
 
-void JogCon::SetJogConMode(bool enabled, bool show_message)
+u8 JogCon::GetNumMotors() const
 {
-  if (m_jogcon_mode == enabled)
-    return;
-
-  m_jogcon_mode = enabled;
-
-  InputManager::SetPadLEDState(m_index, BoolToFloat(enabled));
-
-  INFO_LOG("Controller {} switched to {} mode.", m_index + 1u, m_jogcon_mode ? "JogCon" : "Digital");
-  if (show_message)
-  {
-    Host::AddIconOSDMessage(
-      OSDMessageType::Info, fmt::format("Controller{}JogConMode", m_index), ICON_PF_GAMEPAD_ALT,
-      m_jogcon_mode ? fmt::format(TRANSLATE_FS("Controller", "Controller {} switched to JogCon mode."), m_index + 1u) :
-                      fmt::format(TRANSLATE_FS("Controller", "Controller {} switched to Digital mode."), m_index + 1u));
-  }
+  return 1;
 }
 
-u8 JogCon::GetIDByte() const
+u8 JogCon::GetCommand45Actuators() const
 {
-  return Truncate8((GetModeID() << 4) | GetResponseNumHalfwords());
+  return 0x01;
 }
 
-u8 JogCon::GetModeID() const
+void JogCon::PatchCommand4C(u8 param)
 {
-  if (m_configuration_mode)
-    return 0xF;
-  else if (m_jogcon_mode)
-    return 0xE;
-  else
-    return 0x4;
+  if (param == 0x00)
+    m_tx_buffer[5] = 0x04;
+  else if (param == 0x01)
+    m_tx_buffer[4] = 0x03;
 }
 
-u8 JogCon::GetResponseNumHalfwords() const
+bool JogCon::HasLegacyRumble() const
 {
-  return (m_jogcon_mode || m_configuration_mode) ? 3 : 1;
+  return false;
 }
 
-void JogCon::SetMotorState(u8 value)
+bool JogCon::CanEnterConfigMode() const
+{
+  // Config mode can't be entered from digital mode.
+  return m_analog_mode;
+}
+
+u32 JogCon::GetMotorBindIndex(u32 motor) const
+{
+  return MOTOR_BIND_START_INDEX;
+}
+
+void JogCon::SetMotorState(u32 motor, u8 value)
 {
   const u8 command = (value >> 4);
   const u8 strength = (value & 0x0F);
@@ -211,6 +210,7 @@ void JogCon::SetMotorState(u8 value)
   {
     case MOTOR_COMMAND_STOP:
     {
+      m_motor_state[motor] = 0;
       m_steering_hold_strength = 0;
       SetMotorDirection(MOTOR_COMMAND_STOP, 0);
     }
@@ -219,6 +219,7 @@ void JogCon::SetMotorState(u8 value)
     case MOTOR_COMMAND_RIGHT:
     case MOTOR_COMMAND_LEFT:
     {
+      m_motor_state[motor] = value;
       m_steering_hold_strength = 0;
       SetMotorDirection(command, strength);
     }
@@ -228,8 +229,13 @@ void JogCon::SetMotorState(u8 value)
     case MOTOR_COMMAND_DROP_REVOLUTIONS_AND_HOLD:
     {
       DEV_LOG("Hold wheel in position {} with {} strength.", m_steering_hold_position, strength);
+      // The hold force is updated by the next poll after loading a state.
+      m_motor_state[motor] = (strength != 0) ? static_cast<u8>((MOTOR_COMMAND_HOLD << 4) | strength) : 0;
       m_steering_hold_strength = strength;
-      UpdateSteeringHold();
+      if (strength != 0)
+        UpdateSteeringHold();
+      else
+        SetMotorDirection(MOTOR_COMMAND_STOP, 0);
 
       if (command == MOTOR_COMMAND_DROP_REVOLUTIONS_AND_HOLD)
         ERROR_LOG("JogCon Drop revolutions and hold command is not handled.");
@@ -309,12 +315,6 @@ void JogCon::UpdateSteeringHold()
   }
 }
 
-void JogCon::ResetMotorConfig()
-{
-  m_rumble_config.fill(0xFF);
-  SetMotorState(0);
-}
-
 void JogCon::Poll()
 {
   m_tx_buffer[2] = Truncate8(m_button_state);
@@ -333,230 +333,6 @@ void JogCon::Poll()
 
   m_last_steering_state = m_steering_state;
   UpdateSteeringHold();
-}
-
-bool JogCon::Transfer(const u8 data_in, u8* data_out)
-{
-  bool ack;
-  m_rx_buffer[m_command_step] = data_in;
-
-  switch (m_command)
-  {
-    case Command::Idle:
-    {
-      *data_out = 0xFF;
-
-      if (data_in == 0x01)
-      {
-        DEBUG_LOG("ACK controller access");
-        m_command = Command::Ready;
-        m_tx_buffer.fill(0);
-        m_rx_buffer.fill(0);
-        return true;
-      }
-
-      return false;
-    }
-    break;
-
-    case Command::Ready:
-    {
-      Assert(m_command_step == 0);
-
-      if (data_in == 0x42)
-      {
-        m_response_length = (GetResponseNumHalfwords() + 1) * 2;
-        m_command = Command::ReadPad;
-        m_tx_buffer = {GetIDByte(), m_status_byte, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
-        Poll();
-      }
-      else if ((m_jogcon_mode || m_configuration_mode) && data_in == 0x43)
-      {
-        m_response_length = (GetResponseNumHalfwords() + 1) * 2;
-        m_command = Command::SetMode;
-        m_tx_buffer = {GetIDByte(), m_status_byte, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
-        if (!m_configuration_mode)
-          Poll();
-      }
-      else if (m_configuration_mode && data_in == 0x44)
-      {
-        Assert(m_command_step == 0);
-        m_response_length = (GetResponseNumHalfwords() + 1) * 2;
-        m_command = Command::SetAnalogMode;
-        m_tx_buffer = {GetIDByte(), m_status_byte, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
-        ResetMotorConfig();
-      }
-      else if (m_configuration_mode && data_in == 0x45)
-      {
-        m_response_length = (GetResponseNumHalfwords() + 1) * 2;
-        m_command = Command::GetAnalogMode;
-        m_tx_buffer = {GetIDByte(), m_status_byte, 0x01, 0x02, BoolToUInt8(m_jogcon_mode), 0x01, 0x01, 0x00};
-      }
-      else if (m_configuration_mode && data_in == 0x46)
-      {
-        m_response_length = (GetResponseNumHalfwords() + 1) * 2;
-        m_command = Command::Command46;
-        m_tx_buffer = {GetIDByte(), m_status_byte, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
-      }
-      else if (m_configuration_mode && data_in == 0x47)
-      {
-        m_response_length = (GetResponseNumHalfwords() + 1) * 2;
-        m_command = Command::Command47;
-        m_tx_buffer = {GetIDByte(), m_status_byte, 0x00, 0x00, 0x02, 0x00, 0x01, 0x00};
-      }
-      else if (m_configuration_mode && data_in == 0x4C)
-      {
-        m_response_length = (GetResponseNumHalfwords() + 1) * 2;
-        m_command = Command::Command4C;
-        m_tx_buffer = {GetIDByte(), m_status_byte, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
-      }
-      else if (m_configuration_mode && data_in == 0x4D)
-      {
-        m_response_length = (GetResponseNumHalfwords() + 1) * 2;
-        m_command = Command::GetSetRumble;
-        m_tx_buffer = {GetIDByte(), m_status_byte, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
-      }
-      else
-      {
-        ERROR_LOG("Unimplemented command 0x{:02X}", data_in);
-
-        *data_out = 0xFF;
-        return false;
-      }
-    }
-    break;
-
-    case Command::ReadPad:
-    {
-      if (m_command_step >= 2 && m_command_step < 7 && m_rumble_config[m_command_step - 2] == 0x00)
-        SetMotorState(data_in);
-    }
-    break;
-
-    case Command::GetAnalogMode:
-    {
-      // just send the byte, nothing special to do here
-    }
-    break;
-
-    case Command::SetAnalogMode:
-    {
-      if (m_command_step == 2)
-      {
-        DEV_LOG("analog mode val 0x{:02x}", data_in);
-
-        if (data_in == 0x00 || data_in == 0x01)
-          SetJogConMode(data_in == 0x01, true);
-      }
-      else if (m_command_step == 3)
-      {
-        DEV_LOG("analog mode lock 0x{:02x}", data_in);
-
-        if (data_in == 0x02 || data_in == 0x03)
-          WARNING_LOG("Unimplemented analog mode lock {}", (data_in == 0x03));
-      }
-    }
-    break;
-
-    case Command::SetMode:
-    {
-      m_configuration_mode = (m_rx_buffer[2] == 1);
-
-      if (m_configuration_mode)
-        m_status_byte = 0x5A;
-
-      DEV_LOG("0x{:02x}({}) config mode", m_rx_buffer[2], m_configuration_mode ? "enter" : "leave");
-    }
-    break;
-
-    case Command::GetSetRumble:
-    {
-      if (m_command_step >= 2 && m_command_step < 7)
-      {
-        const u8 index = m_command_step - 2;
-        if (index >= 0)
-        {
-          m_tx_buffer[m_command_step] = m_rumble_config[index];
-          m_rumble_config[index] = data_in;
-
-          if (data_in == 0x00)
-            WARNING_LOG("Motor mapped to byte index {}", index);
-        }
-      }
-      else
-      {
-        // reset motor value if we're no longer mapping it
-        if (std::find(m_rumble_config.begin(), m_rumble_config.end(), 0) == m_rumble_config.end())
-          SetMotorState(0);
-      }
-    }
-    break;
-
-    case Command::Command46:
-    {
-      if (m_command_step == 2)
-      {
-        if (data_in == 0x00)
-        {
-          m_tx_buffer[4] = 0x01;
-          m_tx_buffer[5] = 0x02;
-          m_tx_buffer[6] = 0x00;
-          m_tx_buffer[7] = 0x0A;
-        }
-        else if (data_in == 0x01)
-        {
-          m_tx_buffer[4] = 0x01;
-          m_tx_buffer[5] = 0x01;
-          m_tx_buffer[6] = 0x01;
-          m_tx_buffer[7] = 0x14;
-        }
-      }
-    }
-    break;
-
-    case Command::Command47:
-    {
-      if (m_command_step == 2 && data_in != 0x00)
-      {
-        m_tx_buffer[4] = 0x00;
-        m_tx_buffer[5] = 0x00;
-        m_tx_buffer[6] = 0x00;
-        m_tx_buffer[7] = 0x00;
-      }
-    }
-    break;
-
-    case Command::Command4C:
-    {
-      if (m_command_step == 2)
-      {
-        if (data_in == 0x00)
-          m_tx_buffer[5] = 0x04;
-        else if (data_in == 0x01)
-          m_tx_buffer[4] = 0x03;
-      }
-    }
-    break;
-
-      DefaultCaseIsUnreachable();
-  }
-
-  *data_out = m_tx_buffer[m_command_step];
-
-  m_command_step = (m_command_step + 1) % m_response_length;
-  ack = (m_command_step != 0);
-
-  if (m_command_step == 0)
-  {
-    m_command = Command::Idle;
-
-    DEBUG_LOG("Rx: {:02x} {:02x} {:02x} {:02x} {:02x} {:02x} {:02x} {:02x}", m_rx_buffer[0], m_rx_buffer[1],
-              m_rx_buffer[2], m_rx_buffer[3], m_rx_buffer[4], m_rx_buffer[5], m_rx_buffer[6], m_rx_buffer[7]);
-    DEBUG_LOG("Tx: {:02x} {:02x} {:02x} {:02x} {:02x} {:02x} {:02x} {:02x}", m_tx_buffer[0], m_tx_buffer[1],
-              m_tx_buffer[2], m_tx_buffer[3], m_tx_buffer[4], m_tx_buffer[5], m_tx_buffer[6], m_tx_buffer[7]);
-  }
-
-  return ack;
 }
 
 void JogCon::LoadSettings(const SettingsInterface& si, const char* section, bool initial)

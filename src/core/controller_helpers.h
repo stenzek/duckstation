@@ -36,6 +36,21 @@ ALWAYS_INLINE float MergeHalfAxesToFloat(u8 neg_value, u8 pos_value, bool invert
   return (invert ? -result : result);
 }
 
+/// Merges the half axes of a stick into both of its axes, centring the stick inside a circular deadzone.
+/// Bit 0 of invert inverts the X axis, and bit 1 the Y axis.
+ALWAYS_INLINE void UpdateStickAxes(u8 left, u8 right, u8 up, u8 down, u8 invert, float deadzone, u8* x, u8* y)
+{
+  *x = MergeHalfAxes(left, right, (invert & 1));
+  *y = MergeHalfAxes(up, down, (invert & 2));
+
+  if (deadzone > 0.0f && InCircularDeadzone(deadzone, MergeHalfAxesToFloat(left, right, (invert & 1)),
+                                            MergeHalfAxesToFloat(up, down, (invert & 2))))
+  {
+    *x = 127;
+    *y = 127;
+  }
+}
+
 /// Removes opposing directions (left/right and up/down), preventing these buttons from being pressed concurrently.
 /// Note: Assumes up is bit 4, right is bit 5, down is bit 6, and left is bit 7, which is the case for all PSX pads.
 template<typename T>

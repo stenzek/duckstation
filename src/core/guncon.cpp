@@ -35,25 +35,30 @@ ControllerType GunCon::GetType() const
 
 void GunCon::Reset()
 {
-  m_transfer_state = TransferState::Idle;
+  ResetTransferState();
 }
 
 bool GunCon::DoState(StateWrapper& sw, bool apply_input_state)
 {
-  if (!LightgunController::DoState(sw, apply_input_state))
-    return false;
-
-  u16 position_x = m_position_x;
-  u16 position_y = m_position_y;
-  sw.Do(&position_x);
-  sw.Do(&position_y);
-  if (apply_input_state)
+  if ((sw.GetVersion() >= 105 && !Controller::DoState(sw, apply_input_state)) ||
+      !LightgunController::DoState(sw, apply_input_state))
   {
-    m_position_x = position_x;
-    m_position_y = position_y;
+    return false;
   }
 
-  sw.Do(&m_transfer_state, TransferState::YMSB);
+  if (sw.IsWriting() || apply_input_state)
+  {
+    sw.Do(&m_position_x);
+    sw.Do(&m_position_y);
+  }
+  else
+  {
+    sw.SkipBytes(sizeof(m_position_x) + sizeof(m_position_y));
+  }
+
+  if (sw.GetVersion() < 105)
+    SkipLegacyTransferState(sw);
+
   return true;
 }
 
@@ -66,95 +71,24 @@ void GunCon::SetShootOffscreen(bool pressed)
   }
 }
 
-void GunCon::ResetTransferState()
+u8 GunCon::GetIDByte() const
 {
-  m_transfer_state = TransferState::Idle;
+  return 0x63;
 }
 
-bool GunCon::Transfer(const u8 data_in, u8* data_out)
+bool GunCon::BeginCommand(u8 command)
 {
-  static constexpr u16 ID = 0x5A63;
+  if (command != 0x42)
+    return false;
 
-  switch (m_transfer_state)
-  {
-    case TransferState::Idle:
-    {
-      *data_out = 0xFF;
-
-      if (data_in == 0x01)
-      {
-        m_transfer_state = TransferState::Ready;
-        return true;
-      }
-      return false;
-    }
-
-    case TransferState::Ready:
-    {
-      if (data_in == 0x42)
-      {
-        *data_out = Truncate8(ID);
-        m_transfer_state = TransferState::IDMSB;
-        return true;
-      }
-
-      *data_out = 0xFF;
-      return false;
-    }
-
-    case TransferState::IDMSB:
-    {
-      *data_out = Truncate8(ID >> 8);
-      m_transfer_state = TransferState::ButtonsLSB;
-      return true;
-    }
-
-    case TransferState::ButtonsLSB:
-    {
-      *data_out = Truncate8(m_button_state);
-      m_transfer_state = TransferState::ButtonsMSB;
-      return true;
-    }
-
-    case TransferState::ButtonsMSB:
-    {
-      *data_out = Truncate8(m_button_state >> 8);
-      m_transfer_state = TransferState::XLSB;
-      return true;
-    }
-
-    case TransferState::XLSB:
-    {
-      UpdatePosition();
-      *data_out = Truncate8(m_position_x);
-      m_transfer_state = TransferState::XMSB;
-      return true;
-    }
-
-    case TransferState::XMSB:
-    {
-      *data_out = Truncate8(m_position_x >> 8);
-      m_transfer_state = TransferState::YLSB;
-      return true;
-    }
-
-    case TransferState::YLSB:
-    {
-      *data_out = Truncate8(m_position_y);
-      m_transfer_state = TransferState::YMSB;
-      return true;
-    }
-
-    case TransferState::YMSB:
-    {
-      *data_out = Truncate8(m_position_y >> 8);
-      m_transfer_state = TransferState::Idle;
-      return false;
-    }
-
-    default:
-      UnreachableCode();
-  }
+  UpdatePosition();
+  m_tx_buffer[2] = Truncate8(m_button_state);
+  m_tx_buffer[3] = Truncate8(m_button_state >> 8);
+  m_tx_buffer[4] = Truncate8(m_position_x);
+  m_tx_buffer[5] = Truncate8(m_position_x >> 8);
+  m_tx_buffer[6] = Truncate8(m_position_y);
+  m_tx_buffer[7] = Truncate8(m_position_y >> 8);
+  return true;
 }
 
 void GunCon::UpdatePosition()

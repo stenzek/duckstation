@@ -35,35 +35,29 @@ ControllerType PlayStationMouse::GetType() const
 
 void PlayStationMouse::Reset()
 {
-  m_transfer_state = TransferState::Idle;
+  ResetTransferState();
 }
 
 bool PlayStationMouse::DoState(StateWrapper& sw, bool apply_input_state)
 {
-  u16 button_state = m_button_state;
-  float delta_x = m_delta_x;
-  float delta_y = m_delta_y;
-  sw.Do(&button_state);
-  if (sw.GetVersion() >= 60) [[unlikely]]
+  if (sw.GetVersion() >= 105 && !Controller::DoState(sw, apply_input_state))
+    return false;
+
+  if (sw.IsWriting() || (apply_input_state && sw.GetVersion() >= 60))
   {
-    sw.Do(&delta_x);
-    sw.Do(&delta_y);
+    sw.Do(&m_button_state);
+    sw.Do(&m_delta_x);
+    sw.Do(&m_delta_y);
   }
   else
   {
-    u8 dummy = 0;
-    sw.Do(&dummy);
-    sw.Do(&dummy);
+    sw.SkipBytes((sw.GetVersion() < 60) ? (sizeof(m_button_state) + sizeof(u8) + sizeof(u8)) :
+                                          (sizeof(m_button_state) + sizeof(m_delta_x) + sizeof(m_delta_y)));
   }
 
-  if (apply_input_state)
-  {
-    m_button_state = button_state;
-    m_delta_x = delta_x;
-    m_delta_y = delta_y;
-  }
+  if (sw.GetVersion() < 105)
+    SkipLegacyTransferState(sw);
 
-  sw.Do(&m_transfer_state, TransferState::DeltaY);
   return true;
 }
 
@@ -99,89 +93,30 @@ u32 PlayStationMouse::GetButtonStateBits() const
   return m_button_state ^ 0xFFFF;
 }
 
-void PlayStationMouse::ResetTransferState()
+u8 PlayStationMouse::GetIDByte() const
 {
-  m_transfer_state = TransferState::Idle;
+  return 0x12;
 }
 
-bool PlayStationMouse::Transfer(const u8 data_in, u8* data_out)
+bool PlayStationMouse::BeginCommand(u8 command)
 {
-  static constexpr u16 ID = 0x5A12;
+  if (command != 0x42)
+    return false;
 
-  switch (m_transfer_state)
-  {
-    case TransferState::Idle:
-    {
-      *data_out = 0xFF;
+  m_tx_buffer[2] = Truncate8(m_button_state);
 
-      if (data_in == 0x01)
-      {
-        m_transfer_state = TransferState::Ready;
-        return true;
-      }
-      return false;
-    }
+  // Bits 8-9 always read as 0.
+  m_tx_buffer[3] = Truncate8(m_button_state >> 8) & 0xFC;
 
-    case TransferState::Ready:
-    {
-      if (data_in == 0x42)
-      {
-        *data_out = Truncate8(ID);
-        m_transfer_state = TransferState::IDMSB;
-        return true;
-      }
-
-      *data_out = 0xFF;
-      return false;
-    }
-
-    case TransferState::IDMSB:
-    {
-      *data_out = Truncate8(ID >> 8);
-      m_transfer_state = TransferState::ButtonsLSB;
-      return true;
-    }
-
-    case TransferState::ButtonsLSB:
-    {
-      *data_out = Truncate8(m_button_state);
-      m_transfer_state = TransferState::ButtonsMSB;
-      return true;
-    }
-
-    case TransferState::ButtonsMSB:
-    {
-      // Bits 8-9 always read as 0.
-      *data_out = Truncate8(m_button_state >> 8) & 0xFCu;
-      m_transfer_state = TransferState::DeltaX;
-      return true;
-    }
-
-    case TransferState::DeltaX:
-    {
-      const float delta_x = std::floor(m_delta_x * m_sensitivity_x);
-      m_delta_x -= delta_x / m_sensitivity_x;
-      *data_out = static_cast<s8>(std::clamp(delta_x, static_cast<float>(std::numeric_limits<s8>::min()),
-                                             static_cast<float>(std::numeric_limits<s8>::max())));
-      m_transfer_state = TransferState::DeltaY;
-      return true;
-    }
-
-    case TransferState::DeltaY:
-    {
-      const float delta_y = std::floor(m_delta_y * m_sensitivity_y);
-      m_delta_y -= delta_y / m_sensitivity_y;
-      *data_out = static_cast<s8>(std::clamp(delta_y, static_cast<float>(std::numeric_limits<s8>::min()),
-                                             static_cast<float>(std::numeric_limits<s8>::max())));
-      m_transfer_state = TransferState::Idle;
-      return false;
-    }
-
-    default:
-    {
-      UnreachableCode();
-    }
-  }
+  const float delta_x = std::floor(m_delta_x * m_sensitivity_x);
+  const float delta_y = std::floor(m_delta_y * m_sensitivity_y);
+  m_delta_x -= delta_x / m_sensitivity_x;
+  m_delta_y -= delta_y / m_sensitivity_y;
+  m_tx_buffer[4] = static_cast<u8>(static_cast<s8>(std::clamp(
+    delta_x, static_cast<float>(std::numeric_limits<s8>::min()), static_cast<float>(std::numeric_limits<s8>::max()))));
+  m_tx_buffer[5] = static_cast<u8>(static_cast<s8>(std::clamp(
+    delta_y, static_cast<float>(std::numeric_limits<s8>::min()), static_cast<float>(std::numeric_limits<s8>::max()))));
+  return true;
 }
 
 void PlayStationMouse::LoadSettings(const SettingsInterface& si, const char* section, bool initial)

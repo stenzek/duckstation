@@ -1,4 +1,4 @@
-// SPDX-FileCopyrightText: 2019-2025 Connor McLaughlin <stenzek@gmail.com>
+// SPDX-FileCopyrightText: 2019-2026 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
 #pragma once
@@ -71,20 +71,12 @@ public:
   void SetBindState(u32 index, float value) override;
   u32 GetButtonStateBits() const override;
 
-  void ResetTransferState() override;
-  bool Transfer(const u8 data_in, u8* data_out) override;
-
   void LoadSettings(const SettingsInterface& si, const char* section, bool initial) override;
 
 private:
-  enum class TransferState : u8
-  {
-    Idle,
-    Ready,
-    IDMSB,
-    ButtonsLSB,
-    ButtonsMSB
-  };
+  u8 GetIDByte() const override;
+  bool BeginCommand(u8 command) override;
+  void EndCommand() override;
 
   static constexpr u16 BUTTON_MASK = static_cast<u16>(~((1u << 4) | (1u << 6)));
 
@@ -107,8 +99,6 @@ private:
 
   // buttons are active low
   u16 m_button_state = UINT16_C(0xFFFF);
-
-  TransferState m_transfer_state = TransferState::Idle;
 
   u8 m_power_level = 0;
   u8 m_brake_level = MAX_BRAKE_LEVEL;

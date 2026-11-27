@@ -73,31 +73,17 @@ public:
   u32 GetButtonStateBits() const override;
   std::optional<u32> GetAnalogInputBytes() const override;
 
-  void ResetTransferState() override;
-  bool Transfer(const u8 data_in, u8* data_out) override;
-
   void LoadSettings(const SettingsInterface& si, const char* section, bool initial) override;
 
 private:
-  enum class TransferState : u8
-  {
-    Idle,
-    Ready,
-    IDMSB,
-    ButtonsLSB,
-    ButtonsMSB,
-    RightAxisX,
-    RightAxisY,
-    LeftAxisX,
-    LeftAxisY
-  };
-
   static constexpr u32 HALFAXIS_BIND_START_INDEX = static_cast<u32>(Button::Count);
   static constexpr u32 LED_BIND_START_INDEX = HALFAXIS_BIND_START_INDEX + static_cast<u32>(HalfAxis::Count);
 
   static const Controller::ControllerBindingInfo s_binding_info[];
 
-  u16 GetID() const;
+  u8 GetIDByte() const override;
+  bool BeginCommand(u8 command) override;
+
   void ToggleAnalogMode();
 
   float m_analog_deadzone = 0.0f;
@@ -116,6 +102,4 @@ private:
 
   // both directions of axis state, merged to m_axis_state
   std::array<u8, static_cast<u32>(HalfAxis::Count)> m_half_axis_state{};
-
-  TransferState m_transfer_state = TransferState::Idle;
 };

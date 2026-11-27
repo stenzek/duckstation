@@ -3,13 +3,13 @@
 
 #pragma once
 
-#include "controller.h"
+#include "config_mode_controller.h"
 
 #include <array>
 #include <memory>
 #include <optional>
 
-class AnalogController final : public Controller
+class AnalogController final : public ConfigModeController
 {
 public:
   enum class Axis : u8
@@ -75,66 +75,25 @@ public:
   u32 GetButtonStateBits() const override;
   std::optional<u32> GetAnalogInputBytes() const override;
 
-  void ResetTransferState() override;
-  bool Transfer(const u8 data_in, u8* data_out) override;
-
   void LoadSettings(const SettingsInterface& si, const char* section, bool initial) override;
 
 private:
-  using MotorState = std::array<u8, NUM_MOTORS>;
-
-  enum class Command : u8
-  {
-    Idle,
-    Ready,
-    ReadPad,           // 0x42
-    ConfigModeSetMode, // 0x43
-    SetAnalogMode,     // 0x44
-    GetAnalogMode,     // 0x45
-    Command46,         // 0x46
-    Command47,         // 0x47
-    Command4C,         // 0x4C
-    GetSetRumble,      // 0x4D
-    Command48,         // 0x48
-    UnusedConfig,      // 0x40, 0x41, 0x49-0x4B, 0x4E, 0x4F
-  };
-
-  static constexpr s16 DEFAULT_SMALL_MOTOR_VIBRATION_BIAS = 8;
-  static constexpr s16 DEFAULT_LARGE_MOTOR_VIBRATION_BIAS = 8;
-
   static constexpr u32 HALFAXIS_BIND_START_INDEX = static_cast<u32>(Button::Count);
   static constexpr u32 MOTOR_BIND_START_INDEX = HALFAXIS_BIND_START_INDEX + static_cast<u32>(HalfAxis::Count);
   static constexpr u32 LED_BIND_START_INDEX = MOTOR_BIND_START_INDEX + NUM_MOTORS;
 
   static const Controller::ControllerBindingInfo s_binding_info[];
 
-  Command m_command = Command::Idle;
-  u8 m_command_step = 0;
-  u8 m_response_length = 0;
+  bool DoLegacyState(StateWrapper& sw);
 
-  // Transmit and receive buffers, not including the first Hi-Z/ack response byte
-  static constexpr u32 MAX_RESPONSE_LENGTH = 8;
-  std::array<u8, MAX_RESPONSE_LENGTH> m_rx_buffer{};
-  std::array<u8, MAX_RESPONSE_LENGTH> m_tx_buffer{};
+  u32 GetMotorBindIndex(u32 motor) const override;
+  void Poll() override;
 
-  // Get number of response halfwords (excluding the initial controller info halfword)
-  u8 GetResponseNumHalfwords() const;
-
-  u8 GetModeID() const;
-  u8 GetIDByte() const;
-
-  void SetAnalogMode(bool enabled, bool show_message);
-  void ProcessAnalogModeToggle();
-  void SetMotorState(u32 motor, u8 value);
-  float GetMotorStrength(u32 motor) const;
   u16 GetExtraButtonMask() const;
-  void ResetRumbleConfig();
-  void Poll();
 
   float m_analog_deadzone = 0.0f;
   float m_analog_sensitivity = 1.33f;
   float m_button_deadzone = DEFAULT_BUTTON_DEADZONE;
-  std::array<s16, NUM_MOTORS> m_vibration_bias{DEFAULT_SMALL_MOTOR_VIBRATION_BIAS, DEFAULT_LARGE_MOTOR_VIBRATION_BIAS};
   u8 m_invert_left_stick = 0;
   u8 m_invert_right_stick = 0;
 
@@ -144,28 +103,10 @@ private:
   u8 m_analog_shoulder_buttons = 0;
   u8 m_analog_trigger_buttons = 0;
 
-  bool m_analog_mode = false;
-  bool m_analog_locked = false;
-  bool m_dualshock_enabled = false;
-  bool m_configuration_mode = false;
-
   std::array<u8, static_cast<u8>(Axis::Count)> m_axis_state{};
-
-  enum : u8
-  {
-    SmallMotor = 0,
-    LargeMotor = 1,
-  };
-
-  std::array<u8, 6> m_rumble_config{};
-
-  bool m_analog_toggle_queued = false;
-  u8 m_status_byte = 0;
 
   // buttons are active low
   u16 m_button_state = UINT16_C(0xFFFF);
-
-  MotorState m_motor_state{};
 
   // both directions of axis state, merged to m_axis_state
   std::array<u8, static_cast<u32>(HalfAxis::Count)> m_half_axis_state{};

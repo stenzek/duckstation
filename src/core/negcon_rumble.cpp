@@ -23,10 +23,8 @@
 
 LOG_CHANNEL(Controller);
 
-NeGconRumble::NeGconRumble(u32 index) : NegConBase(index, HALFAXIS_BIND_START_INDEX)
+NeGconRumble::NeGconRumble(u32 index) : ConfigModeController(index)
 {
-  m_status_byte = 0x5A;
-  m_rumble_config.fill(0xFF);
 }
 
 NeGconRumble::~NeGconRumble() = default;
@@ -38,24 +36,7 @@ ControllerType NeGconRumble::GetType() const
 
 void NeGconRumble::Reset()
 {
-  m_command = Command::Idle;
-  m_command_step = 0;
-  m_rx_buffer.fill(0x00);
-  m_tx_buffer.fill(0x00);
-  m_analog_mode = false;
-  m_analog_locked = false;
-  m_configuration_mode = false;
-
-  for (u32 i = 0; i < NUM_MOTORS; i++)
-  {
-    if (m_motor_state[i] != 0)
-      SetMotorState(i, 0);
-  }
-
-  m_dualshock_enabled = false;
-  ResetRumbleConfig();
-
-  m_status_byte = 0x5A;
+  ResetConfigState();
 
   // NOTE: Should be NeGconRumble, but we don't want to break it for games that haven't opted in.
   if (CanStartInAnalogMode(ControllerType::AnalogController))
@@ -64,61 +45,66 @@ void NeGconRumble::Reset()
 
 bool NeGconRumble::DoState(StateWrapper& sw, bool apply_input_state)
 {
-  const bool old_analog_mode = m_analog_mode;
+  if (sw.GetVersion() < 105) [[unlikely]]
+    return DoLegacyState(sw);
 
-  sw.Do(&m_analog_mode);
+  if (!ConfigModeController::DoState(sw, apply_input_state))
+    return false;
+
+  if (sw.IsWriting() || apply_input_state)
+  {
+    sw.Do(&m_inputs.m_button_state);
+    sw.DoBytes(m_inputs.m_axis_state.data(), m_inputs.m_axis_state.size());
+  }
+  else
+  {
+    sw.SkipBytes(sizeof(m_inputs.m_button_state) + sizeof(m_inputs.m_axis_state));
+  }
+
+  return !sw.HasError();
+}
+
+bool NeGconRumble::DoLegacyState(StateWrapper& sw)
+{
+  // The transfer restarts from idle, so the old transfer state is skipped.
+  bool analog_mode = m_analog_mode;
+  sw.Do(&analog_mode);
   sw.Do(&m_dualshock_enabled);
   sw.Do(&m_configuration_mode);
   sw.DoEx(&m_status_byte, 55, static_cast<u8>(0x5A));
 
-  u16 button_state = m_button_state;
-  sw.DoEx(&button_state, 44, static_cast<u16>(0xFFFF));
-  if (apply_input_state)
-    m_button_state = button_state;
-  else
-    m_analog_mode = old_analog_mode;
+  // we're never applying input state from legacy states
+  u16 unused_button_state = m_inputs.m_button_state;
+  sw.DoEx(&unused_button_state, 44, static_cast<u16>(0xFFFF));
 
-  sw.Do(&m_command);
-
-  sw.DoEx(&m_rumble_config, 45, {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF});
-  sw.DoEx(&m_rumble_config_large_motor_index, 45, -1);
-  sw.DoEx(&m_rumble_config_small_motor_index, 45, -1);
+  sw.SkipBytes(sizeof(u8)); // unused_command
+  sw.DoEx(&m_rumble_config, 45, {0xFFu, 0xFFu, 0xFFu, 0xFFu, 0xFFu, 0xFFu});
+  if (sw.GetVersion() >= 45)
+    sw.SkipBytes(sizeof(int) + sizeof(int)); // rumble_config_large_motor_index, rumble_config_small_motor_index
   sw.DoEx(&m_analog_toggle_queued, 45, false);
 
-  MotorState motor_state = m_motor_state;
+  // The large motor was first.
+  MotorState motor_state;
   sw.Do(&motor_state);
+  std::swap(motor_state[SmallMotor], motor_state[LargeMotor]);
 
   if (sw.IsReading())
   {
-    for (u8 i = 0; i < NUM_MOTORS; i++)
-      SetMotorState(i, motor_state[i]);
-
-    if (old_analog_mode != m_analog_mode)
-    {
-      Host::AddIconOSDMessage(OSDMessageType::Quick, fmt::format("Controller{}AnalogMode", m_index), ICON_FA_GAMEPAD,
-                              fmt::format(m_analog_mode ?
-                                            TRANSLATE_FS("Controller", "Controller {} switched to analog mode.") :
-                                            TRANSLATE_FS("Controller", "Controller {} switched to digital mode."),
-                                          m_index + 1u));
-    }
+    Controller::ResetTransferState();
+    FinishLoadState(analog_mode, motor_state);
   }
-  return true;
+
+  return !sw.HasError();
 }
 
 float NeGconRumble::GetBindState(u32 index) const
 {
   if (index >= LED_BIND_START_INDEX)
-  {
     return BoolToFloat(index == LED_BIND_START_INDEX && m_analog_mode);
-  }
   else if (index >= MOTOR_BIND_START_INDEX)
-  {
-    return GetMotorStrength(index - MOTOR_BIND_START_INDEX);
-  }
+    return GetMotorStrength((index == GetMotorBindIndex(LargeMotor)) ? LargeMotor : SmallMotor);
   else
-  {
-    return NegConBase::GetBindState(index);
-  }
+    return m_inputs.GetBindState(index);
 }
 
 void NeGconRumble::SetBindState(u32 index, float value)
@@ -127,538 +113,57 @@ void NeGconRumble::SetBindState(u32 index, float value)
   {
     // analog toggle
     if (value >= 0.5f)
-    {
-      if (m_command == Command::Idle)
-        ProcessAnalogModeToggle();
-      else
-        m_analog_toggle_queued = true;
-    }
+      ToggleAnalogMode();
 
     return;
   }
-  NegConBase::SetBindState(index, value);
+
+  m_inputs.SetBindState(index, value);
 }
 
-void NeGconRumble::ResetTransferState()
+u32 NeGconRumble::GetButtonStateBits() const
 {
-  if (m_analog_toggle_queued)
-  {
-    ProcessAnalogModeToggle();
-    m_analog_toggle_queued = false;
-  }
-
-  m_command = Command::Idle;
-  m_command_step = 0;
+  return m_inputs.GetButtonStateBits();
 }
 
-void NeGconRumble::SetAnalogMode(bool enabled, bool show_message)
+std::optional<u32> NeGconRumble::GetAnalogInputBytes() const
 {
-  if (m_analog_mode == enabled)
-    return;
-
-  InputManager::SetPadLEDState(m_index, BoolToFloat(enabled));
-
-  INFO_LOG("Controller {} switched to {} mode.", m_index + 1u, m_analog_mode ? "analog" : "digital");
-  if (show_message)
-  {
-    Host::AddIconOSDMessage(
-      OSDMessageType::Quick, fmt::format("Controller{}AnalogMode", m_index), ICON_FA_GAMEPAD,
-      enabled ? fmt::format(TRANSLATE_FS("Controller", "Controller {} switched to analog mode."), m_index + 1u) :
-                fmt::format(TRANSLATE_FS("Controller", "Controller {} switched to digital mode."), m_index + 1u));
-  }
-
-  m_analog_mode = enabled;
+  return m_inputs.GetAnalogInputBytes();
 }
 
-void NeGconRumble::ProcessAnalogModeToggle()
+u8 NeGconRumble::GetAnalogModeID() const
 {
-  if (m_analog_locked)
-  {
-    Host::AddIconOSDMessage(
-      OSDMessageType::Quick, fmt::format("Controller{}AnalogMode", m_index), ICON_FA_GAMEPAD,
-      fmt::format(m_analog_mode ?
-                    TRANSLATE_FS("Controller", "Controller {} is locked to analog mode by the game.") :
-                    TRANSLATE_FS("Controller", "Controller {} is locked to digital mode by the game."),
-                  m_index + 1u));
-  }
-  else
-  {
-    SetAnalogMode(!m_analog_mode, true);
-    ResetRumbleConfig();
-
-    if (m_dualshock_enabled)
-      m_status_byte = 0x00;
-  }
+  return 0x2;
 }
 
-void NeGconRumble::SetMotorState(u32 motor, u8 value)
+void NeGconRumble::PatchCommand4C(u8 param)
 {
-  DebugAssert(motor < NUM_MOTORS);
-  if (m_motor_state[motor] != value)
-  {
-    m_motor_state[motor] = value;
-
-    const float hvalue = GetMotorStrength(motor);
-    DEV_LOG("Set {} motor to {} (raw {})", (motor == LargeMotor) ? "large" : "small", hvalue, m_motor_state[motor]);
-    InputManager::SetPadVibrationIntensity(m_index, MOTOR_BIND_START_INDEX + motor, hvalue);
-  }
+  if (param == 0x00)
+    m_tx_buffer[5] = 0x04;
+  else if (param == 0x01)
+    m_tx_buffer[5] = 0x02;
 }
 
-float NeGconRumble::GetMotorStrength(u32 motor) const
+u32 NeGconRumble::GetMotorBindIndex(u32 motor) const
 {
-  // Curve from https://github.com/KrossX/Pokopom/blob/master/Pokopom/Input_XInput.cpp#L210
-  const u8 state = m_motor_state[motor];
-  const double x = static_cast<double>(std::clamp<s32>(static_cast<s32>(state) + m_vibration_bias[motor], 0, 255));
-  const double strength = 0.006474549734772402 * std::pow(x, 3.0) - 1.258165252213538 * std::pow(x, 2.0) +
-                          156.82454281087692 * x + 3.637978807091713e-11;
-
-  return (state != 0) ? static_cast<float>(strength / 65535.0) : 0.0f;
+  // The large motor is bound first.
+  return MOTOR_BIND_START_INDEX + ((motor == LargeMotor) ? 0 : 1);
 }
 
-void NeGconRumble::ResetRumbleConfig()
+void NeGconRumble::Poll()
 {
-  m_rumble_config.fill(0xFF);
+  const u16 button_state = m_inputs.m_button_state;
+  m_tx_buffer[2] =
+    Truncate8(m_inputs.m_disable_socd ? ControllerHelpers::RemoveOpposingDirections(button_state) : button_state);
+  m_tx_buffer[3] = Truncate8(button_state >> 8);
 
-  m_rumble_config_large_motor_index = -1;
-  m_rumble_config_small_motor_index = -1;
-
-  SetMotorState(LargeMotor, 0);
-  SetMotorState(SmallMotor, 0);
-}
-
-void NeGconRumble::SetMotorStateForConfigIndex(int index, u8 value)
-{
-  if (m_rumble_config_small_motor_index == index)
-    SetMotorState(SmallMotor, ((value & 0x01) != 0) ? 255 : 0);
-  else if (m_rumble_config_large_motor_index == index)
-    SetMotorState(LargeMotor, value);
-}
-
-u8 NeGconRumble::GetResponseNumHalfwords() const
-{
   if (m_configuration_mode || m_analog_mode)
-    return 0x3;
-
-  // Actuators mapped past the first two motor bytes extend the reply in digital mode, to include the halfword
-  // with that byte. The motor bytes start at the third byte after the command.
-  for (u32 i = static_cast<u32>(m_rumble_config.size()) - 1; i >= 2; i--)
   {
-    if (m_rumble_config[i] < NUM_MOTORS)
-      return static_cast<u8>((i + 2) / 2);
+    m_tx_buffer[4] = m_inputs.m_axis_state[static_cast<u8>(Axis::Steering)];
+    m_tx_buffer[5] = m_inputs.m_axis_state[static_cast<u8>(Axis::I)];
+    m_tx_buffer[6] = m_inputs.m_axis_state[static_cast<u8>(Axis::II)];
+    m_tx_buffer[7] = m_inputs.m_axis_state[static_cast<u8>(Axis::L)];
   }
-
-  return 0x1;
-}
-
-u8 NeGconRumble::GetModeID() const
-{
-  if (m_configuration_mode)
-    return 0xF;
-
-  if (m_analog_mode)
-    return 0x2;
-
-  return 0x4;
-}
-
-u8 NeGconRumble::GetIDByte() const
-{
-  return Truncate8((GetModeID() << 4) | GetResponseNumHalfwords());
-}
-
-bool NeGconRumble::Transfer(const u8 data_in, u8* data_out)
-{
-  bool ack;
-  m_rx_buffer[m_command_step] = data_in;
-
-  switch (m_command)
-  {
-    case Command::Idle:
-    {
-      *data_out = 0xFF;
-
-      if (data_in == 0x01)
-      {
-        DEBUG_LOG("ACK controller access");
-        m_command = Command::Ready;
-        return true;
-      }
-
-      DEV_LOG("Unknown data_in = 0x{:02X}", data_in);
-      return false;
-    }
-    break;
-
-    case Command::Ready:
-    {
-      if (data_in == 0x42)
-      {
-        Assert(m_command_step == 0);
-        m_response_length = (GetResponseNumHalfwords() + 1) * 2;
-        m_command = Command::ReadPad;
-        m_tx_buffer = {GetIDByte(), m_status_byte, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
-      }
-      else if (data_in == 0x43)
-      {
-        Assert(m_command_step == 0);
-        m_response_length = (GetResponseNumHalfwords() + 1) * 2;
-        m_command = Command::ConfigModeSetMode;
-        m_tx_buffer = {GetIDByte(), m_status_byte, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
-      }
-      else if (m_configuration_mode && data_in == 0x44)
-      {
-        Assert(m_command_step == 0);
-        m_response_length = (GetResponseNumHalfwords() + 1) * 2;
-        m_command = Command::SetAnalogMode;
-        m_tx_buffer = {GetIDByte(), m_status_byte, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
-
-        ResetRumbleConfig();
-      }
-      else if (m_configuration_mode && data_in == 0x45)
-      {
-        Assert(m_command_step == 0);
-        m_response_length = (GetResponseNumHalfwords() + 1) * 2;
-        m_command = Command::GetAnalogMode;
-        m_tx_buffer = {GetIDByte(), m_status_byte, 0x01, 0x02, BoolToUInt8(m_analog_mode), 0x02, 0x01, 0x00};
-      }
-      else if (m_configuration_mode && data_in == 0x46)
-      {
-        Assert(m_command_step == 0);
-        m_response_length = (GetResponseNumHalfwords() + 1) * 2;
-        m_command = Command::Command46;
-        m_tx_buffer = {GetIDByte(), m_status_byte, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
-      }
-      else if (m_configuration_mode && data_in == 0x47)
-      {
-        Assert(m_command_step == 0);
-        m_response_length = (GetResponseNumHalfwords() + 1) * 2;
-        m_command = Command::Command47;
-        m_tx_buffer = {GetIDByte(), m_status_byte, 0x00, 0x00, 0x02, 0x00, 0x01, 0x00};
-      }
-      else if (m_configuration_mode && data_in == 0x4C)
-      {
-        Assert(m_command_step == 0);
-        m_response_length = (GetResponseNumHalfwords() + 1) * 2;
-        m_command = Command::Command4C;
-        m_tx_buffer = {GetIDByte(), m_status_byte, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
-      }
-      else if (m_configuration_mode && data_in == 0x4D)
-      {
-        Assert(m_command_step == 0);
-        m_response_length = (GetResponseNumHalfwords() + 1) * 2;
-        m_command = Command::GetSetRumble;
-        m_tx_buffer = {GetIDByte(), m_status_byte, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
-
-        m_rumble_config_large_motor_index = -1;
-        m_rumble_config_small_motor_index = -1;
-      }
-      else if (m_configuration_mode && data_in == 0x48)
-      {
-        Assert(m_command_step == 0);
-        m_response_length = (GetResponseNumHalfwords() + 1) * 2;
-        m_command = Command::Command48;
-        m_tx_buffer = {GetIDByte(), m_status_byte, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
-      }
-      else if (m_configuration_mode && (data_in == 0x40 || data_in == 0x41 || (data_in >= 0x49 && data_in <= 0x4B) ||
-                                        data_in == 0x4E || data_in == 0x4F))
-      {
-        // DualShock 2 and unused commands, these only return zeros on PSX pads.
-        Assert(m_command_step == 0);
-        m_response_length = (GetResponseNumHalfwords() + 1) * 2;
-        m_command = Command::UnusedConfig;
-        m_tx_buffer = {GetIDByte(), m_status_byte, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
-      }
-      else
-      {
-        if (m_configuration_mode)
-          ERROR_LOG("Unimplemented config mode command 0x{:02X}", data_in);
-
-        // The ID is sent while the command byte is received, so it's still there for unknown commands.
-        *data_out = GetIDByte();
-        return false;
-      }
-    }
-    break;
-
-    case Command::ReadPad:
-    {
-      const int rumble_index = m_command_step - 2;
-
-      switch (m_command_step)
-      {
-        case 2:
-        {
-          m_tx_buffer[m_command_step] =
-            Truncate8(m_disable_socd ? ControllerHelpers::RemoveOpposingDirections(m_button_state) : m_button_state);
-
-          if (m_dualshock_enabled)
-            SetMotorStateForConfigIndex(rumble_index, data_in);
-        }
-        break;
-
-        case 3:
-        {
-          m_tx_buffer[m_command_step] = Truncate8(m_button_state >> 8);
-
-          if (m_dualshock_enabled)
-          {
-            SetMotorStateForConfigIndex(rumble_index, data_in);
-          }
-          else
-          {
-            bool legacy_rumble_on = (m_rx_buffer[2] & 0xC0) == 0x40 && (m_rx_buffer[3] & 0x01) != 0;
-            SetMotorState(SmallMotor, legacy_rumble_on ? 255 : 0);
-          }
-        }
-        break;
-
-        case 4:
-        {
-          if (m_configuration_mode || m_analog_mode)
-            m_tx_buffer[m_command_step] = m_axis_state[static_cast<u8>(Axis::Steering)];
-
-          if (m_dualshock_enabled)
-            SetMotorStateForConfigIndex(rumble_index, data_in);
-        }
-        break;
-
-        case 5:
-        {
-          if (m_configuration_mode || m_analog_mode)
-            m_tx_buffer[m_command_step] = m_axis_state[static_cast<u8>(Axis::I)];
-
-          if (m_dualshock_enabled)
-            SetMotorStateForConfigIndex(rumble_index, data_in);
-        }
-        break;
-
-        case 6:
-        {
-          if (m_configuration_mode || m_analog_mode)
-            m_tx_buffer[m_command_step] = m_axis_state[static_cast<u8>(Axis::II)];
-
-          if (m_dualshock_enabled)
-            SetMotorStateForConfigIndex(rumble_index, data_in);
-        }
-        break;
-
-        case 7:
-        {
-          if (m_configuration_mode || m_analog_mode)
-            m_tx_buffer[m_command_step] = m_axis_state[static_cast<u8>(Axis::L)];
-
-          if (m_dualshock_enabled)
-            SetMotorStateForConfigIndex(rumble_index, data_in);
-        }
-        break;
-
-        default:
-        {
-        }
-        break;
-      }
-    }
-    break;
-
-    case Command::ConfigModeSetMode:
-    {
-      if (!m_configuration_mode)
-      {
-        switch (m_command_step)
-        {
-          case 2:
-          {
-            m_tx_buffer[m_command_step] =
-              Truncate8(m_disable_socd ? ControllerHelpers::RemoveOpposingDirections(m_button_state) : m_button_state);
-          }
-          break;
-
-          case 3:
-          {
-            m_tx_buffer[m_command_step] = Truncate8(m_button_state >> 8);
-          }
-          break;
-
-          case 4:
-          {
-            if (m_configuration_mode || m_analog_mode)
-              m_tx_buffer[m_command_step] = m_axis_state[static_cast<u8>(Axis::Steering)];
-          }
-          break;
-
-          case 5:
-          {
-            if (m_configuration_mode || m_analog_mode)
-              m_tx_buffer[m_command_step] = m_axis_state[static_cast<u8>(Axis::I)];
-          }
-          break;
-
-          case 6:
-          {
-            if (m_configuration_mode || m_analog_mode)
-              m_tx_buffer[m_command_step] = m_axis_state[static_cast<u8>(Axis::II)];
-          }
-          break;
-
-          case 7:
-          {
-            if (m_configuration_mode || m_analog_mode)
-              m_tx_buffer[m_command_step] = m_axis_state[static_cast<u8>(Axis::L)];
-          }
-          break;
-
-          default:
-          {
-          }
-          break;
-        }
-      }
-
-      if (m_command_step == (static_cast<s32>(m_response_length) - 1))
-      {
-        m_configuration_mode = (m_rx_buffer[2] == 1);
-
-        if (m_configuration_mode)
-        {
-          m_dualshock_enabled = true;
-          m_status_byte = 0x5A;
-        }
-
-        DEV_LOG("0x{:02x}({}) config mode", m_rx_buffer[2], m_configuration_mode ? "enter" : "leave");
-      }
-    }
-    break;
-
-    case Command::SetAnalogMode:
-    {
-      if (m_command_step == 2)
-      {
-        DEV_LOG("analog mode val 0x{:02x}", data_in);
-
-        if (data_in == 0x00 || data_in == 0x01)
-          SetAnalogMode((data_in == 0x01), true);
-      }
-      else if (m_command_step == 3)
-      {
-        DEV_LOG("analog mode lock 0x{:02x}", data_in);
-
-        // 00h-02h unlock, 03h locks, and higher values are masked.
-        m_analog_locked = ((data_in & 0x03) == 0x03);
-      }
-    }
-    break;
-
-    case Command::GetAnalogMode:
-    {
-      // Intentionally empty, analog mode byte is set in reply buffer when command is first received
-    }
-    break;
-
-    case Command::Command46:
-    {
-      if (m_command_step == 2)
-      {
-        if (data_in == 0x00)
-        {
-          m_tx_buffer[4] = 0x01;
-          m_tx_buffer[5] = 0x02;
-          m_tx_buffer[6] = 0x00;
-          m_tx_buffer[7] = 0x0A;
-        }
-        else if (data_in == 0x01)
-        {
-          m_tx_buffer[4] = 0x01;
-          m_tx_buffer[5] = 0x01;
-          m_tx_buffer[6] = 0x01;
-          m_tx_buffer[7] = 0x14;
-        }
-      }
-    }
-    break;
-
-    case Command::Command47:
-    {
-      if (m_command_step == 2 && data_in != 0x00)
-      {
-        m_tx_buffer[4] = 0x00;
-        m_tx_buffer[5] = 0x00;
-        m_tx_buffer[6] = 0x00;
-        m_tx_buffer[7] = 0x00;
-      }
-    }
-    break;
-
-    case Command::Command4C:
-    {
-      if (m_command_step == 2)
-      {
-        if (data_in == 0x00)
-          m_tx_buffer[5] = 0x04;
-        else if (data_in == 0x01)
-          m_tx_buffer[5] = 0x02;
-      }
-    }
-    break;
-
-    case Command::Command48:
-    {
-      if (m_command_step == 2 && data_in <= 0x01)
-        m_tx_buffer[6] = 0x01;
-    }
-    break;
-
-    case Command::UnusedConfig:
-    {
-    }
-    break;
-
-    case Command::GetSetRumble:
-    {
-      int rumble_index = m_command_step - 2;
-      if (rumble_index >= 0)
-      {
-        m_tx_buffer[m_command_step] = m_rumble_config[rumble_index];
-        m_rumble_config[rumble_index] = data_in;
-
-        if (data_in == 0x00)
-          m_rumble_config_small_motor_index = rumble_index;
-        else if (data_in == 0x01)
-          m_rumble_config_large_motor_index = rumble_index;
-      }
-
-      if (m_command_step == 7)
-      {
-        if (m_rumble_config_large_motor_index == -1)
-          SetMotorState(LargeMotor, 0);
-
-        if (m_rumble_config_small_motor_index == -1)
-          SetMotorState(SmallMotor, 0);
-      }
-    }
-    break;
-
-      DefaultCaseIsUnreachable();
-  }
-
-  *data_out = m_tx_buffer[m_command_step];
-
-  m_command_step = (m_command_step + 1) % m_response_length;
-  ack = (m_command_step == 0) ? false : true;
-
-  if (m_command_step == 0)
-  {
-    m_command = Command::Idle;
-
-    DEBUG_LOG("Rx: {:02x} {:02x} {:02x} {:02x} {:02x} {:02x} {:02x} {:02x}", m_rx_buffer[0], m_rx_buffer[1],
-              m_rx_buffer[2], m_rx_buffer[3], m_rx_buffer[4], m_rx_buffer[5], m_rx_buffer[6], m_rx_buffer[7]);
-    DEBUG_LOG("Tx: {:02x} {:02x} {:02x} {:02x} {:02x} {:02x} {:02x} {:02x}", m_tx_buffer[0], m_tx_buffer[1],
-              m_tx_buffer[2], m_tx_buffer[3], m_tx_buffer[4], m_tx_buffer[5], m_tx_buffer[6], m_tx_buffer[7]);
-
-    m_rx_buffer.fill(0x00);
-    m_tx_buffer.fill(0x00);
-  }
-
-  return ack;
 }
 
 std::unique_ptr<NeGconRumble> NeGconRumble::Create(u32 index)
@@ -698,8 +203,8 @@ constinit const Controller::ControllerBindingInfo NeGconRumble::s_binding_info[]
   AXIS("SteeringRight", TRANSLATE_NOOP("NeGcon", "Steering (Twist) Right"), ICON_PF_ANALOG_RIGHT, "Steering", NeGconRumble::HalfAxis::SteeringRight, GenericInputBinding::LeftStickRight),
   BUTTON("Analog", TRANSLATE_NOOP("NeGcon", "Analog Toggle"), ICON_PF_ANALOG_LEFT_RIGHT, nullptr, NeGconRumble::Button::Analog, GenericInputBinding::System),
   
-  MOTOR("LargeMotor", TRANSLATE_NOOP("NeGcon", "Large Motor"), ICON_PF_VIBRATION_L, LargeMotor, GenericInputBinding::LargeMotor),
-  MOTOR("SmallMotor", TRANSLATE_NOOP("NeGcon", "Small Motor"), ICON_PF_VIBRATION, SmallMotor, GenericInputBinding::SmallMotor),
+  MOTOR("LargeMotor", TRANSLATE_NOOP("NeGcon", "Large Motor"), ICON_PF_VIBRATION_L, 0, GenericInputBinding::LargeMotor),
+  MOTOR("SmallMotor", TRANSLATE_NOOP("NeGcon", "Small Motor"), ICON_PF_VIBRATION, 1, GenericInputBinding::SmallMotor),
 
   MODE_LED("ModeLED", TRANSLATE_NOOP("NeGcon", "Mode LED"), ICON_PF_LED, 0, GenericInputBinding::ModeLED),
 // clang-format on
@@ -768,9 +273,9 @@ const Controller::ControllerInfo NeGconRumble::INFO = {ControllerType::NeGconRum
 
 void NeGconRumble::LoadSettings(const SettingsInterface& si, const char* section, bool initial)
 {
-  NegConBase::LoadSettings(si, section, initial);
-  m_vibration_bias[0] = static_cast<s16>(
-    std::clamp(si.GetIntValue(section, "LargeMotorVibrationBias", DEFAULT_LARGE_MOTOR_VIBRATION_BIAS), -255, 255));
-  m_vibration_bias[1] = static_cast<s16>(
-    std::clamp(si.GetIntValue(section, "SmallMotorVibrationBias", DEFAULT_SMALL_MOTOR_VIBRATION_BIAS), -255, 255));
+  m_inputs.LoadSettings(si, section);
+  m_vibration_bias[LargeMotor] =
+    static_cast<s16>(std::clamp(si.GetIntValue(section, "LargeMotorVibrationBias", DEFAULT_VIBRATION_BIAS), -255, 255));
+  m_vibration_bias[SmallMotor] =
+    static_cast<s16>(std::clamp(si.GetIntValue(section, "SmallMotorVibrationBias", DEFAULT_VIBRATION_BIAS), -255, 255));
 }

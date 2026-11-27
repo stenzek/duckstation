@@ -158,11 +158,13 @@ TEST_F(AnalogJoystickTest, ModeToggle)
   Press(Button::Mode, 1.0f);
   EXPECT_FALSE(ModeLED());
 
-  // Partway through a poll, the mode changes straight away.
+  // Partway through a poll, the mode changes straight away, but the rest of the poll was built when it started.
   Press(Button::Mode, 1.0f);
   EXPECT_EQ(TransferBytes(m_joystick, {0x01, 0x42, 0x00}), (std::vector<u8>{0xFF, 0x53, 0x5A}));
   Press(Button::Mode, 1.0f);
-  EXPECT_EQ(Transfer({0x00, 0x00}), (std::vector<u8>{0xFF, 0xFF}));
+  EXPECT_FALSE(ModeLED());
+  EXPECT_EQ(Transfer({0x00, 0x00, 0x00, 0x00, 0x00, 0x00}), (std::vector<u8>{0xFF, 0xFF, 0x7F, 0x7F, 0x7F, 0x7F}));
+  EXPECT_EQ(Transfer(POLL), PollReply(NO_BUTTONS));
 }
 
 TEST_F(AnalogJoystickTest, Buttons)
@@ -330,4 +332,16 @@ TEST_F(AnalogJoystickTest, SaveState)
     loaded->SetBindState(static_cast<u32>(Button::Mode), 1.0f);
     EXPECT_EQ(TransferCommand(*loaded, LONG_POLL), JoystickReply(Pressed({Button::Circle}), 0x7F, 0x00, 0x00, 0x7F));
   }
+}
+
+TEST_F(AnalogJoystickTest, LegacyState)
+{
+  // Saved by version 104 partway through a poll, in analog mode with Circle pressed and the right stick up.
+  static const std::vector<u8> state = {0x01, 0xFF, 0xDF, 0x7F, 0x7F, 0x7F, 0x00, 0x03};
+  Press(Button::Mode);
+  LoadState(m_joystick, state, true, 104);
+  EXPECT_TRUE(ModeLED());
+
+  // The transfer starts again from idle.
+  EXPECT_EQ(Transfer(LONG_POLL), JoystickReply(Pressed({Button::Circle}), 0x7F, 0x00));
 }

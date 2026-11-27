@@ -18,8 +18,13 @@
 #include "util/state_wrapper.h"
 #include "util/translation.h"
 
+#include "common/assert.h"
+#include "common/log.h"
+
 #include "IconsPromptFont.h"
 #include "fmt/format.h"
+
+LOG_CHANNEL(Controller);
 
 static const Controller::ControllerInfo s_none_info = {ControllerType::None,
                                                        "None",
@@ -66,6 +71,120 @@ Controller::~Controller() = default;
 std::optional<u32> Controller::GetAnalogInputBytes() const
 {
   return std::nullopt;
+}
+
+bool Controller::DoState(StateWrapper& sw, bool apply_input_state)
+{
+  sw.Do(&m_transfer_state, TransferState::Command);
+  sw.Do(&m_command_step);
+  sw.Do(&m_response_length);
+  sw.DoBytes(m_rx_buffer.data(), m_rx_buffer.size());
+  sw.DoBytes(m_tx_buffer.data(), m_tx_buffer.size());
+  if (sw.IsReading() && m_transfer_state == TransferState::Command &&
+      (m_command_step >= m_response_length || m_response_length > MAX_RESPONSE_LENGTH))
+  {
+    Controller::ResetTransferState();
+  }
+
+  return !sw.HasError();
+}
+
+void Controller::SkipLegacyTransferState(StateWrapper& sw)
+{
+  sw.SkipBytes(sizeof(TransferState)); // transfer_state
+  if (sw.IsReading())
+    Controller::ResetTransferState();
+}
+
+void Controller::ResetTransferState()
+{
+  m_transfer_state = TransferState::Idle;
+  m_command_step = 0;
+}
+
+bool Controller::Transfer(const u8 data_in, u8* data_out)
+{
+  switch (m_transfer_state)
+  {
+    case TransferState::Idle:
+    {
+      *data_out = 0xFF;
+
+      if (data_in == 0x01)
+      {
+        DEBUG_LOG("ACK controller access");
+        m_transfer_state = TransferState::Ready;
+        return true;
+      }
+
+      DEV_LOG("Unknown data_in = 0x{:02X}", data_in);
+      return false;
+    }
+
+    case TransferState::Ready:
+    {
+      m_rx_buffer.fill(0x00);
+      m_tx_buffer.fill(0x00);
+
+      // The ID is sent while the command byte is received, so it's still there for unknown commands.
+      const u8 id = GetIDByte();
+      *data_out = id;
+
+      m_rx_buffer[0] = data_in;
+      m_tx_buffer[0] = id;
+      m_tx_buffer[1] = 0x5A;
+      if (!BeginCommand(data_in))
+        return false;
+
+      m_response_length = static_cast<u8>(((id & 0xF) + 1) * 2);
+      m_command_step = 1;
+      m_transfer_state = TransferState::Command;
+      return true;
+    }
+
+    case TransferState::Command:
+    {
+      m_rx_buffer[m_command_step] = data_in;
+      ProcessCommandByte(m_command_step, data_in);
+      *data_out = m_tx_buffer[m_command_step];
+
+      if (++m_command_step < m_response_length)
+        return true;
+
+      EndCommand();
+
+      DEBUG_LOG("Rx: {:02x} {:02x} {:02x} {:02x} {:02x} {:02x} {:02x} {:02x}", m_rx_buffer[0], m_rx_buffer[1],
+                m_rx_buffer[2], m_rx_buffer[3], m_rx_buffer[4], m_rx_buffer[5], m_rx_buffer[6], m_rx_buffer[7]);
+      DEBUG_LOG("Tx: {:02x} {:02x} {:02x} {:02x} {:02x} {:02x} {:02x} {:02x}", m_tx_buffer[0], m_tx_buffer[1],
+                m_tx_buffer[2], m_tx_buffer[3], m_tx_buffer[4], m_tx_buffer[5], m_tx_buffer[6], m_tx_buffer[7]);
+
+      m_transfer_state = TransferState::Idle;
+      m_command_step = 0;
+      return false;
+    }
+
+      DefaultCaseIsUnreachable();
+  }
+}
+
+void Controller::ProcessCommandByte(u32 step, u8 data_in)
+{
+}
+
+void Controller::EndCommand()
+{
+}
+
+void Controller::SetButtonPressed(u16& state, u16 bit, bool pressed)
+{
+  if (pressed == ((state & bit) == 0))
+    return;
+
+  System::SetRunaheadReplayFlag(false);
+  if (pressed)
+    state &= ~bit;
+  else
+    state |= bit;
 }
 
 std::unique_ptr<Controller> Controller::Create(ControllerType type, u32 index)

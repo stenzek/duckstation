@@ -50,16 +50,26 @@ static float SteeringRaw(u8 raw)
   return (static_cast<float>(raw) + 0.5f) / (Controller::DEFAULT_STICK_SENSITIVITY * 255.0f);
 }
 
+/// Reply with the status byte replaced.
+static std::vector<u8> WithStatus(std::vector<u8> reply, u8 status)
+{
+  reply[2] = status;
+  return reply;
+}
+
 static std::vector<u8> ConfigPollReply(u16 buttons, s8 steering = 0, u8 rotation = 0, u8 last_command = 0)
 {
   return JogReply(buttons, steering, rotation, last_command, 0xF3);
 }
 
-class JogConTest : public ::testing::Test
+class JogConTest : public ControllerSettingsTest
 {
 protected:
   void SetUp() override
   {
+    // So that the mode button doesn't leave DualShock mode, see ModeButton_LeavesDualShockMode.
+    ControllerSettingsTest::SetUp();
+    SetCanStartInAnalogMode(true);
     LoadDefaultSettings(m_jogcon);
     m_jogcon.Reset();
   }
@@ -83,7 +93,7 @@ protected:
   void MapMotor()
   {
     EnterConfigMode();
-    EXPECT_EQ(Transfer(MapMotorsCommand({0x00})), ConfigReply({0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x00}));
+    EXPECT_EQ(Transfer(MapMotorsCommand({0x00})), ConfigReply({0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF}));
     ExitConfigMode();
   }
 
@@ -155,7 +165,7 @@ TEST_F(JogConTest, Modes)
   EXPECT_EQ(Transfer(POLL), PollReply(Pressed({Button::Cross})));
 
   // 43h is only available in JogCon mode.
-  EXPECT_EQ(Transfer({0x01, 0x43}), (std::vector<u8>{0xFF, 0xFF}));
+  EXPECT_EQ(Transfer({0x01, 0x43}), (std::vector<u8>{0xFF, 0x41}));
   m_jogcon.ResetTransferState();
 
   // Reset goes back to JogCon mode.
@@ -166,12 +176,11 @@ TEST_F(JogConTest, Modes)
 
 TEST_F(JogConTest, RejectedBytes)
 {
-  ExpectRejectedBytes(m_jogcon, {0x00, 0x40, 0x44, 0x45, 0x46, 0x47, 0x4C, 0x4D, 0x53}, 0xFF, LONG_POLL,
+  ExpectRejectedBytes(m_jogcon, {0x00, 0x40, 0x44, 0x45, 0x46, 0x47, 0x4C, 0x4D, 0x53}, 0xE3, LONG_POLL,
                       JogReply(NO_BUTTONS));
 
   EnterConfigMode();
-  ExpectRejectedBytes(m_jogcon, {0x00, 0x40, 0x41, 0x48, 0x49, 0x4A, 0x4B, 0x4E, 0x4F}, 0xFF, LONG_POLL,
-                      ConfigPollReply(NO_BUTTONS));
+  ExpectRejectedBytes(m_jogcon, {0x00, 0x3F, 0x50, 0x53}, 0xF3, LONG_POLL, ConfigPollReply(NO_BUTTONS));
 }
 
 TEST_F(JogConTest, ResetTransferState)
@@ -274,27 +283,33 @@ TEST_F(JogConTest, ConfigMode)
   EXPECT_EQ(Transfer(ConfigCommand(0x43, 0x02)), ANALOG_CONFIG_REPLY);
   EXPECT_EQ(Transfer(LONG_POLL), JogReply(Pressed({Button::Circle}), 127, 0));
 
-  // An aborted 43h still enters config mode, if the parameter byte was sent.
-  TransferBytes(m_jogcon, {0x01, 0x43, 0x00});
-  m_jogcon.ResetTransferState();
-  EXPECT_EQ(Transfer(LONG_POLL), JogReply(Pressed({Button::Circle}), 127, 0));
+  // An aborted 43h doesn't enter config mode, it's applied at the end of the command.
   TransferBytes(m_jogcon, {0x01, 0x43, 0x00, 0x01});
   m_jogcon.ResetTransferState();
-  EXPECT_EQ(Transfer(LONG_POLL), ConfigPollReply(Pressed({Button::Circle}), 127, 0));
+  EXPECT_EQ(Transfer(LONG_POLL), JogReply(Pressed({Button::Circle}), 127, 0));
+  TransferBytes(m_jogcon, {0x01, 0x43, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00});
+  m_jogcon.ResetTransferState();
+  EXPECT_EQ(Transfer(LONG_POLL), JogReply(Pressed({Button::Circle}), 127, 0));
 }
 
 TEST_F(JogConTest, SetMode)
 {
   EnterConfigMode();
 
-  // Current behaviour: the lock is ignored, and the mode can still be changed with the button.
+  // 03h locks the mode, so the button does nothing until it's unlocked.
   EXPECT_EQ(Transfer(SetAnalogModeCommand(0x01, 0x01, 0x03)), ANALOG_CONFIG_REPLY);
+  ToggleMode();
+  EXPECT_TRUE(ModeLED());
+  EXPECT_EQ(Transfer(SetAnalogModeCommand(0x01, 0x01, 0x02)), ANALOG_CONFIG_REPLY);
   ToggleMode();
   EXPECT_FALSE(ModeLED());
   ToggleMode();
   EXPECT_TRUE(ModeLED());
 
-  // Values other than 00h/01h are ignored. Toggling the mode stayed in config mode.
+  // Toggling the mode stayed in config mode, but cleared the status byte until config mode is entered again.
+  EXPECT_EQ(Transfer(ConfigCommand(0x43, 0x01)), WithStatus(ANALOG_CONFIG_REPLY, 0x00));
+
+  // Values other than 00h/01h are ignored.
   EXPECT_EQ(Transfer(SetAnalogModeCommand(0x01, 0x02, 0x00)), ANALOG_CONFIG_REPLY);
   EXPECT_TRUE(ModeLED());
 
@@ -306,7 +321,7 @@ TEST_F(JogConTest, SetMode)
   EXPECT_EQ(Transfer(POLL), PollReply(NO_BUTTONS));
 
   // 43h can't enter config mode from digital mode.
-  EXPECT_EQ(Transfer({0x01, 0x43}), (std::vector<u8>{0xFF, 0xFF}));
+  EXPECT_EQ(Transfer({0x01, 0x43}), (std::vector<u8>{0xFF, 0x41}));
   m_jogcon.ResetTransferState();
 }
 
@@ -341,16 +356,16 @@ TEST_F(JogConTest, MapMotors)
 {
   EnterConfigMode();
 
-  // The previous mapping is sent back. Current behaviour: only the first five bytes are stored, the sixth replies 00h.
+  // The previous mapping is sent back.
   EXPECT_EQ(Transfer(MapMotorsCommand({0x00, 0x01, 0x02, 0x03, 0x04, 0x05})),
-            ConfigReply({0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x00}));
-  EXPECT_EQ(Transfer(MapMotorsCommand({0xFF, 0x00})), ConfigReply({0x00, 0x01, 0x02, 0x03, 0x04, 0x00}));
-  EXPECT_EQ(Transfer(MapMotorsCommand({})), ConfigReply({0xFF, 0x00, 0xFF, 0xFF, 0xFF, 0x00}));
+            ConfigReply({0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF}));
+  EXPECT_EQ(Transfer(MapMotorsCommand({0xFF, 0x00})), ConfigReply({0x00, 0x01, 0x02, 0x03, 0x04, 0x05}));
+  EXPECT_EQ(Transfer(MapMotorsCommand({})), ConfigReply({0xFF, 0x00, 0xFF, 0xFF, 0xFF, 0xFF}));
 
   // 44h resets the mapping.
-  EXPECT_EQ(Transfer(MapMotorsCommand({0x00})), ConfigReply({0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x00}));
+  EXPECT_EQ(Transfer(MapMotorsCommand({0x00})), ConfigReply({0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF}));
   EXPECT_EQ(Transfer(SetAnalogModeCommand(0x01, 0x01, 0x02)), ANALOG_CONFIG_REPLY);
-  EXPECT_EQ(Transfer(MapMotorsCommand({})), ConfigReply({0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x00}));
+  EXPECT_EQ(Transfer(MapMotorsCommand({})), ConfigReply({0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF}));
 }
 
 TEST_F(JogConTest, MotorCommands)
@@ -383,11 +398,11 @@ TEST_F(JogConTest, MotorCommands)
   EXPECT_FLOAT_EQ(Motor(), 1.0f);
   EnterConfigMode(0x1);
   EXPECT_EQ(Motor(), 1.0f);
-  EXPECT_EQ(Transfer(MapMotorsCommand({0xFF})), ConfigReply({0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0x00}));
+  EXPECT_EQ(Transfer(MapMotorsCommand({0xFF})), ConfigReply({0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF}));
   EXPECT_EQ(Motor(), 0.0f);
 
   // So does 44h.
-  EXPECT_EQ(Transfer(MapMotorsCommand({0x00})), ConfigReply({0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x00}));
+  EXPECT_EQ(Transfer(MapMotorsCommand({0x00})), ConfigReply({0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF}));
   ExitConfigMode();
   EXPECT_EQ(Transfer(RumblePoll({0x1F})), JogReply(NO_BUTTONS));
   EnterConfigMode(0x1);
@@ -479,22 +494,40 @@ TEST_F(JogConTest, ModeButton)
   m_jogcon.ResetTransferState();
   EXPECT_FALSE(ModeLED());
 
-  // Switching modes in config mode stays in it.
+  // Switching modes in config mode stays in it, and clears the status byte until config mode is entered again.
   ToggleMode();
   EnterConfigMode();
   ToggleMode();
   ToggleMode();
-  EXPECT_EQ(Transfer(LONG_POLL), ConfigPollReply(NO_BUTTONS));
+  EXPECT_EQ(Transfer(LONG_POLL), WithStatus(ConfigPollReply(NO_BUTTONS), 0x00));
   ToggleMode();
-  EXPECT_EQ(Transfer(LONG_POLL), ConfigPollReply(NO_BUTTONS));
-  ExitConfigMode();
+  EXPECT_EQ(Transfer(LONG_POLL), WithStatus(ConfigPollReply(NO_BUTTONS), 0x00));
+  EXPECT_EQ(Transfer(ConfigCommand(0x43, 0x00)), WithStatus(ANALOG_CONFIG_REPLY, 0x00));
+  EXPECT_EQ(Transfer(POLL), WithStatus(PollReply(NO_BUTTONS), 0x00));
+}
+
+TEST_F(JogConTest, ModeButton_LeavesDualShockMode)
+{
+  // If the game can't start in analog mode, switching to digital mode leaves config and DualShock mode.
+  SetCanStartInAnalogMode(false);
+  EnterConfigMode();
+  ToggleMode();
+  EXPECT_FALSE(ModeLED());
   EXPECT_EQ(Transfer(POLL), PollReply(NO_BUTTONS));
+
+  // Switching back doesn't change the status byte, since DualShock mode was left.
+  ToggleMode();
+  EXPECT_EQ(Transfer(LONG_POLL), JogReply(NO_BUTTONS));
 }
 
 TEST_F(JogConTest, SaveState)
 {
-  // Current behaviour: the response length isn't saved, so a state saved partway through a command can't be loaded
-  // into a new JogCon (it divides by zero). Only states between commands are checked.
+  Press(Button::Start);
+
+  // Partway through a poll, the rest of it continues after loading.
+  ExpectResumesAfterLoad(m_jogcon, MakeJogCon, LONG_POLL, JogReply(Pressed({Button::Start})));
+  Press(Button::Start, 0.0f);
+
   MapMotor();
   Press(Button::Start);
   SetHalfAxis(HalfAxis::SteeringLeft, 0.5f);
@@ -505,6 +538,9 @@ TEST_F(JogConTest, SaveState)
   {
     const auto loaded = MakeJogCon();
     LoadState(*loaded, state, true);
+
+    // The force is restored, without replaying the new hold position command.
+    EXPECT_FLOAT_EQ(loaded->GetBindState(MOTOR_INDEX), 3.0f / 15.0f);
     EXPECT_EQ(TransferCommand(*loaded, RumblePoll({0x1A})), JogReply(Pressed({Button::Start}), -85, 0, 0xC));
     EXPECT_EQ(TransferCommand(m_jogcon, RumblePoll({0x1A})), JogReply(Pressed({Button::Start}), -85, 0, 0xC));
     EXPECT_FLOAT_EQ(loaded->GetBindState(MOTOR_INDEX), 10.0f / 15.0f);
@@ -520,13 +556,100 @@ TEST_F(JogConTest, SaveState)
     EXPECT_EQ(TransferCommand(*loaded, LONG_POLL), JogReply(Pressed({Button::Square}), 127, 1, 0xC));
   }
 
-  // The mode is always loaded.
+  // The mode is always loaded, and the status byte cleared by toggling it in DualShock mode.
   ToggleMode();
   const std::vector<u8> digital_state = SaveState(m_jogcon);
   {
     const auto loaded = MakeJogCon();
     LoadState(*loaded, digital_state, false);
     EXPECT_EQ(loaded->GetBindState(LED_INDEX), 0.0f);
-    EXPECT_EQ(TransferCommand(*loaded, POLL), PollReply(NO_BUTTONS));
+    EXPECT_EQ(TransferCommand(*loaded, POLL), WithStatus(PollReply(NO_BUTTONS), 0x00));
   }
+}
+
+TEST_F(JogConTest, LoadStateStopsHoldForce)
+{
+  // Loading a state holding with no strength, or with the motor stopped, stops a hold force.
+  const std::vector<u8> stopped_state = SaveState(m_jogcon);
+  MapMotor();
+  Transfer(RumblePoll({0x30}));
+  const std::vector<u8> zero_hold_state = SaveState(m_jogcon);
+  for (const std::vector<u8>* state : {&zero_hold_state, &stopped_state})
+  {
+    SetHalfAxis(HalfAxis::SteeringRight, 0.0f);
+    SetHalfAxis(HalfAxis::SteeringRight, 1.0f);
+    Transfer(RumblePoll({0x3F}));
+    EXPECT_FLOAT_EQ(Motor(), 1.0f);
+    LoadState(m_jogcon, *state, true);
+    EXPECT_EQ(Motor(), 0.0f);
+  }
+
+  // Holding with no strength stops the motor.
+  MapMotor();
+  Transfer(RumblePoll({0x1F}));
+  EXPECT_FLOAT_EQ(Motor(), 1.0f);
+  Transfer(RumblePoll({0x30}));
+  EXPECT_EQ(Motor(), 0.0f);
+}
+
+TEST_F(JogConTest, LegacyState)
+{
+  // Saved by version 104 partway through a poll, in JogCon mode with the motor mapped, Start pressed, the wheel
+  // turned left, and a hold position set.
+  static const std::vector<u8> state = {0xF7, 0xFF, 0xAB, 0x02, 0x03, 0x5A, 0xAB, 0x00, 0xAB, 0x00, 0x00, 0x01,
+                                        0x42, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xE3, 0x5A, 0xF7, 0xFF,
+                                        0xAB, 0xFF, 0xC0, 0x00, 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
+  ToggleMode();
+  LoadState(m_jogcon, state, true, 104);
+  EXPECT_TRUE(ModeLED());
+
+  // The transfer starts again from idle, and the mapped motor works without entering DualShock mode again.
+  EXPECT_EQ(Transfer(RumblePoll({0x1F})), JogReply(Pressed({Button::Start}), -85));
+  EXPECT_FLOAT_EQ(Motor(), 1.0f);
+  EXPECT_EQ(Transfer(RumblePoll({0x00})), JogReply(Pressed({Button::Start}), -85, 0, 0x1));
+  EXPECT_EQ(Motor(), 0.0f);
+
+  // Holding uses the saved position, so the wheel is pushed back to the left when turned right.
+  SetHalfAxis(HalfAxis::SteeringLeft, 0.0f);
+  SetHalfAxis(HalfAxis::SteeringRight, 0.5f);
+  EXPECT_EQ(Transfer(RumblePoll({0x3F})), JogReply(Pressed({Button::Start}), 84, 1));
+  EXPECT_FLOAT_EQ(Motor(), 1.0f);
+
+  // Only the first five motor bytes were stored, and there was no lock.
+  EXPECT_EQ(Transfer(ENTER_CONFIG_LONG), JogReply(Pressed({Button::Start}), 84, 0, 0x3));
+  EXPECT_EQ(Transfer(MapMotorsCommand({})), ConfigReply({0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF}));
+  ExitConfigMode();
+  ToggleMode();
+  EXPECT_FALSE(ModeLED());
+
+  // Saved in config mode before the motor was mapped, the motor works after mapping it.
+  std::vector<u8> config_state = state;
+  config_state[10] = 0x01;
+  config_state[28] = 0xFF;
+  LoadState(m_jogcon, config_state, true, 104);
+  EXPECT_EQ(Transfer(MapMotorsCommand({0x00})), ConfigReply({0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF}));
+  ExitConfigMode();
+  EXPECT_EQ(Transfer(RumblePoll({0x1F})), JogReply(Pressed({Button::Start}), -85));
+  EXPECT_FLOAT_EQ(Motor(), 1.0f);
+
+  // A saved hold force is stopped by loading a state with the motor stopped.
+  std::vector<u8> hold_state = state;
+  hold_state[8] = 0x00;
+  hold_state[9] = 0x0F;
+  hold_state[28] = 0xFF;
+  const auto held = MakeJogCon();
+  LoadState(*held, hold_state, true, 104);
+  TransferCommand(*held, LONG_POLL);
+  EXPECT_FLOAT_EQ(held->GetBindState(MOTOR_INDEX), 1.0f);
+  LoadState(*held, SaveState(*MakeJogCon()), true);
+  EXPECT_EQ(held->GetBindState(MOTOR_INDEX), 0.0f);
+
+  // Loading a state without a hold stops the motor, and saving it again keeps it stopped.
+  LoadState(*held, hold_state, true, 104);
+  TransferCommand(*held, LONG_POLL);
+  EXPECT_FLOAT_EQ(held->GetBindState(MOTOR_INDEX), 1.0f);
+  LoadState(*held, config_state, true, 104);
+  EXPECT_EQ(held->GetBindState(MOTOR_INDEX), 0.0f);
+  LoadState(*held, SaveState(*held), true);
+  EXPECT_EQ(held->GetBindState(MOTOR_INDEX), 0.0f);
 }

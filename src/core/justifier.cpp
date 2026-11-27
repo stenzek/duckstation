@@ -50,11 +50,14 @@ ControllerType Justifier::GetType() const
 
 void Justifier::Reset()
 {
-  m_transfer_state = TransferState::Idle;
+  ResetTransferState();
 }
 
 bool Justifier::DoState(StateWrapper& sw, bool apply_input_state)
 {
+  if (sw.GetVersion() >= 105 && !Controller::DoState(sw, apply_input_state))
+    return false;
+
   u16 irq_first_line = m_irq_first_line;
   u16 irq_last_line = m_irq_last_line;
   u16 irq_tick = m_irq_tick;
@@ -79,7 +82,8 @@ bool Justifier::DoState(StateWrapper& sw, bool apply_input_state)
   }
 
   sw.DoEx(&m_irq_enabled, 82, true);
-  sw.Do(&m_transfer_state, TransferState::YMSB);
+  if (sw.GetVersion() < 105)
+    SkipLegacyTransferState(sw);
 
   if (sw.IsReading())
     UpdateIRQEvent();
@@ -93,66 +97,32 @@ void Justifier::SetShootOffscreen(bool pressed)
     m_shoot_offscreen = m_shoot_offscreen ? m_shoot_offscreen : m_offscreen_oob_frames;
 }
 
-void Justifier::ResetTransferState()
+u8 Justifier::GetIDByte() const
 {
-  m_transfer_state = TransferState::Idle;
+  return 0x31;
 }
 
-bool Justifier::Transfer(const u8 data_in, u8* data_out)
+bool Justifier::BeginCommand(u8 command)
 {
-  static constexpr u16 ID = 0x5A31;
+  if (command != 0x42)
+    return false;
 
-  switch (m_transfer_state)
+  UpdatePosition();
+  m_tx_buffer[2] = Truncate8(m_button_state);
+  m_tx_buffer[3] = Truncate8(m_button_state >> 8);
+  return true;
+}
+
+void Justifier::ProcessCommandByte(u32 step, u8 data_in)
+{
+  if (step != 2)
+    return;
+
+  const bool new_irq_enabled = ((data_in & 0x10) == 0x10);
+  if (new_irq_enabled != m_irq_enabled)
   {
-    case TransferState::Idle:
-    {
-      // ack when sent 0x01, send ID for 0x42
-      if (data_in == 0x42)
-      {
-        *data_out = Truncate8(ID);
-        m_transfer_state = TransferState::IDMSB;
-        UpdatePosition();
-        return true;
-      }
-      else
-      {
-        *data_out = 0xFF;
-        return (data_in == 0x01);
-      }
-    }
-
-    case TransferState::IDMSB:
-    {
-      *data_out = Truncate8(ID >> 8);
-      m_transfer_state = TransferState::ButtonsLSB;
-      return true;
-    }
-
-    case TransferState::ButtonsLSB:
-    {
-      const bool new_irq_enabled = ((data_in & 0x10) == 0x10);
-      if (new_irq_enabled != m_irq_enabled)
-      {
-        m_irq_enabled = new_irq_enabled;
-        UpdateIRQEvent();
-      }
-
-      *data_out = Truncate8(m_button_state);
-      m_transfer_state = TransferState::ButtonsMSB;
-      return true;
-    }
-
-    case TransferState::ButtonsMSB:
-    {
-      *data_out = Truncate8(m_button_state >> 8);
-      m_transfer_state = TransferState::Idle;
-      return false;
-    }
-
-    default:
-    {
-      UnreachableCode();
-    }
+    m_irq_enabled = new_irq_enabled;
+    UpdateIRQEvent();
   }
 }
 
@@ -162,7 +132,7 @@ void Justifier::UpdatePosition()
   {
     if (m_shoot_offscreen == m_offscreen_trigger_frames)
       SetBindState(static_cast<u32>(Binding::Trigger), 1.0f);
-    else if (m_shoot_offscreen == m_offscreen_release_frames)
+    if (m_shoot_offscreen == m_offscreen_release_frames)
       SetBindState(static_cast<u32>(Binding::Trigger), 0.0f);
 
     m_shoot_offscreen--;
@@ -309,7 +279,7 @@ static const SettingInfo s_settings[] = {
   {SettingInfo::Type::Integer, "OffscreenReleaseFrames", TRANSLATE_NOOP("Justifier", "Off-Screen Release Frames"),
    TRANSLATE_NOOP("Justifier", "Number of frames that the Justifier is pointed out-of-bounds after the trigger is "
                                "released, for an off-screen shot."),
-   "5", "0", "80", "1", "%u", nullptr, 0.0f},
+   "5", "1", "80", "1", "%u", nullptr, 0.0f},
 };
 
 const Controller::ControllerInfo Justifier::INFO = {ControllerType::Justifier,
@@ -341,7 +311,7 @@ void Justifier::LoadSettings(const SettingsInterface& si, const char* section, b
                                     std::numeric_limits<s8>::min(), std::numeric_limits<s8>::max()));
   const s8 offscreen_release_frames =
     static_cast<s8>(std::clamp<int>(si.GetIntValue(section, "OffscreenReleaseFrames", DEFAULT_OFFSCREEN_RELEASE_FRAMES),
-                                    std::numeric_limits<s8>::min(), std::numeric_limits<s8>::max()));
+                                    1, std::numeric_limits<s8>::max()));
   m_offscreen_oob_frames = offscreen_oob_frames + offscreen_trigger_frames + offscreen_release_frames;
   m_offscreen_trigger_frames = m_offscreen_oob_frames - offscreen_oob_frames;
   m_offscreen_release_frames = m_offscreen_trigger_frames - offscreen_trigger_frames;

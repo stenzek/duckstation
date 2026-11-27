@@ -12,6 +12,7 @@
 #include "core/interrupt_controller.h"
 #include "core/memory_card.h"
 #include "core/pad.h"
+#include "core/save_state_version.h"
 #include "core/settings.h"
 #include "core/system.h"
 #include "core/timing_event.h"
@@ -115,8 +116,9 @@ void ExpectRejectedBytes(Controller& controller, std::initializer_list<u8> bad_c
 /// Saves the controller state with the current version, returning only the bytes that were written.
 std::vector<u8> SaveState(Controller& controller);
 
-/// Loads a state written by SaveState().
-void LoadState(Controller& controller, const std::vector<u8>& data, bool apply_input_state);
+/// Loads a state written by SaveState(), or by an older version, checking that all of it is read.
+void LoadState(Controller& controller, const std::vector<u8>& data, bool apply_input_state,
+               u32 version = SAVE_STATE_VERSION);
 
 /// Saves source partway through the command at every split point, loads the state into a fresh controller from
 /// make_fresh(), and checks that the rest of the command gives the rest of the replies.
