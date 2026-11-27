@@ -94,7 +94,9 @@ private:
     Command46,         // 0x46
     Command47,         // 0x47
     Command4C,         // 0x4C
-    GetSetRumble       // 0x4D
+    GetSetRumble,      // 0x4D
+    Command48,         // 0x48
+    UnusedConfig,      // 0x40, 0x41, 0x49-0x4B, 0x4E, 0x4F
   };
 
   static constexpr s16 DEFAULT_SMALL_MOTOR_VIBRATION_BIAS = 8;

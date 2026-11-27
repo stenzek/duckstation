@@ -575,6 +575,22 @@ bool AnalogController::Transfer(const u8 data_in, u8* data_out)
         m_command = Command::GetSetRumble;
         m_tx_buffer = {GetIDByte(), m_status_byte, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
       }
+      else if (m_configuration_mode && data_in == 0x48)
+      {
+        Assert(m_command_step == 0);
+        m_response_length = (GetResponseNumHalfwords() + 1) * 2;
+        m_command = Command::Command48;
+        m_tx_buffer = {GetIDByte(), m_status_byte, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+      }
+      else if (m_configuration_mode && (data_in == 0x40 || data_in == 0x41 || (data_in >= 0x49 && data_in <= 0x4B) ||
+                                        data_in == 0x4E || data_in == 0x4F))
+      {
+        // DualShock 2 and unused commands, these only return zeros on PSX pads.
+        Assert(m_command_step == 0);
+        m_response_length = (GetResponseNumHalfwords() + 1) * 2;
+        m_command = Command::UnusedConfig;
+        m_tx_buffer = {GetIDByte(), m_status_byte, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+      }
       else
       {
         if (m_configuration_mode)
@@ -690,6 +706,18 @@ bool AnalogController::Transfer(const u8 data_in, u8* data_out)
         else if (data_in == 0x01)
           m_tx_buffer[5] = 0x07;
       }
+    }
+    break;
+
+    case Command::Command48:
+    {
+      if (m_command_step == 2 && data_in <= 0x01)
+        m_tx_buffer[6] = 0x01;
+    }
+    break;
+
+    case Command::UnusedConfig:
+    {
     }
     break;
 
