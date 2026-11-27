@@ -228,10 +228,10 @@ static const SettingInfo s_settings[] = {
    TRANSLATE_NOOP("GunCon", "Scales X coordinates relative to the center of the screen."), "1.0", "0.01", "2.0", "0.01",
    "%.0f%%", nullptr, 100.0f},
   {SettingInfo::Type::Integer, "GunConLineOffset", TRANSLATE_NOOP("GunCon", "Line Offset"),
-   TRANSLATE_NOOP("GunCon", "Offset applied to lightgun vertical position."), "0", "-128", "127", "1", "%u", nullptr,
+   TRANSLATE_NOOP("GunCon", "Offset applied to lightgun vertical position."), "0", "-128", "127", "1", "%d", nullptr,
    0.0f},
   {SettingInfo::Type::Integer, "GunConTickOffset", TRANSLATE_NOOP("GunCon", "Tick Offset"),
-   TRANSLATE_NOOP("GunCon", "Offset applied to lightgun horizontal position."), "-140", "-1000", "1000", "1", "%u",
+   TRANSLATE_NOOP("GunCon", "Offset applied to lightgun horizontal position."), "-140", "-1000", "1000", "1", "%d",
    nullptr, 0.0f},
 };
 

@@ -80,7 +80,7 @@ void LightgunController::SetBindState(u32 index, float value)
 
 u32 LightgunController::GetButtonStateBits() const
 {
-  return m_button_state;
+  return m_button_state ^ 0xFFFF;
 }
 
 LightgunController::Position LightgunController::GetPosition() const

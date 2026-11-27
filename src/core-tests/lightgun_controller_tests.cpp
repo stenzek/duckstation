@@ -98,29 +98,39 @@ static bool IsEventActive(std::string_view name)
   return false;
 }
 
+/// Integer settings that can be negative must not be shown with %u.
+static void ExpectSignedIntegerFormats(const Controller::ControllerInfo& info)
+{
+  for (const SettingInfo& si : info.settings)
+  {
+    if (si.type == SettingInfo::Type::Integer && si.IntegerMinValue() < 0)
+      EXPECT_EQ(std::string_view(si.format), "%d") << si.name;
+  }
+}
+
 } // namespace
 
 TEST(LightgunController, ButtonBindings)
 {
   TestLightgunController controller;
 
-  EXPECT_EQ(controller.GetButtonStateBits(), UINT16_C(0xFFFF));
+  EXPECT_EQ(controller.GetButtonStateBits(), 0u);
   EXPECT_EQ(controller.GetBindState(0), 0.0f);
 
   controller.SetBindState(0, 0.49f);
   EXPECT_EQ(controller.GetBindState(0), 0.0f);
-  EXPECT_EQ(controller.GetButtonStateBits(), UINT16_C(0xFFFF));
+  EXPECT_EQ(controller.GetButtonStateBits(), 0u);
 
   controller.SetBindState(0, 0.5f);
   EXPECT_EQ(controller.GetBindState(0), 1.0f);
-  EXPECT_EQ(controller.GetButtonStateBits(), UINT16_C(0xFFFB));
+  EXPECT_EQ(controller.GetButtonStateBits(), UINT16_C(0x0004));
 
   controller.SetBindState(0, 0.0f);
   EXPECT_EQ(controller.GetBindState(0), 0.0f);
-  EXPECT_EQ(controller.GetButtonStateBits(), UINT16_C(0xFFFF));
+  EXPECT_EQ(controller.GetButtonStateBits(), 0u);
 
   controller.SetBindState(8, 1.0f);
-  EXPECT_EQ(controller.GetButtonStateBits(), UINT16_C(0xFFFF));
+  EXPECT_EQ(controller.GetButtonStateBits(), 0u);
 }
 
 TEST(LightgunController, ShootOffscreenDispatch)
@@ -131,12 +141,12 @@ TEST(LightgunController, ShootOffscreenDispatch)
   EXPECT_TRUE(controller.GetLastShootOffscreenState());
   EXPECT_EQ(controller.GetShootOffscreenCallCount(), 1u);
   EXPECT_EQ(controller.GetBindState(3), 0.0f);
-  EXPECT_EQ(controller.GetButtonStateBits(), UINT16_C(0xFFFF));
+  EXPECT_EQ(controller.GetButtonStateBits(), 0u);
 
   controller.SetBindState(3, 0.0f);
   EXPECT_FALSE(controller.GetLastShootOffscreenState());
   EXPECT_EQ(controller.GetShootOffscreenCallCount(), 2u);
-  EXPECT_EQ(controller.GetButtonStateBits(), UINT16_C(0xFFFF));
+  EXPECT_EQ(controller.GetButtonStateBits(), 0u);
 }
 
 TEST(LightgunController, DeviceButtonMappings)
@@ -145,13 +155,13 @@ TEST(LightgunController, DeviceButtonMappings)
   guncon.SetBindState(static_cast<u32>(GunCon::Binding::Trigger), 1.0f);
   guncon.SetBindState(static_cast<u32>(GunCon::Binding::A), 1.0f);
   guncon.SetBindState(static_cast<u32>(GunCon::Binding::B), 1.0f);
-  EXPECT_EQ(guncon.GetButtonStateBits(), UINT16_C(0x9FF7));
+  EXPECT_EQ(guncon.GetButtonStateBits(), UINT16_C(0x6008));
 
   Justifier justifier(0);
   justifier.SetBindState(static_cast<u32>(Justifier::Binding::Trigger), 1.0f);
   justifier.SetBindState(static_cast<u32>(Justifier::Binding::Start), 1.0f);
   justifier.SetBindState(static_cast<u32>(Justifier::Binding::Back), 1.0f);
-  EXPECT_EQ(justifier.GetButtonStateBits(), UINT16_C(0x3FF7));
+  EXPECT_EQ(justifier.GetButtonStateBits(), UINT16_C(0xC008));
 }
 
 TEST(LightgunController, StateApplication)
@@ -260,6 +270,11 @@ TEST(GunCon, Buttons)
   {
     EXPECT_TRUE(HasSetting(GunCon::INFO, setting)) << setting;
   }
+}
+
+TEST(GunCon, SettingFormats)
+{
+  ExpectSignedIntegerFormats(GunCon::INFO);
 }
 
 TEST(GunCon, SaveState)
