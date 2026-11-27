@@ -147,20 +147,6 @@ bool DDGoController::Transfer(const u8 data_in, u8* data_out)
       if (data_in == 0x01)
       {
         m_transfer_state = TransferState::Ready;
-
-        // handle transition time
-        if (m_power_transition_frames_remaining > 0)
-        {
-          m_power_transition_frames_remaining--;
-          UpdatePowerBits();
-        }
-
-        if (m_brake_transition_frames_remaining > 0)
-        {
-          m_brake_transition_frames_remaining--;
-          UpdateBrakeBits();
-        }
-
         return true;
       }
       return false;
@@ -194,9 +180,25 @@ bool DDGoController::Transfer(const u8 data_in, u8* data_out)
     }
 
     case TransferState::ButtonsMSB:
+    {
       *data_out = Truncate8((m_button_state & BUTTON_MASK) >> 8);
       m_transfer_state = TransferState::Idle;
+
+      // handle transition time, after the poll so that it's seen for the full count
+      if (m_power_transition_frames_remaining > 0)
+      {
+        m_power_transition_frames_remaining--;
+        UpdatePowerBits();
+      }
+
+      if (m_brake_transition_frames_remaining > 0)
+      {
+        m_brake_transition_frames_remaining--;
+        UpdateBrakeBits();
+      }
+
       return false;
+    }
 
     default:
       UnreachableCode();
@@ -285,8 +287,8 @@ void DDGoController::LoadSettings(const SettingsInterface& si, const char* secti
   m_analog_deadzone = std::clamp(si.GetFloatValue(section, "AnalogDeadzone", DEFAULT_STICK_DEADZONE), 0.0f, 1.0f);
   m_analog_sensitivity =
     std::clamp(si.GetFloatValue(section, "AnalogSensitivity", DEFAULT_STICK_SENSITIVITY), 0.01f, 3.0f);
-  m_power_transition_frames = static_cast<u8>(si.GetIntValue(section, "PowerTransitionFrames", 0));
-  m_brake_transition_frames = static_cast<u8>(si.GetIntValue(section, "BrakeTransitionFrames", 0));
+  m_power_transition_frames = static_cast<u8>(si.GetIntValue(section, "PowerTransitionFrames", 10));
+  m_brake_transition_frames = static_cast<u8>(si.GetIntValue(section, "BrakeTransitionFrames", 10));
 }
 
 std::unique_ptr<DDGoController> DDGoController::Create(u32 index)

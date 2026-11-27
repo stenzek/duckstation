@@ -81,6 +81,15 @@ static std::unique_ptr<DDGoController> MakeController(const INISettingsInterface
   return controller;
 }
 
+/// Without transition frames, so level changes are seen straight away.
+static std::unique_ptr<DDGoController> MakeInstantController()
+{
+  INISettingsInterface si;
+  si.SetIntValue(SECTION, "PowerTransitionFrames", 0);
+  si.SetIntValue(SECTION, "BrakeTransitionFrames", 0);
+  return MakeController(&si);
+}
+
 static void PressBind(Controller& controller, Bind bind, float value = 1.0f)
 {
   controller.SetBindState(static_cast<u32>(bind), value);
@@ -159,7 +168,7 @@ TEST(DDGoController, Buttons)
 
 TEST(DDGoController, PowerLevels)
 {
-  const auto controller = MakeController();
+  const auto controller = MakeInstantController();
   for (u32 level = 0; level < std::size(POWER_LEVEL_BITS); level++)
   {
     controller->SetBindState(VirtualPower(level), 1.0f);
@@ -176,7 +185,7 @@ TEST(DDGoController, PowerLevels)
 
 TEST(DDGoController, BrakeLevels)
 {
-  const auto controller = MakeController();
+  const auto controller = MakeInstantController();
   for (u32 level = 0; level < std::size(BRAKE_LEVEL_BITS); level++)
   {
     controller->SetBindState(VirtualBrake(level), 1.0f);
@@ -193,7 +202,7 @@ TEST(DDGoController, BrakeLevels)
 TEST(DDGoController, Axes)
 {
   // With the default sensitivity of 1.33, the level is value * 1.33 * levels, rounded down.
-  const auto controller = MakeController();
+  const auto controller = MakeInstantController();
   static constexpr struct
   {
     float value;
@@ -216,6 +225,8 @@ TEST(DDGoController, Axes)
   INISettingsInterface si;
   si.SetFloatValue(SECTION, "AnalogDeadzone", 0.5f);
   si.SetFloatValue(SECTION, "AnalogSensitivity", 1.0f);
+  si.SetIntValue(SECTION, "PowerTransitionFrames", 0);
+  si.SetIntValue(SECTION, "BrakeTransitionFrames", 0);
   controller->LoadSettings(si, SECTION, false);
   PressBind(*controller, Bind::Power, 0.45f);
   PressBind(*controller, Bind::Brake, 0.45f);
@@ -233,19 +244,24 @@ TEST(DDGoController, TransitionFrames)
   const auto controller = MakeController(&si);
   EXPECT_EQ(TransferCommand(*controller, POLL), PollReply(LevelState(0, EMERGENCY)));
 
-  // The in-between state is reported straight away. It counts down on each 01h, so with N frames it's seen by N-1
-  // polls. Current behaviour: the count is one poll shorter than the setting.
+  // The in-between state is reported straight away, for as many polls as the setting.
   controller->SetBindState(VirtualPower(1), 1.0f);
   controller->SetBindState(VirtualBrake(0), 1.0f);
   EXPECT_EQ(controller->GetBindState(VirtualPower(1)), 1.0f);
   EXPECT_EQ(TransferCommand(*controller, POLL), PollReply(State({}, BRAKE_TRANSITION_BITS)));
+  EXPECT_EQ(TransferCommand(*controller, POLL), PollReply(State({}, BRAKE_TRANSITION_BITS)));
   EXPECT_EQ(TransferCommand(*controller, POLL), PollReply(State(POWER_LEVEL_BITS[1], BRAKE_TRANSITION_BITS)));
   EXPECT_EQ(TransferCommand(*controller, POLL), PollReply(LevelState(1, 0)));
 
-  // A 01h that isn't followed by a poll still counts.
+  // Only complete polls count.
   controller->SetBindState(VirtualPower(2), 1.0f);
-  TransferBytes(*controller, {0x01});
-  controller->ResetTransferState();
+  for (size_t len = 1; len < POLL.size(); len++)
+  {
+    TransferBytes(*controller, std::vector<u8>(POLL.begin(), POLL.begin() + len));
+    controller->ResetTransferState();
+  }
+  EXPECT_EQ(TransferCommand(*controller, POLL), PollReply(State({}, BRAKE_LEVEL_BITS[0])));
+  EXPECT_EQ(TransferCommand(*controller, POLL), PollReply(State({}, BRAKE_LEVEL_BITS[0])));
   EXPECT_EQ(TransferCommand(*controller, POLL), PollReply(LevelState(2, 0)));
 
   // A reset ends the transition.
@@ -256,8 +272,7 @@ TEST(DDGoController, TransitionFrames)
 
 TEST(DDGoController, Defaults)
 {
-  // Current behaviour: the member default is 10 transition frames, the setting's listed default is 10, but
-  // LoadSettings() defaults to 0.
+  // 10 transition frames by default.
   for (const SettingInfo& setting : DDGoController::INFO.settings)
   {
     if (std::string_view(setting.name) == "PowerTransitionFrames" ||
@@ -269,6 +284,8 @@ TEST(DDGoController, Defaults)
 
   const auto loaded = MakeController();
   loaded->SetBindState(VirtualPower(1), 1.0f);
+  for (u32 i = 0; i < 10; i++)
+    EXPECT_EQ(TransferCommand(*loaded, POLL), PollReply(State({}, BRAKE_LEVEL_BITS[EMERGENCY]))) << i;
   EXPECT_EQ(TransferCommand(*loaded, POLL), PollReply(LevelState(1, EMERGENCY)));
 
   // Current behaviour: before Reset(), the power bits read as the in-between state.
@@ -278,41 +295,43 @@ TEST(DDGoController, Defaults)
   EXPECT_EQ(TransferCommand(controller, POLL), PollReply(LevelState(0, EMERGENCY)));
 
   controller.SetBindState(VirtualPower(1), 1.0f);
-  for (u32 i = 0; i < 9; i++)
+  for (u32 i = 0; i < 10; i++)
     EXPECT_EQ(TransferCommand(controller, POLL), PollReply(State({}, BRAKE_LEVEL_BITS[EMERGENCY]))) << i;
   EXPECT_EQ(TransferCommand(controller, POLL), PollReply(LevelState(1, EMERGENCY)));
 }
 
 TEST(DDGoController, SaveState)
 {
-  const auto controller = MakeController();
+  const auto controller = MakeInstantController();
   PressBind(*controller, Bind::Start);
   controller->SetBindState(VirtualPower(3), 1.0f);
   controller->SetBindState(VirtualBrake(6), 1.0f);
 
   // Partway through a poll, the rest of it continues after loading.
   ExpectResumesAfterLoad(
-    *controller, [] { return MakeController(); }, POLL, PollReply(LevelState(3, 6, {Bind::Start})));
+    *controller, [] { return MakeInstantController(); }, POLL, PollReply(LevelState(3, 6, {Bind::Start})));
 
   // The levels and the transition countdown are input state, so only loaded if asked to.
   INISettingsInterface si;
   si.SetIntValue(SECTION, "PowerTransitionFrames", 3);
+  si.SetIntValue(SECTION, "BrakeTransitionFrames", 0);
   const auto source = MakeController(&si);
   PressBind(*source, Bind::C);
   source->SetBindState(VirtualPower(4), 1.0f);
   source->SetBindState(VirtualBrake(2), 1.0f);
   const std::vector<u8> state = SaveState(*source);
   {
-    const auto loaded = MakeController();
+    const auto loaded = MakeInstantController();
     PressBind(*loaded, Bind::B);
     loaded->SetBindState(VirtualPower(5), 1.0f);
     LoadState(*loaded, state, false);
     EXPECT_EQ(TransferCommand(*loaded, POLL), PollReply(LevelState(5, EMERGENCY, {Bind::B})));
   }
   {
-    const auto loaded = MakeController();
+    const auto loaded = MakeInstantController();
     LoadState(*loaded, state, true);
     EXPECT_EQ(loaded->GetBindState(VirtualPower(4)), 1.0f);
+    EXPECT_EQ(TransferCommand(*loaded, POLL), PollReply(State({}, BRAKE_LEVEL_BITS[2], {Bind::C})));
     EXPECT_EQ(TransferCommand(*loaded, POLL), PollReply(State({}, BRAKE_LEVEL_BITS[2], {Bind::C})));
     EXPECT_EQ(TransferCommand(*loaded, POLL), PollReply(State({}, BRAKE_LEVEL_BITS[2], {Bind::C})));
     EXPECT_EQ(TransferCommand(*loaded, POLL), PollReply(LevelState(4, 2, {Bind::C})));
