@@ -867,10 +867,9 @@ TEST_F(AnalogControllerTest, StickDeadzone)
   SetHalfAxis(HalfAxis::LRight, 0.2f);
   EXPECT_EQ(Transfer(ANALOG_POLL), AnalogPollReply(NO_BUTTONS));
 
-  // Current behaviour: leaving the deadzone only updates the axis that changed, the other stays centred until it
-  // changes too.
+  // Leaving it through one axis restores the other one.
   SetHalfAxis(HalfAxis::LRight, 0.5f);
-  EXPECT_EQ(Transfer(ANALOG_POLL), AnalogPollReply(NO_BUTTONS, 0x7F, 0x7F, 0xD4, 0x7F));
+  EXPECT_EQ(Transfer(ANALOG_POLL), AnalogPollReply(NO_BUTTONS, 0x7F, 0x7F, 0xD4, 0xA1));
   SetHalfAxis(HalfAxis::LDown, 0.21f);
   EXPECT_EQ(Transfer(ANALOG_POLL), AnalogPollReply(NO_BUTTONS, 0x7F, 0x7F, 0xD4, 0xA3));
 
