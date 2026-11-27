@@ -1,16 +1,9 @@
 // SPDX-FileCopyrightText: 2019-2026 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
-#include "core/analog_controller.h"
-#include "core/controller.h"
-#include "core/cpu_core.h"
-#include "core/digital_controller.h"
-#include "core/interrupt_controller.h"
-#include "core/memory_card.h"
-#include "core/pad.h"
+#include "controller_test_utils.h"
+
 #include "core/save_state_version.h"
-#include "core/system.h"
-#include "core/timing_event.h"
 
 #include "util/state_wrapper.h"
 
@@ -23,54 +16,13 @@
 // These tests check what is currently emulated. Comments starting with "psx-spx:" mark places where that differs from
 // the behaviour documented there, see the notes in pad.cpp and memory_card.cpp.
 
+using namespace ControllerTestUtils;
+
 namespace {
 
-enum : u32
-{
-  JOY_DATA = 0x00,
-  JOY_STAT = 0x04,
-  JOY_MODE = 0x08,
-  JOY_CTRL = 0x0A,
-  JOY_BAUD = 0x0E,
-
-  STAT_TXRDY = (1u << 0),
-  STAT_RXFIFONEMPTY = (1u << 1),
-  STAT_TXDONE = (1u << 2),
-  STAT_ACKINPUT = (1u << 7),
-  STAT_INTR = (1u << 9),
-
-  CTRL_TXEN = (1u << 0),
-  CTRL_SELECT = (1u << 1),
-  CTRL_ACK = (1u << 4),
-  CTRL_RESET = (1u << 6),
-  CTRL_TXINTEN = (1u << 10),
-  CTRL_RXINTEN = (1u << 11),
-  CTRL_ACKINTEN = (1u << 12),
-  CTRL_SLOT2 = (1u << 13),
-
-  PAD_IRQ_BIT = (1u << static_cast<u32>(InterruptController::IRQ::PAD)),
-
-  // What the BIOS uses: 8N1, MUL1, 0x88 reload.
-  BIOS_JOY_MODE = 0x000D,
-  BIOS_JOY_BAUD = 0x0088,
-
-  TRANSFER_TICKS = BIOS_JOY_BAUD * 8,
-  CONTROLLER_ACK_TICKS = 450,
-  MEMORY_CARD_ACK_TICKS = 170,
-
-  // Long enough for any ACK to have arrived.
-  ACK_WINDOW = CONTROLLER_ACK_TICKS + 100,
-  NOT_REACHED = 0xFFFFFFFFu,
-};
-
-const std::vector<u8> POLL = {0x01, 0x42, 0x00, 0x00, 0x00};
-static constexpr u16 NO_BUTTONS = 0xFFFF;
-
-const std::vector<u8> ANALOG_CONFIG_REPLY = {0xFF, 0xF3, 0x5A, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
 const std::vector<u8> GET_ID_REPLY = {0xFF, 0x08, 0x5A, 0x5D, 0x5C, 0x5D, 0x04, 0x00, 0x00, 0x80};
 
 // Multitap all-controllers mode: what's sent and received for each sub-port.
-using Block = std::vector<u8>;
 const Block POLL_BLOCK = {0x42, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
 const Block EMPTY_BLOCK = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
 const Block ZERO_BLOCK = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
@@ -83,16 +35,6 @@ const std::vector<u8> GARBAGE_REPLY = {0xFF, 0x80, 0x5A, 0xFF};
 static std::vector<u8> GetIDCommand(u8 first)
 {
   return {first, 0x53, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
-}
-
-static Block DigitalBlock(u16 buttons)
-{
-  return {0x41, 0x5A, Truncate8(buttons), Truncate8(buttons >> 8), 0xFF, 0xFF, 0xFF, 0xFF};
-}
-
-static Block AnalogBlock(u16 buttons)
-{
-  return {0x73, 0x5A, Truncate8(buttons), Truncate8(buttons >> 8), 0x7F, 0x7F, 0x7F, 0x7F};
 }
 
 static std::vector<u8> AllControllersCommand(u8 first, u8 request, const std::array<Block, 4>& blocks)
@@ -140,181 +82,6 @@ static std::vector<u8> ReadSectorCommand(u8 first, u16 sector)
   ret.resize(ret.size() + MemoryCardImage::FRAME_SIZE + 2, 0x00);
   return ret;
 }
-
-class PadTest : public ::testing::Test
-{
-protected:
-  struct Reply
-  {
-    u8 data;
-    bool ack;
-    u32 ack_ticks; // after RX, or NOT_REACHED
-  };
-
-  static void SetUpTestSuite()
-  {
-    TimingEvents::Initialize();
-    System::UpdateOverclock();
-    DeactivateAllEvents();
-  }
-
-  void SetUp() override
-  {
-    CPU::g_state.cop0_regs.sr.bits = 0;
-    CPU::g_state.pending_ticks = 0;
-    DeactivateAllEvents();
-    TimingEvents::Reset();
-    InterruptController::Reset();
-
-    // Time can't advance without something to count down to.
-    m_idle_event.Activate();
-
-    Pad::Initialize();
-    for (u32 i = 0; i < NUM_MULTITAPS; i++)
-      Pad::SetMultitapEnabled(i, false);
-
-    Pad::WriteRegister(JOY_MODE, BIOS_JOY_MODE);
-    Pad::WriteRegister(JOY_BAUD, BIOS_JOY_BAUD);
-  }
-
-  void TearDown() override
-  {
-    Pad::Shutdown();
-    for (u32 i = 0; i < NUM_MULTITAPS; i++)
-      Pad::SetMultitapEnabled(i, false);
-    DeactivateAllEvents();
-  }
-
-  static void DeactivateAllEvents()
-  {
-    while (TimingEvent* event = *TimingEvents::GetHeadEventPtr())
-      event->Deactivate();
-  }
-
-  /// Runs the CPU for the specified number of ticks, without any register accesses.
-  static void Run(u32 ticks)
-  {
-    for (u32 i = 0; i < ticks; i++)
-    {
-      CPU::AddPendingTicks(1);
-      if (CPU::GetPendingTicks() >= CPU::g_state.downcount)
-        TimingEvents::RunEvents();
-    }
-  }
-
-  /// Runs one tick at a time until pred() is true, returning the number of ticks taken, or NOT_REACHED.
-  template<typename F>
-  static u32 RunUntil(const F& pred, u32 max_ticks)
-  {
-    for (u32 i = 1; i <= max_ticks; i++)
-    {
-      Run(1);
-      if (pred())
-        return i;
-    }
-    return NOT_REACHED;
-  }
-
-  /// Polls JOY_STAT like the BIOS does. Note this clears ACKINPUT.
-  static bool RXReady() { return (Pad::ReadRegister(JOY_STAT) & STAT_RXFIFONEMPTY) != 0; }
-
-  /// Checks the interrupt controller without touching the pad registers.
-  static bool PadIRQPending() { return (InterruptController::ReadRegister(0x00) & PAD_IRQ_BIT) != 0; }
-
-  static void PlugController(u32 index)
-  {
-    Pad::SetController(index, DigitalController::Create(index, ControllerType::DigitalController));
-  }
-
-  static void PlugAnalogController(u32 index) { Pad::SetController(index, AnalogController::Create(index)); }
-
-  static MemoryCard* PlugMemoryCard(u32 index)
-  {
-    Pad::SetMemoryCard(index, MemoryCard::Create(index));
-    return Pad::GetMemoryCard(index);
-  }
-
-  static void Press(u32 index, DigitalController::Button button)
-  {
-    Pad::GetController(index)->SetBindState(static_cast<u32>(button), 1.0f);
-  }
-
-  void Select(u32 slot, u32 extra_bits = CTRL_ACKINTEN)
-  {
-    m_ctrl = CTRL_TXEN | CTRL_SELECT | extra_bits | (slot ? CTRL_SLOT2 : 0u);
-    Pad::WriteRegister(JOY_CTRL, m_ctrl);
-  }
-
-  static void Deselect() { Pad::WriteRegister(JOY_CTRL, 0); }
-
-  /// Acknowledges the interrupt in both the pad and the interrupt controller, like the BIOS does.
-  void AckIRQ()
-  {
-    Pad::WriteRegister(JOY_CTRL, m_ctrl | CTRL_ACK);
-    InterruptController::WriteRegister(0x00, ~PAD_IRQ_BIT);
-  }
-
-  /// Sends one byte, waits for the reply and the ACK (if any).
-  Reply Exchange(u8 value)
-  {
-    Pad::WriteRegister(JOY_DATA, value);
-    EXPECT_EQ(RunUntil(RXReady, TRANSFER_TICKS * 2), TRANSFER_TICKS) << "TX of 0x" << std::hex << u32(value);
-
-    Reply reply;
-    reply.data = Truncate8(Pad::ReadRegister(JOY_DATA));
-    reply.ack_ticks = RunUntil(PadIRQPending, ACK_WINDOW);
-    reply.ack = (reply.ack_ticks != NOT_REACHED);
-    AckIRQ();
-    return reply;
-  }
-
-  /// Sends a whole command and returns the replies. Every byte except the last should ACK.
-  /// The time from each RX to its ACK is left in m_ack_ticks.
-  std::vector<u8> Command(const std::vector<u8>& tx)
-  {
-    std::vector<u8> rx;
-    m_ack_ticks.clear();
-    for (size_t i = 0; i < tx.size(); i++)
-    {
-      const Reply reply = Exchange(tx[i]);
-      rx.push_back(reply.data);
-      if (reply.ack)
-        m_ack_ticks.push_back(reply.ack_ticks);
-
-      const bool expected_ack = (i + 1) < tx.size();
-      EXPECT_EQ(reply.ack, expected_ack) << "byte " << i;
-      if (reply.ack != expected_ack)
-        break;
-    }
-
-    EXPECT_FALSE(Pad::IsTransmitting());
-    return rx;
-  }
-
-  /// Digital pad poll, with the replies for the given button state.
-  static std::vector<u8> PollReply(u16 buttons)
-  {
-    return {0xFF, 0x41, 0x5A, Truncate8(buttons), Truncate8(buttons >> 8)};
-  }
-
-  /// Switches an analog controller to analog mode through config mode. first is 0x01, or the multitap sub-port.
-  void EnterAnalogMode(u32 slot, u8 first)
-  {
-    Select(slot);
-    EXPECT_EQ(Command({first, 0x43, 0x00, 0x01, 0x00}), (std::vector<u8>{0xFF, 0x41, 0x5A, 0xFF, 0xFF}));
-    Deselect();
-    Select(slot);
-    EXPECT_EQ(Command({first, 0x44, 0x00, 0x01, 0x03, 0x00, 0x00, 0x00, 0x00}), ANALOG_CONFIG_REPLY);
-    Deselect();
-    Select(slot);
-    EXPECT_EQ(Command({first, 0x43, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}), ANALOG_CONFIG_REPLY);
-    Deselect();
-  }
-
-  TimingEvent m_idle_event{"Idle", 1000000, 1000000, [](void*, TickCount) {}, nullptr};
-  u32 m_ctrl = 0;
-  std::vector<u32> m_ack_ticks;
-};
 
 } // namespace
 
@@ -680,8 +447,6 @@ TEST_F(PadTest, Multitap_MemoryCard)
   Pad::SetMultitapEnabled(0, true);
   PlugController(0);
   PlugMemoryCard(3);
-
-  static const std::vector<u8> GET_ID_REPLY = {0xFF, 0x08, 0x5A, 0x5D, 0x5C, 0x5D, 0x04, 0x00, 0x00, 0x80};
 
   // Sub-port C has the card, and only C answers.
   for (u8 sub = 0; sub < 4; sub++)

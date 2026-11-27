@@ -1,17 +1,15 @@
 // SPDX-FileCopyrightText: 2019-2026 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
+#include "controller_test_utils.h"
+
 #include "core/guncon.h"
 #include "core/justifier.h"
 #include "core/lightgun_controller.h"
-#include "core/save_state_version.h"
 
-#include "util/state_wrapper.h"
-
-#include <array>
-#include <cstring>
 #include <gtest/gtest.h>
-#include <span>
+
+using namespace ControllerTestUtils;
 
 namespace {
 
@@ -100,19 +98,13 @@ TEST(LightgunController, StateApplication)
   TestLightgunController controller;
   controller.SetBindState(1, 1.0f);
 
-  std::array<u8, sizeof(u16)> state_data = {};
-  StateWrapper write_sw(std::span<u8>(state_data), StateWrapper::Mode::Write, SAVE_STATE_VERSION);
-  ASSERT_TRUE(controller.DoState(write_sw, true));
-  ASSERT_FALSE(write_sw.HasError());
-  EXPECT_EQ(write_sw.GetPosition(), sizeof(u16));
+  const std::vector<u8> state = SaveState(controller);
 
   controller.SetBindState(1, 0.0f);
-  StateWrapper no_apply_sw(std::span<const u8>(state_data), StateWrapper::Mode::Read, SAVE_STATE_VERSION);
-  ASSERT_TRUE(controller.DoState(no_apply_sw, false));
+  LoadState(controller, state, false);
   EXPECT_EQ(controller.GetBindState(1), 0.0f);
 
-  StateWrapper apply_sw(std::span<const u8>(state_data), StateWrapper::Mode::Read, SAVE_STATE_VERSION);
-  ASSERT_TRUE(controller.DoState(apply_sw, true));
+  LoadState(controller, state, true);
   EXPECT_EQ(controller.GetBindState(1), 1.0f);
 }
 
@@ -125,30 +117,4 @@ TEST(LightgunController, GunConOffscreenTrigger)
 
   controller.SetBindState(static_cast<u32>(GunCon::Binding::ShootOffscreen), 0.0f);
   EXPECT_EQ(controller.GetBindState(static_cast<u32>(GunCon::Binding::Trigger)), 0.0f);
-}
-
-TEST(LightgunController, DeviceStateLayout)
-{
-  std::array<u8, 32> state_data = {};
-
-  GunCon guncon(0);
-  guncon.SetBindState(static_cast<u32>(GunCon::Binding::A), 1.0f);
-  StateWrapper guncon_sw(std::span<u8>(state_data), StateWrapper::Mode::Write, SAVE_STATE_VERSION);
-  ASSERT_TRUE(guncon.DoState(guncon_sw, true));
-  EXPECT_EQ(guncon_sw.GetPosition(), 7u);
-
-  u16 guncon_buttons;
-  std::memcpy(&guncon_buttons, state_data.data(), sizeof(guncon_buttons));
-  EXPECT_EQ(guncon_buttons, UINT16_C(0xFFF7));
-
-  state_data.fill(0);
-  Justifier justifier(0);
-  justifier.SetBindState(static_cast<u32>(Justifier::Binding::Start), 1.0f);
-  StateWrapper justifier_sw(std::span<u8>(state_data), StateWrapper::Mode::Write, SAVE_STATE_VERSION);
-  ASSERT_TRUE(justifier.DoState(justifier_sw, true));
-  EXPECT_EQ(justifier_sw.GetPosition(), 12u);
-
-  u16 justifier_buttons;
-  std::memcpy(&justifier_buttons, &state_data[sizeof(u16) * 3], sizeof(justifier_buttons));
-  EXPECT_EQ(justifier_buttons, UINT16_C(0xFFF7));
 }

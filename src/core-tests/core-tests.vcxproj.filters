@@ -2,13 +2,16 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <ClCompile Include="..\..\dep\googletest\src\gtest_main.cc" />
+    <ClCompile Include="analog_controller_tests.cpp" />
     <ClCompile Include="cdrom_tests.cpp" />
     <ClCompile Include="cheats_tests.cpp" />
     <ClCompile Include="controller_helpers_tests.cpp" />
+    <ClCompile Include="controller_test_utils.cpp" />
     <ClCompile Include="cpu_disasm_tests.cpp" />
     <ClCompile Include="cpu_execution_tests.cpp" />
     <ClCompile Include="cpu_pgxp_tests.cpp" />
     <ClCompile Include="cpu_test_harness.cpp" />
+    <ClCompile Include="digital_controller_tests.cpp" />
     <ClCompile Include="dma_tests.cpp" />
     <ClCompile Include="fullscreenui_widgets_tests.cpp" />
     <ClCompile Include="game_list_tests.cpp" />
@@ -28,6 +31,7 @@
     <ClCompile Include="bus_tests.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="controller_test_utils.h" />
     <ClInclude Include="cpu_test_harness.h" />
   </ItemGroup>
   <ItemGroup>

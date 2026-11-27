@@ -2,15 +2,19 @@
 # SPDX-License-Identifier: CC-BY-NC-ND-4.0 + Packaging Restriction
 
 add_executable(core-tests
+  analog_controller_tests.cpp
   bus_tests.cpp
   cdrom_tests.cpp
   cheats_tests.cpp
   controller_helpers_tests.cpp
+  controller_test_utils.cpp
+  controller_test_utils.h
   cpu_disasm_tests.cpp
   cpu_execution_tests.cpp
   cpu_pgxp_tests.cpp
   cpu_test_harness.cpp
   cpu_test_harness.h
+  digital_controller_tests.cpp
   dma_tests.cpp
   fullscreenui_widgets_tests.cpp
   game_list_tests.cpp

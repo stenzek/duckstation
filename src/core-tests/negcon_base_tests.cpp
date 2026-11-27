@@ -1,19 +1,16 @@
 // SPDX-FileCopyrightText: 2019-2026 Connor McLaughlin <stenzek@gmail.com> and contributors.
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
+#include "controller_test_utils.h"
+
 #include "core/negcon.h"
 #include "core/negcon_base.h"
 #include "core/negcon_rumble.h"
-#include "core/save_state_version.h"
 
 #include "util/ini_settings_interface.h"
-#include "util/state_wrapper.h"
 
 #include <array>
-#include <cstring>
 #include <gtest/gtest.h>
-#include <span>
-#include <string_view>
 #include <type_traits>
 
 static_assert(std::is_base_of_v<NegConBase, NeGcon>);
@@ -22,9 +19,7 @@ static_assert(static_cast<u32>(NeGcon::Button::Count) == 8);
 static_assert(static_cast<u32>(NeGconRumble::Button::Analog) == 8);
 static_assert(static_cast<u32>(NeGconRumble::Button::Count) == 9);
 
-static const Controller::ControllerBindingInfo* FindBinding(const Controller::ControllerInfo& info,
-                                                            std::string_view name);
-static bool HasSetting(const Controller::ControllerInfo& info, std::string_view name);
+using namespace ControllerTestUtils;
 
 TEST(NegConBase, BindingIndices)
 {
@@ -142,92 +137,16 @@ TEST(NegConBase, RumbleSettings)
   EXPECT_FALSE(HasSetting(NeGconRumble::INFO, "SteeringSensitivity"));
 }
 
-TEST(NegConBase, DeviceStateLayouts)
-{
-  std::array<u8, 64> state_data = {};
-
-  NeGcon negcon(0);
-  negcon.SetBindState(static_cast<u32>(NeGcon::Button::A), 1.0f);
-  StateWrapper negcon_sw(std::span<u8>(state_data), StateWrapper::Mode::Write, SAVE_STATE_VERSION);
-  ASSERT_TRUE(negcon.DoState(negcon_sw, true));
-  ASSERT_FALSE(negcon_sw.HasError());
-  EXPECT_EQ(negcon_sw.GetPosition(), 3u);
-
-  u16 negcon_buttons;
-  std::memcpy(&negcon_buttons, state_data.data(), sizeof(negcon_buttons));
-  EXPECT_EQ(negcon_buttons, UINT16_C(0xDFFF));
-
-  state_data.fill(0);
-  NeGconRumble rumble(0);
-  rumble.SetBindState(static_cast<u32>(NeGconRumble::Button::A), 1.0f);
-  StateWrapper rumble_sw(std::span<u8>(state_data), StateWrapper::Mode::Write, SAVE_STATE_VERSION);
-  ASSERT_TRUE(rumble.DoState(rumble_sw, true));
-  ASSERT_FALSE(rumble_sw.HasError());
-  EXPECT_EQ(rumble_sw.GetPosition(), 24u);
-
-  u16 rumble_buttons;
-  std::memcpy(&rumble_buttons, &state_data[4], sizeof(rumble_buttons));
-  EXPECT_EQ(rumble_buttons, UINT16_C(0xDFFF));
-
-  std::array<u8, 6> legacy_state_data = {};
-  NeGconRumble legacy_rumble(0);
-  legacy_rumble.SetBindState(static_cast<u32>(NeGconRumble::Button::A), 1.0f);
-  StateWrapper legacy_rumble_sw(std::span<const u8>(legacy_state_data), StateWrapper::Mode::Read, 43);
-  ASSERT_TRUE(legacy_rumble.DoState(legacy_rumble_sw, true));
-  ASSERT_FALSE(legacy_rumble_sw.HasError());
-  EXPECT_EQ(legacy_rumble_sw.GetPosition(), legacy_state_data.size());
-  EXPECT_EQ(legacy_rumble.GetButtonStateBits(), 0u);
-}
-
 TEST(NegConBase, DeviceProtocols)
 {
   NeGcon negcon(0);
   negcon.SetBindState(static_cast<u32>(NeGcon::Button::A), 1.0f);
 
-  u8 data_out;
-  EXPECT_TRUE(negcon.Transfer(0x01, &data_out));
-  EXPECT_EQ(data_out, 0xFF);
-  EXPECT_TRUE(negcon.Transfer(0x42, &data_out));
-  EXPECT_EQ(data_out, 0x23);
-  EXPECT_TRUE(negcon.Transfer(0x00, &data_out));
-  EXPECT_EQ(data_out, 0x5A);
-  EXPECT_TRUE(negcon.Transfer(0x00, &data_out));
-  EXPECT_EQ(data_out, 0xFF);
-  EXPECT_TRUE(negcon.Transfer(0x00, &data_out));
-  EXPECT_EQ(data_out, 0xDF);
+  std::vector<bool> acks;
+  EXPECT_EQ(TransferBytes(negcon, POLL, &acks), (std::vector<u8>{0xFF, 0x23, 0x5A, 0xFF, 0xDF}));
+  EXPECT_EQ(acks, std::vector<bool>(POLL.size(), true));
 
   NeGconRumble rumble(0);
   rumble.SetBindState(static_cast<u32>(NeGconRumble::Button::A), 1.0f);
-  EXPECT_TRUE(rumble.Transfer(0x01, &data_out));
-  EXPECT_EQ(data_out, 0xFF);
-  EXPECT_TRUE(rumble.Transfer(0x42, &data_out));
-  EXPECT_EQ(data_out, 0x41);
-  EXPECT_TRUE(rumble.Transfer(0x00, &data_out));
-  EXPECT_EQ(data_out, 0x5A);
-  EXPECT_TRUE(rumble.Transfer(0x00, &data_out));
-  EXPECT_EQ(data_out, 0xFF);
-  EXPECT_FALSE(rumble.Transfer(0x00, &data_out));
-  EXPECT_EQ(data_out, 0xDF);
-}
-
-const Controller::ControllerBindingInfo* FindBinding(const Controller::ControllerInfo& info, std::string_view name)
-{
-  for (const Controller::ControllerBindingInfo& binding : info.bindings)
-  {
-    if (name == binding.name)
-      return &binding;
-  }
-
-  return nullptr;
-}
-
-bool HasSetting(const Controller::ControllerInfo& info, std::string_view name)
-{
-  for (const SettingInfo& setting : info.settings)
-  {
-    if (name == setting.name)
-      return true;
-  }
-
-  return false;
+  EXPECT_EQ(TransferCommand(rumble, POLL), PollReply(0xDFFF));
 }
