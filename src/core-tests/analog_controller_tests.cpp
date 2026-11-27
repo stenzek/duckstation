@@ -11,7 +11,6 @@
 #include <gtest/gtest.h>
 
 #include <array>
-#include <initializer_list>
 #include <iterator>
 #include <utility>
 #include <vector>
@@ -28,85 +27,19 @@ using HalfAxis = AnalogController::HalfAxis;
 
 static constexpr const char* SECTION = "Pad1";
 
-// Full length commands, for analog and config mode.
-const std::vector<u8> ANALOG_POLL = {0x01, 0x42, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
-const std::vector<u8> ENTER_CONFIG_LONG = {0x01, 0x43, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00};
-
-// Large motor strength for a raw value plus the bias.
-static constexpr float STRENGTH_127 = 0.19662970304489136f;
-static constexpr float STRENGTH_128 = 0.19894525408744812f;
-static constexpr float STRENGTH_136 = 0.2188686728477478f;
-static constexpr float STRENGTH_9 = 0.020053856074810028f;
-
-static constexpr u16 ButtonBit(Button button)
-{
-  return static_cast<u16>(1u << static_cast<u8>(button));
-}
-
-static u16 Pressed(std::initializer_list<Button> buttons)
-{
-  u16 ret = NO_BUTTONS;
-  for (const Button button : buttons)
-    ret &= ~ButtonBit(button);
-  return ret;
-}
-
 static constexpr u32 HalfAxisIndex(HalfAxis axis)
 {
   return static_cast<u32>(Button::Count) + static_cast<u32>(axis);
 }
 
-/// Bind value that gives the raw half-axis value with a sensitivity of 1.
-static float RawHalfAxis(u8 raw)
-{
-  return (static_cast<float>(raw) + 0.5f) / 255.0f;
-}
-
-/// 42h with the given bytes in the motor positions.
-static std::vector<u8> RumblePoll(std::initializer_list<u8> motor_bytes, size_t length = 9)
-{
-  std::vector<u8> ret = {0x01, 0x42, 0x00};
-  ret.insert(ret.end(), motor_bytes);
-  ret.resize(length, 0x00);
-  return ret;
-}
-
-/// 4Dh with the given mapping.
-static std::vector<u8> MapMotorsCommand(std::initializer_list<u8> mapping)
-{
-  std::vector<u8> ret = {0x01, 0x4D, 0x00};
-  ret.insert(ret.end(), mapping);
-  ret.resize(9, 0xFF);
-  return ret;
-}
-
-static std::vector<u8> ConfigReply(std::initializer_list<u8> data)
-{
-  std::vector<u8> ret = {0xFF, 0xF3, 0x5A};
-  ret.insert(ret.end(), data);
-  ret.resize(9, 0x00);
-  return ret;
-}
-
-static std::vector<u8> ConfigCommand(u8 command, u8 param)
-{
-  return {0x01, command, 0x00, param, 0x00, 0x00, 0x00, 0x00, 0x00};
-}
-
-class AnalogControllerTest : public ::testing::Test
+class AnalogControllerTest : public ControllerSettingsTest
 {
 protected:
   void SetUp() override
   {
-    m_old_settings = g_settings;
-    g_settings.apply_compatibility_settings = true;
+    ControllerSettingsTest::SetUp();
     LoadDefaultSettings(m_controller);
   }
-
-  void TearDown() override { g_settings = m_old_settings; }
-
-  /// Without a game, CanStartInAnalogMode() is only true with compatibility settings off.
-  static void SetCanStartInAnalogMode(bool enabled) { g_settings.apply_compatibility_settings = !enabled; }
 
   void LoadSettings(const INISettingsInterface& si) { m_controller.LoadSettings(si, SECTION, false); }
 
@@ -132,7 +65,6 @@ protected:
     EXPECT_EQ(Transfer(ExitConfigModeCommand()), ANALOG_CONFIG_REPLY);
   }
 
-  Settings m_old_settings;
   AnalogController m_controller{0};
 };
 
@@ -187,19 +119,19 @@ TEST_F(AnalogControllerTest, DigitalModePoll)
   EXPECT_EQ(Transfer(EnterConfigModeCommand()), PollReply(Pressed({Button::Cross})));
   std::vector<u8> expected = AnalogPollReply(Pressed({Button::Cross, Button::L3, Button::R3}), 0xFF);
   expected[1] = 0xF3;
-  EXPECT_EQ(Transfer(ANALOG_POLL), expected);
+  EXPECT_EQ(Transfer(LONG_POLL), expected);
 
   // As does analog mode.
   EXPECT_EQ(Transfer(SetAnalogModeCommand()), ANALOG_CONFIG_REPLY);
   EXPECT_EQ(Transfer(ExitConfigModeCommand()), ANALOG_CONFIG_REPLY);
-  EXPECT_EQ(Transfer(ANALOG_POLL), AnalogPollReply(Pressed({Button::Cross, Button::L3, Button::R3}), 0xFF));
+  EXPECT_EQ(Transfer(LONG_POLL), AnalogPollReply(Pressed({Button::Cross, Button::L3, Button::R3}), 0xFF));
 }
 
 TEST_F(AnalogControllerTest, AnalogModePoll)
 {
   EnterAnalogMode(m_controller);
   EXPECT_TRUE(AnalogLED());
-  EXPECT_EQ(Transfer(ANALOG_POLL), AnalogPollReply(NO_BUTTONS));
+  EXPECT_EQ(Transfer(LONG_POLL), AnalogPollReply(NO_BUTTONS));
 
   // RX, RY, LX, LY.
   Press(Button::L1);
@@ -207,7 +139,7 @@ TEST_F(AnalogControllerTest, AnalogModePoll)
   SetHalfAxis(HalfAxis::RUp, 1.0f);
   SetHalfAxis(HalfAxis::LLeft, 1.0f);
   SetHalfAxis(HalfAxis::LDown, 0.5f);
-  EXPECT_EQ(Transfer(ANALOG_POLL), AnalogPollReply(Pressed({Button::L1}), 0xFF, 0x00, 0x00, 0xD4));
+  EXPECT_EQ(Transfer(LONG_POLL), AnalogPollReply(Pressed({Button::L1}), 0xFF, 0x00, 0x00, 0xD4));
   EXPECT_EQ(m_controller.GetAnalogInputBytes(), 0xD40000FFu);
 
   // 43h that doesn't enter config mode is a poll too.
@@ -235,9 +167,9 @@ TEST_F(AnalogControllerTest, ConfigMode)
 
   // In config mode, 42h has the buttons and sticks, 43h doesn't.
   SetHalfAxis(HalfAxis::RLeft, 1.0f);
-  EXPECT_EQ(Transfer(ANALOG_POLL), (std::vector<u8>{0xFF, 0xF3, 0x5A, 0xFF, 0xBF, 0x00, 0x7F, 0x7F, 0x7F}));
+  EXPECT_EQ(Transfer(LONG_POLL), (std::vector<u8>{0xFF, 0xF3, 0x5A, 0xFF, 0xBF, 0x00, 0x7F, 0x7F, 0x7F}));
   EXPECT_EQ(Transfer(ENTER_CONFIG_LONG), ANALOG_CONFIG_REPLY);
-  EXPECT_EQ(Transfer(ANALOG_POLL), (std::vector<u8>{0xFF, 0xF3, 0x5A, 0xFF, 0xBF, 0x00, 0x7F, 0x7F, 0x7F}));
+  EXPECT_EQ(Transfer(LONG_POLL), (std::vector<u8>{0xFF, 0xF3, 0x5A, 0xFF, 0xBF, 0x00, 0x7F, 0x7F, 0x7F}));
 
   // Any value other than 01h leaves.
   EXPECT_EQ(Transfer({0x01, 0x43, 0x00, 0x02, 0x00, 0x00, 0x00, 0x00, 0x00}), ANALOG_CONFIG_REPLY);
@@ -307,7 +239,7 @@ TEST_F(AnalogControllerTest, SetAnalogMode)
   EXPECT_EQ(Transfer(ExitConfigModeCommand()), ANALOG_CONFIG_REPLY);
   ToggleAnalog();
   EXPECT_TRUE(AnalogLED());
-  EXPECT_EQ(Transfer(ANALOG_POLL), AnalogPollReply(NO_BUTTONS));
+  EXPECT_EQ(Transfer(LONG_POLL), AnalogPollReply(NO_BUTTONS));
 
   // Unlock and switch to digital.
   EXPECT_EQ(Transfer(ENTER_CONFIG_LONG), AnalogPollReply(NO_BUTTONS));
@@ -401,7 +333,7 @@ TEST_F(AnalogControllerTest, ConfigTables)
   EXPECT_EQ(Transfer(SetAnalogModeCommand()), ANALOG_CONFIG_REPLY);
   EXPECT_EQ(Transfer(ConfigCommand(0x46, 0x01)), ConfigReply({0x00, 0x00, 0x01, 0x01, 0x01, 0x14}));
   EXPECT_EQ(Transfer(ExitConfigModeCommand()), ANALOG_CONFIG_REPLY);
-  EXPECT_EQ(Transfer(ANALOG_POLL), AnalogPollReply(NO_BUTTONS));
+  EXPECT_EQ(Transfer(LONG_POLL), AnalogPollReply(NO_BUTTONS));
 }
 
 TEST_F(AnalogControllerTest, MapMotors)
@@ -420,13 +352,13 @@ TEST_F(AnalogControllerTest, MapMotors)
   EXPECT_EQ(Transfer(ExitConfigModeCommand()), ANALOG_CONFIG_REPLY);
   EXPECT_EQ(Transfer(RumblePoll({0x01, 0x80}, 5)), PollReply(NO_BUTTONS));
   EXPECT_EQ(SmallMotor(), 1.0f);
-  EXPECT_FLOAT_EQ(LargeMotor(), STRENGTH_136);
+  EXPECT_FLOAT_EQ(LargeMotor(), MotorStrength(136));
 
   // A motor that's no longer mapped is stopped on the last byte.
   EXPECT_EQ(Transfer(EnterConfigModeCommand()), PollReply(NO_BUTTONS));
   const std::vector<u8> tx = MapMotorsCommand({0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF});
   TransferBytes(m_controller, std::vector<u8>(tx.begin(), tx.end() - 1));
-  EXPECT_FLOAT_EQ(LargeMotor(), STRENGTH_136);
+  EXPECT_FLOAT_EQ(LargeMotor(), MotorStrength(136));
   std::vector<bool> acks;
   EXPECT_EQ(TransferBytes(m_controller, {tx.back()}, &acks), std::vector<u8>{0xFF});
   EXPECT_EQ(acks, std::vector<bool>{false});
@@ -456,9 +388,9 @@ TEST_F(AnalogControllerTest, DualShockRumble)
 
   // The large motor is scaled, including the default bias of 8.
   EXPECT_EQ(Transfer(RumblePoll({0x00, 0x80})), AnalogPollReply(NO_BUTTONS));
-  EXPECT_FLOAT_EQ(LargeMotor(), STRENGTH_136);
+  EXPECT_FLOAT_EQ(LargeMotor(), MotorStrength(136));
   EXPECT_EQ(Transfer(RumblePoll({0x00, 0x01})), AnalogPollReply(NO_BUTTONS));
-  EXPECT_FLOAT_EQ(LargeMotor(), STRENGTH_9);
+  EXPECT_FLOAT_EQ(LargeMotor(), MotorStrength(9));
   EXPECT_EQ(Transfer(RumblePoll({0x00, 0xFF})), AnalogPollReply(NO_BUTTONS));
   EXPECT_EQ(LargeMotor(), 1.0f);
   EXPECT_EQ(Transfer(RumblePoll({0x00, 0x00})), AnalogPollReply(NO_BUTTONS));
@@ -477,18 +409,18 @@ TEST_F(AnalogControllerTest, DualShockRumble)
   LoadSettings(si);
   EXPECT_EQ(Transfer(RumblePoll({0x01, 0x80})), AnalogPollReply(NO_BUTTONS));
   EXPECT_EQ(SmallMotor(), 1.0f);
-  EXPECT_FLOAT_EQ(LargeMotor(), STRENGTH_128);
+  EXPECT_FLOAT_EQ(LargeMotor(), MotorStrength(128));
 
   // Each motor uses its own bias.
   si.SetIntValue(SECTION, "LargeMotorVibrationBias", -1);
   LoadSettings(si);
   EXPECT_EQ(SmallMotor(), 1.0f);
-  EXPECT_FLOAT_EQ(LargeMotor(), STRENGTH_127);
+  EXPECT_FLOAT_EQ(LargeMotor(), MotorStrength(127));
   si.SetIntValue(SECTION, "LargeMotorVibrationBias", 8);
   si.SetIntValue(SECTION, "SmallMotorVibrationBias", -128);
   LoadSettings(si);
-  EXPECT_FLOAT_EQ(SmallMotor(), STRENGTH_127);
-  EXPECT_FLOAT_EQ(LargeMotor(), STRENGTH_136);
+  EXPECT_FLOAT_EQ(SmallMotor(), MotorStrength(127));
+  EXPECT_FLOAT_EQ(LargeMotor(), MotorStrength(136));
 }
 
 TEST_F(AnalogControllerTest, DualShockRumble_LastBytes)
@@ -513,7 +445,7 @@ TEST_F(AnalogControllerTest, DualShockRumble_DigitalMode)
   SetupDualShock(false);
   EXPECT_EQ(Transfer(RumblePoll({0x01, 0x80}, 5)), PollReply(NO_BUTTONS));
   EXPECT_EQ(SmallMotor(), 1.0f);
-  EXPECT_FLOAT_EQ(LargeMotor(), STRENGTH_136);
+  EXPECT_FLOAT_EQ(LargeMotor(), MotorStrength(136));
 }
 
 TEST_F(AnalogControllerTest, DualShockRumble_DigitalModeLength)
@@ -543,7 +475,7 @@ TEST_F(AnalogControllerTest, DualShockRumble_DigitalModeLength)
   EXPECT_EQ(Transfer(MapMotorsCommand({0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x01})),
             ConfigReply({0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF}));
   EXPECT_EQ(Transfer(ExitConfigModeCommand()), ANALOG_CONFIG_REPLY);
-  EXPECT_EQ(Transfer(ANALOG_POLL), AnalogPollReply(NO_BUTTONS));
+  EXPECT_EQ(Transfer(LONG_POLL), AnalogPollReply(NO_BUTTONS));
   EXPECT_EQ(Transfer(ENTER_CONFIG_LONG), AnalogPollReply(NO_BUTTONS));
   EXPECT_EQ(Transfer(SetAnalogModeCommand(0x01, 0x00, 0x02)), ANALOG_CONFIG_REPLY);
   EXPECT_EQ(Transfer(MapMotorsCommand({0x00, 0x01})), ConfigReply({0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF}));
@@ -589,7 +521,7 @@ TEST_F(AnalogControllerTest, AnalogButton)
   EXPECT_EQ(m_controller.GetBindState(static_cast<u32>(Button::Analog)), 0.0f);
   Press(Button::Analog, 0.0f);
   EXPECT_TRUE(AnalogLED());
-  EXPECT_EQ(Transfer(ANALOG_POLL), AnalogPollReply(NO_BUTTONS));
+  EXPECT_EQ(Transfer(LONG_POLL), AnalogPollReply(NO_BUTTONS));
   ToggleAnalog();
   EXPECT_FALSE(AnalogLED());
   EXPECT_EQ(Transfer(POLL), PollReply(NO_BUTTONS));
@@ -602,7 +534,7 @@ TEST_F(AnalogControllerTest, AnalogButton)
   EXPECT_FALSE(AnalogLED());
   m_controller.ResetTransferState();
   EXPECT_TRUE(AnalogLED());
-  EXPECT_EQ(Transfer(ANALOG_POLL), AnalogPollReply(NO_BUTTONS));
+  EXPECT_EQ(Transfer(LONG_POLL), AnalogPollReply(NO_BUTTONS));
 
   // Only once.
   m_controller.ResetTransferState();
@@ -617,7 +549,7 @@ TEST_F(AnalogControllerTest, AnalogButton)
   EnterAnalogMode(m_controller);
   ToggleAnalog();
   EXPECT_TRUE(AnalogLED());
-  EXPECT_EQ(Transfer(ANALOG_POLL), AnalogPollReply(NO_BUTTONS));
+  EXPECT_EQ(Transfer(LONG_POLL), AnalogPollReply(NO_BUTTONS));
 }
 
 TEST_F(AnalogControllerTest, AnalogButton_ResetsRumble)
@@ -642,7 +574,7 @@ TEST_F(AnalogControllerTest, AnalogButton_StatusByte)
   // Without DualShock mode, the status byte stays at 5Ah.
   SetCanStartInAnalogMode(true);
   ToggleAnalog();
-  EXPECT_EQ(Transfer(ANALOG_POLL), AnalogPollReply(NO_BUTTONS));
+  EXPECT_EQ(Transfer(LONG_POLL), AnalogPollReply(NO_BUTTONS));
   ToggleAnalog();
   EXPECT_EQ(Transfer(POLL), PollReply(NO_BUTTONS));
 
@@ -652,7 +584,7 @@ TEST_F(AnalogControllerTest, AnalogButton_StatusByte)
   ToggleAnalog();
   std::vector<u8> expected = AnalogPollReply(NO_BUTTONS);
   expected[2] = 0x00;
-  EXPECT_EQ(Transfer(ANALOG_POLL), expected);
+  EXPECT_EQ(Transfer(LONG_POLL), expected);
   ToggleAnalog();
   expected = PollReply(NO_BUTTONS);
   expected[2] = 0x00;
@@ -674,7 +606,7 @@ TEST_F(AnalogControllerTest, AnalogButton_LeavesDualShockMode)
   ToggleAnalog();
   std::vector<u8> expected = AnalogPollReply(NO_BUTTONS);
   expected[2] = 0x00;
-  EXPECT_EQ(Transfer(ANALOG_POLL), expected);
+  EXPECT_EQ(Transfer(LONG_POLL), expected);
 
   ToggleAnalog();
   EXPECT_EQ(Transfer(POLL), PollReply(NO_BUTTONS));
@@ -741,7 +673,7 @@ TEST_F(AnalogControllerTest, Reset_ClearsLock)
   EXPECT_FALSE(AnalogLED());
   ToggleAnalog();
   EXPECT_TRUE(AnalogLED());
-  EXPECT_EQ(Transfer(ANALOG_POLL), AnalogPollReply(NO_BUTTONS));
+  EXPECT_EQ(Transfer(LONG_POLL), AnalogPollReply(NO_BUTTONS));
 }
 
 TEST_F(AnalogControllerTest, ButtonDeadzone)
@@ -773,7 +705,7 @@ TEST_F(AnalogControllerTest, ButtonDeadzone)
     Press(Button::Cross, 0.0f);
     Press(button);
     EXPECT_EQ(m_controller.GetButtonStateBits(), ButtonBit(button)) << i;
-    EXPECT_EQ(Transfer(ANALOG_POLL), AnalogPollReply(Pressed({button}))) << i;
+    EXPECT_EQ(Transfer(LONG_POLL), AnalogPollReply(Pressed({button}))) << i;
     Press(button, 0.0f);
   }
 }
@@ -785,27 +717,27 @@ TEST_F(AnalogControllerTest, Sticks)
   // With the default sensitivity of 1.33.
   SetHalfAxis(HalfAxis::LRight, 0.5f);
   EXPECT_FLOAT_EQ(m_controller.GetBindState(HalfAxisIndex(HalfAxis::LRight)), 169.0f / 255.0f);
-  EXPECT_EQ(Transfer(ANALOG_POLL), AnalogPollReply(NO_BUTTONS, 0x7F, 0x7F, 0xD4, 0x7F));
+  EXPECT_EQ(Transfer(LONG_POLL), AnalogPollReply(NO_BUTTONS, 0x7F, 0x7F, 0xD4, 0x7F));
   SetHalfAxis(HalfAxis::LRight, 1.0f);
-  EXPECT_EQ(Transfer(ANALOG_POLL), AnalogPollReply(NO_BUTTONS, 0x7F, 0x7F, 0xFF, 0x7F));
+  EXPECT_EQ(Transfer(LONG_POLL), AnalogPollReply(NO_BUTTONS, 0x7F, 0x7F, 0xFF, 0x7F));
 
   // Opposing directions cancel out.
   SetHalfAxis(HalfAxis::LLeft, 1.0f);
-  EXPECT_EQ(Transfer(ANALOG_POLL), AnalogPollReply(NO_BUTTONS, 0x7F, 0x7F, 0x7F, 0x7F));
+  EXPECT_EQ(Transfer(LONG_POLL), AnalogPollReply(NO_BUTTONS, 0x7F, 0x7F, 0x7F, 0x7F));
   SetHalfAxis(HalfAxis::LRight, 0.0f);
-  EXPECT_EQ(Transfer(ANALOG_POLL), AnalogPollReply(NO_BUTTONS, 0x7F, 0x7F, 0x00, 0x7F));
+  EXPECT_EQ(Transfer(LONG_POLL), AnalogPollReply(NO_BUTTONS, 0x7F, 0x7F, 0x00, 0x7F));
   SetHalfAxis(HalfAxis::LLeft, 0.0f);
 
   // Up is negative.
   SetHalfAxis(HalfAxis::LUp, 1.0f);
   SetHalfAxis(HalfAxis::RDown, 1.0f);
   SetHalfAxis(HalfAxis::RLeft, 1.0f);
-  EXPECT_EQ(Transfer(ANALOG_POLL), AnalogPollReply(NO_BUTTONS, 0x00, 0xFF, 0x7F, 0x00));
+  EXPECT_EQ(Transfer(LONG_POLL), AnalogPollReply(NO_BUTTONS, 0x00, 0xFF, 0x7F, 0x00));
   EXPECT_EQ(m_controller.GetAnalogInputBytes(), 0x007FFF00u);
 
   // Indices past the half axes are ignored.
   m_controller.SetBindState(HalfAxisIndex(HalfAxis::Count), 1.0f);
-  EXPECT_EQ(Transfer(ANALOG_POLL), AnalogPollReply(NO_BUTTONS, 0x00, 0xFF, 0x7F, 0x00));
+  EXPECT_EQ(Transfer(LONG_POLL), AnalogPollReply(NO_BUTTONS, 0x00, 0xFF, 0x7F, 0x00));
   EXPECT_EQ(SmallMotor(), 0.0f);
 
   // Sensitivity of 1.
@@ -817,7 +749,7 @@ TEST_F(AnalogControllerTest, Sticks)
   SetHalfAxis(HalfAxis::RLeft, 0.0f);
   SetHalfAxis(HalfAxis::LRight, 0.5f);
   SetHalfAxis(HalfAxis::RUp, 0.5f);
-  EXPECT_EQ(Transfer(ANALOG_POLL), AnalogPollReply(NO_BUTTONS, 0x7F, 0x40, 0xBF, 0x7F));
+  EXPECT_EQ(Transfer(LONG_POLL), AnalogPollReply(NO_BUTTONS, 0x7F, 0x40, 0xBF, 0x7F));
 }
 
 TEST_F(AnalogControllerTest, InvertSticks)
@@ -848,7 +780,7 @@ TEST_F(AnalogControllerTest, InvertSticks)
       SetHalfAxis(axis, 1.0f);
     }
 
-    EXPECT_EQ(Transfer(ANALOG_POLL), AnalogPollReply(NO_BUTTONS, c.axes[0], c.axes[1], c.axes[2], c.axes[3]))
+    EXPECT_EQ(Transfer(LONG_POLL), AnalogPollReply(NO_BUTTONS, c.axes[0], c.axes[1], c.axes[2], c.axes[3]))
       << "left " << c.left << " right " << c.right;
   }
 }
@@ -863,25 +795,25 @@ TEST_F(AnalogControllerTest, StickDeadzone)
 
   // Inside the circular deadzone, both axes of the stick are centred.
   SetHalfAxis(HalfAxis::LDown, 0.2f);
-  EXPECT_EQ(Transfer(ANALOG_POLL), AnalogPollReply(NO_BUTTONS));
+  EXPECT_EQ(Transfer(LONG_POLL), AnalogPollReply(NO_BUTTONS));
   SetHalfAxis(HalfAxis::LRight, 0.2f);
-  EXPECT_EQ(Transfer(ANALOG_POLL), AnalogPollReply(NO_BUTTONS));
+  EXPECT_EQ(Transfer(LONG_POLL), AnalogPollReply(NO_BUTTONS));
 
   // Leaving it through one axis restores the other one.
   SetHalfAxis(HalfAxis::LRight, 0.5f);
-  EXPECT_EQ(Transfer(ANALOG_POLL), AnalogPollReply(NO_BUTTONS, 0x7F, 0x7F, 0xD4, 0xA1));
+  EXPECT_EQ(Transfer(LONG_POLL), AnalogPollReply(NO_BUTTONS, 0x7F, 0x7F, 0xD4, 0xA1));
   SetHalfAxis(HalfAxis::LDown, 0.21f);
-  EXPECT_EQ(Transfer(ANALOG_POLL), AnalogPollReply(NO_BUTTONS, 0x7F, 0x7F, 0xD4, 0xA3));
+  EXPECT_EQ(Transfer(LONG_POLL), AnalogPollReply(NO_BUTTONS, 0x7F, 0x7F, 0xD4, 0xA3));
 
   // The other stick is separate.
   SetHalfAxis(HalfAxis::RRight, 0.2f);
-  EXPECT_EQ(Transfer(ANALOG_POLL), AnalogPollReply(NO_BUTTONS, 0x7F, 0x7F, 0xD4, 0xA3));
+  EXPECT_EQ(Transfer(LONG_POLL), AnalogPollReply(NO_BUTTONS, 0x7F, 0x7F, 0xD4, 0xA3));
   SetHalfAxis(HalfAxis::RRight, 0.5f);
-  EXPECT_EQ(Transfer(ANALOG_POLL), AnalogPollReply(NO_BUTTONS, 0xD4, 0x7F, 0xD4, 0xA3));
+  EXPECT_EQ(Transfer(LONG_POLL), AnalogPollReply(NO_BUTTONS, 0xD4, 0x7F, 0xD4, 0xA3));
 
   // Back inside.
   SetHalfAxis(HalfAxis::LRight, 0.0f);
-  EXPECT_EQ(Transfer(ANALOG_POLL), AnalogPollReply(NO_BUTTONS, 0xD4, 0x7F, 0x7F, 0x7F));
+  EXPECT_EQ(Transfer(LONG_POLL), AnalogPollReply(NO_BUTTONS, 0xD4, 0x7F, 0x7F, 0x7F));
 }
 
 TEST_F(AnalogControllerTest, AnalogDPadInDigitalMode)
@@ -921,10 +853,10 @@ TEST_F(AnalogControllerTest, AnalogDPadInDigitalMode)
   SetHalfAxis(HalfAxis::LLeft, 1.0f);
   EXPECT_EQ(Transfer(POLL), PollReply(Pressed({Button::Left})));
   EXPECT_EQ(Transfer(EnterConfigModeCommand()), PollReply(Pressed({Button::Left})));
-  EXPECT_EQ(Transfer(ANALOG_POLL), (std::vector<u8>{0xFF, 0xF3, 0x5A, 0xFF, 0xFF, 0x7F, 0x7F, 0x00, 0x7F}));
+  EXPECT_EQ(Transfer(LONG_POLL), (std::vector<u8>{0xFF, 0xF3, 0x5A, 0xFF, 0xFF, 0x7F, 0x7F, 0x00, 0x7F}));
   EXPECT_EQ(Transfer(SetAnalogModeCommand()), ANALOG_CONFIG_REPLY);
   EXPECT_EQ(Transfer(ExitConfigModeCommand()), ANALOG_CONFIG_REPLY);
-  EXPECT_EQ(Transfer(ANALOG_POLL), AnalogPollReply(NO_BUTTONS, 0x7F, 0x7F, 0x00, 0x7F));
+  EXPECT_EQ(Transfer(LONG_POLL), AnalogPollReply(NO_BUTTONS, 0x7F, 0x7F, 0x00, 0x7F));
 
   // Or with the setting off.
   AnalogController controller(0);
@@ -967,7 +899,7 @@ TEST_F(AnalogControllerTest, AnalogShoulderAndTriggerButtons)
 
     for (u32 analog = 0; analog < 2; analog++)
     {
-      const std::vector<u8>& tx = analog ? ANALOG_POLL : POLL;
+      const std::vector<u8>& tx = analog ? LONG_POLL : POLL;
       const auto reply = [analog](u16 pressed) {
         return analog ? AnalogPollReply(static_cast<u16>(~pressed), 0x00, 0x7F, 0x7F, 0x7F) :
                         PollReply(static_cast<u16>(~pressed));
@@ -1024,7 +956,7 @@ TEST_F(AnalogControllerTest, DisableSOCD)
   EXPECT_EQ(Transfer(POLL), PollReply(Pressed({Button::Down, Button::Right})));
 
   ToggleAnalog();
-  EXPECT_EQ(Transfer(ANALOG_POLL), AnalogPollReply(Pressed({Button::Down, Button::Left}), 0x7F, 0x7F, 0xFF, 0x7F));
+  EXPECT_EQ(Transfer(LONG_POLL), AnalogPollReply(Pressed({Button::Down, Button::Left}), 0x7F, 0x7F, 0xFF, 0x7F));
 }
 
 TEST_F(AnalogControllerTest, MemberDefaults)
@@ -1044,8 +976,7 @@ TEST_F(AnalogControllerTest, MemberDefaults)
   SetCanStartInAnalogMode(true);
   controller.Reset();
   EXPECT_EQ(controller.GetBindState(GetBindIndex(AnalogController::INFO, "AnalogLED")), 1.0f);
-  EXPECT_EQ(TransferCommand(controller, ANALOG_POLL),
-            AnalogPollReply(Pressed({Button::Square}), 0x7F, 0x7F, 0x00, 0x7F));
+  EXPECT_EQ(TransferCommand(controller, LONG_POLL), AnalogPollReply(Pressed({Button::Square}), 0x7F, 0x7F, 0x00, 0x7F));
 }
 
 TEST_F(AnalogControllerTest, SaveState_MapMotors)
@@ -1068,7 +999,7 @@ TEST_F(AnalogControllerTest, SaveState_MapMotors)
     EXPECT_EQ(TransferCommand(*controller, ExitConfigModeCommand()), ANALOG_CONFIG_REPLY);
     EXPECT_EQ(TransferCommand(*controller, RumblePoll({0x01, 0x80})), AnalogPollReply(NO_BUTTONS));
     EXPECT_EQ(controller->GetBindState(GetBindIndex(AnalogController::INFO, "SmallMotor")), 1.0f);
-    EXPECT_FLOAT_EQ(controller->GetBindState(GetBindIndex(AnalogController::INFO, "LargeMotor")), STRENGTH_136);
+    EXPECT_FLOAT_EQ(controller->GetBindState(GetBindIndex(AnalogController::INFO, "LargeMotor")), MotorStrength(136));
   }
 
   // The motors are restored too.
@@ -1076,7 +1007,7 @@ TEST_F(AnalogControllerTest, SaveState_MapMotors)
   LoadDefaultSettings(loaded2);
   LoadState(loaded2, SaveState(m_controller), true);
   EXPECT_EQ(loaded2.GetBindState(GetBindIndex(AnalogController::INFO, "SmallMotor")), 1.0f);
-  EXPECT_FLOAT_EQ(loaded2.GetBindState(GetBindIndex(AnalogController::INFO, "LargeMotor")), STRENGTH_136);
+  EXPECT_FLOAT_EQ(loaded2.GetBindState(GetBindIndex(AnalogController::INFO, "LargeMotor")), MotorStrength(136));
   EXPECT_EQ(TransferCommand(loaded2, RumblePoll({0x00, 0x00})), AnalogPollReply(NO_BUTTONS));
   EXPECT_EQ(loaded2.GetBindState(GetBindIndex(AnalogController::INFO, "SmallMotor")), 0.0f);
 }
@@ -1100,7 +1031,7 @@ TEST_F(AnalogControllerTest, SaveState_SetAnalogMode)
   // Locked.
   loaded.SetBindState(static_cast<u32>(Button::Analog), 1.0f);
   EXPECT_EQ(loaded.GetBindState(GetBindIndex(AnalogController::INFO, "AnalogLED")), 1.0f);
-  EXPECT_EQ(TransferCommand(loaded, ANALOG_POLL), AnalogPollReply(NO_BUTTONS));
+  EXPECT_EQ(TransferCommand(loaded, LONG_POLL), AnalogPollReply(NO_BUTTONS));
 }
 
 TEST_F(AnalogControllerTest, SaveState_InputState)
@@ -1116,7 +1047,7 @@ TEST_F(AnalogControllerTest, SaveState_InputState)
   loaded.SetBindState(static_cast<u32>(Button::Circle), 1.0f);
   loaded.SetBindState(HalfAxisIndex(HalfAxis::RDown), 1.0f);
   LoadState(loaded, state, false);
-  EXPECT_EQ(TransferCommand(loaded, ANALOG_POLL), AnalogPollReply(Pressed({Button::Circle}), 0x7F, 0xFF, 0x7F, 0x7F));
+  EXPECT_EQ(TransferCommand(loaded, LONG_POLL), AnalogPollReply(Pressed({Button::Circle}), 0x7F, 0xFF, 0x7F, 0x7F));
   LoadState(loaded, state, true);
-  EXPECT_EQ(TransferCommand(loaded, ANALOG_POLL), AnalogPollReply(Pressed({Button::Cross}), 0x7F, 0x7F, 0xFF, 0x7F));
+  EXPECT_EQ(TransferCommand(loaded, LONG_POLL), AnalogPollReply(Pressed({Button::Cross}), 0x7F, 0x7F, 0xFF, 0x7F));
 }

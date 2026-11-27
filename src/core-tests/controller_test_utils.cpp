@@ -12,14 +12,26 @@
 
 namespace ControllerTestUtils {
 
+float RawHalfAxis(u8 raw)
+{
+  return (static_cast<float>(raw) + 0.5f) / 255.0f;
+}
+
+std::vector<u8> DeviceReply(u8 id, u16 buttons, std::initializer_list<u8> extra)
+{
+  std::vector<u8> ret = {0xFF, id, 0x5A, Truncate8(buttons), Truncate8(buttons >> 8)};
+  ret.insert(ret.end(), extra);
+  return ret;
+}
+
 std::vector<u8> PollReply(u16 buttons)
 {
-  return {0xFF, 0x41, 0x5A, Truncate8(buttons), Truncate8(buttons >> 8)};
+  return DeviceReply(0x41, buttons);
 }
 
 std::vector<u8> AnalogPollReply(u16 buttons, u8 rx, u8 ry, u8 lx, u8 ly)
 {
-  return {0xFF, 0x73, 0x5A, Truncate8(buttons), Truncate8(buttons >> 8), rx, ry, lx, ly};
+  return DeviceReply(0x73, buttons, {rx, ry, lx, ly});
 }
 
 Block DigitalBlock(u16 buttons)
@@ -45,6 +57,35 @@ std::vector<u8> ExitConfigModeCommand(u8 first)
 std::vector<u8> SetAnalogModeCommand(u8 first, u8 analog, u8 lock)
 {
   return {first, 0x44, 0x00, analog, lock, 0x00, 0x00, 0x00, 0x00};
+}
+
+std::vector<u8> ConfigCommand(u8 command, u8 param)
+{
+  return {0x01, command, 0x00, param, 0x00, 0x00, 0x00, 0x00, 0x00};
+}
+
+std::vector<u8> ConfigReply(std::initializer_list<u8> data)
+{
+  std::vector<u8> ret = {0xFF, 0xF3, 0x5A};
+  ret.insert(ret.end(), data);
+  ret.resize(9, 0x00);
+  return ret;
+}
+
+std::vector<u8> RumblePoll(std::initializer_list<u8> motor_bytes, size_t length)
+{
+  std::vector<u8> ret = {0x01, 0x42, 0x00};
+  ret.insert(ret.end(), motor_bytes);
+  ret.resize(length, 0x00);
+  return ret;
+}
+
+std::vector<u8> MapMotorsCommand(std::initializer_list<u8> mapping)
+{
+  std::vector<u8> ret = {0x01, 0x4D, 0x00};
+  ret.insert(ret.end(), mapping);
+  ret.resize(9, 0xFF);
+  return ret;
 }
 
 std::vector<u8> TransferBytes(Controller& controller, const std::vector<u8>& tx, std::vector<bool>* acks)
@@ -88,6 +129,24 @@ void EnterAnalogMode(Controller& controller)
   EXPECT_EQ(TransferCommand(controller, EnterConfigModeCommand()), PollReply(NO_BUTTONS));
   EXPECT_EQ(TransferCommand(controller, SetAnalogModeCommand()), ANALOG_CONFIG_REPLY);
   EXPECT_EQ(TransferCommand(controller, ExitConfigModeCommand()), ANALOG_CONFIG_REPLY);
+}
+
+void ExpectRejectedBytes(Controller& controller, std::initializer_list<u8> bad_commands, u8 bad_command_reply,
+                         const std::vector<u8>& poll, const std::vector<u8>& poll_reply)
+{
+  for (const u8 first : {0x00, 0x02, 0x42, 0x81, 0xFF})
+  {
+    EXPECT_EQ(TransferCommand(controller, {first}), std::vector<u8>{0xFF}) << "first byte 0x" << std::hex << u32(first);
+    EXPECT_EQ(TransferCommand(controller, poll), poll_reply) << "after first byte 0x" << std::hex << u32(first);
+  }
+
+  for (const u8 command : bad_commands)
+  {
+    EXPECT_EQ(TransferCommand(controller, {0x01, command}), (std::vector<u8>{0xFF, bad_command_reply}))
+      << "command 0x" << std::hex << u32(command);
+    controller.ResetTransferState();
+    EXPECT_EQ(TransferCommand(controller, poll), poll_reply) << "after command 0x" << std::hex << u32(command);
+  }
 }
 
 std::vector<u8> SaveState(Controller& controller)
@@ -141,6 +200,22 @@ u32 GetBindIndex(const Controller::ControllerInfo& info, std::string_view name)
   const Controller::ControllerBindingInfo* binding = FindBinding(info, name);
   EXPECT_NE(binding, nullptr) << name;
   return binding ? binding->bind_index : 0xFFFFFFFFu;
+}
+
+void ControllerSettingsTest::SetUp()
+{
+  m_old_settings = g_settings;
+  g_settings.apply_compatibility_settings = true;
+}
+
+void ControllerSettingsTest::TearDown()
+{
+  g_settings = m_old_settings;
+}
+
+void ControllerSettingsTest::SetCanStartInAnalogMode(bool enabled)
+{
+  g_settings.apply_compatibility_settings = !enabled;
 }
 
 void PadTest::SetUpTestSuite()

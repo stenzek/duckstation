@@ -9,7 +9,6 @@
 
 #include <gtest/gtest.h>
 
-#include <initializer_list>
 #include <memory>
 #include <vector>
 
@@ -21,19 +20,6 @@ using namespace ControllerTestUtils;
 namespace {
 
 using Button = DigitalController::Button;
-
-static constexpr u16 ButtonBit(Button button)
-{
-  return static_cast<u16>(1u << static_cast<u8>(button));
-}
-
-static u16 Pressed(std::initializer_list<Button> buttons)
-{
-  u16 ret = NO_BUTTONS;
-  for (const Button button : buttons)
-    ret &= ~ButtonBit(button);
-  return ret;
-}
 
 static void Press(Controller& controller, Button button, float value = 1.0f)
 {
@@ -64,20 +50,8 @@ TEST(DigitalController, RejectedBytes)
   DigitalController controller(0, 0xFFFF);
   LoadDefaultSettings(controller);
 
-  for (const u8 first : {0x00, 0x02, 0x42, 0x81, 0xFF})
-  {
-    EXPECT_EQ(TransferCommand(controller, {first}), std::vector<u8>{0xFF}) << "first byte 0x" << std::hex << u32(first);
-    EXPECT_EQ(TransferCommand(controller, POLL), PollReply(NO_BUTTONS));
-  }
-
   // The ID byte is still sent for other commands, but not ACKed.
-  for (const u8 command : {0x00, 0x43, 0x44, 0x45, 0x4D, 0x53})
-  {
-    EXPECT_EQ(TransferCommand(controller, {0x01, command}), (std::vector<u8>{0xFF, 0x41}))
-      << "command 0x" << std::hex << u32(command);
-    controller.ResetTransferState();
-    EXPECT_EQ(TransferCommand(controller, POLL), PollReply(NO_BUTTONS));
-  }
+  ExpectRejectedBytes(controller, {0x00, 0x43, 0x44, 0x45, 0x4D, 0x53}, 0x41, POLL, PollReply(NO_BUTTONS));
 
   // Current behaviour: a rejected command leaves the pad waiting for a command, until the transfer state is reset.
   EXPECT_EQ(TransferCommand(controller, {0x01, 0x43}), (std::vector<u8>{0xFF, 0x41}));
@@ -238,26 +212,18 @@ TEST(DigitalController, SaveState)
   LoadDefaultSettings(controller);
   Press(controller, Button::Circle);
 
-  std::vector<u8> state;
-
   // Partway through a poll, the rest of it continues after loading.
-  const std::vector<u8> reply = PollReply(Pressed({Button::Circle}));
-  for (size_t len = 1; len < POLL.size(); len++)
-  {
-    TransferBytes(controller, std::vector<u8>(POLL.begin(), POLL.begin() + len));
-    state = SaveState(controller);
-    controller.ResetTransferState();
-
-    DigitalController loaded(0, 0xFFFF);
-    LoadDefaultSettings(loaded);
-    LoadState(loaded, state, true);
-    EXPECT_EQ(TransferCommand(loaded, std::vector<u8>(POLL.begin() + len, POLL.end())),
-              std::vector<u8>(reply.begin() + len, reply.end()))
-      << "after " << len;
-  }
+  ExpectResumesAfterLoad(
+    controller,
+    [] {
+      auto loaded = std::make_unique<DigitalController>(0, 0xFFFF);
+      LoadDefaultSettings(*loaded);
+      return loaded;
+    },
+    POLL, PollReply(Pressed({Button::Circle})));
 
   // Input state is only loaded if asked to.
-  state = SaveState(controller);
+  const std::vector<u8> state = SaveState(controller);
   DigitalController loaded(0, 0xFFFF);
   LoadDefaultSettings(loaded);
   Press(loaded, Button::Square);

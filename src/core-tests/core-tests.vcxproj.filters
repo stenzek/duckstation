@@ -3,6 +3,7 @@
   <ItemGroup>
     <ClCompile Include="..\..\dep\googletest\src\gtest_main.cc" />
     <ClCompile Include="analog_controller_tests.cpp" />
+    <ClCompile Include="analog_joystick_tests.cpp" />
     <ClCompile Include="cdrom_tests.cpp" />
     <ClCompile Include="cheats_tests.cpp" />
     <ClCompile Include="controller_helpers_tests.cpp" />
@@ -11,6 +12,7 @@
     <ClCompile Include="cpu_execution_tests.cpp" />
     <ClCompile Include="cpu_pgxp_tests.cpp" />
     <ClCompile Include="cpu_test_harness.cpp" />
+    <ClCompile Include="ddgo_controller_tests.cpp" />
     <ClCompile Include="digital_controller_tests.cpp" />
     <ClCompile Include="dma_tests.cpp" />
     <ClCompile Include="fullscreenui_widgets_tests.cpp" />
@@ -19,12 +21,14 @@
     <ClCompile Include="gpu_tests.cpp" />
     <ClCompile Include="gte_tests.cpp" />
     <ClCompile Include="gte_timing_tests.cpp" />
+    <ClCompile Include="jogcon_tests.cpp" />
     <ClCompile Include="stub_host.cpp" />
     <ClCompile Include="spu_tests.cpp" />
     <ClCompile Include="lightgun_controller_tests.cpp" />
     <ClCompile Include="macro_sequence_tests.cpp" />
     <ClCompile Include="negcon_base_tests.cpp" />
     <ClCompile Include="pad_tests.cpp" />
+    <ClCompile Include="playstation_mouse_tests.cpp" />
     <ClCompile Include="psxdiag_tests.cpp" />
     <ClCompile Include="mdec_tests.cpp" />
     <ClCompile Include="timers_tests.cpp" />

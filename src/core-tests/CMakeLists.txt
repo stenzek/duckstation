@@ -3,6 +3,7 @@
 
 add_executable(core-tests
   analog_controller_tests.cpp
+  analog_joystick_tests.cpp
   bus_tests.cpp
   cdrom_tests.cpp
   cheats_tests.cpp
@@ -13,6 +14,7 @@ add_executable(core-tests
   cpu_execution_tests.cpp
   cpu_pgxp_tests.cpp
   cpu_test_harness.cpp
+  ddgo_controller_tests.cpp
   cpu_test_harness.h
   digital_controller_tests.cpp
   dma_tests.cpp
@@ -22,11 +24,13 @@ add_executable(core-tests
   gpu_tests.cpp
   gte_tests.cpp
   gte_timing_tests.cpp
+  jogcon_tests.cpp
   lightgun_controller_tests.cpp
   macro_sequence_tests.cpp
   mdec_tests.cpp
   negcon_base_tests.cpp
   pad_tests.cpp
+  playstation_mouse_tests.cpp
   psxdiag_tests.cpp
   spu_tests.cpp
   stub_host.cpp
