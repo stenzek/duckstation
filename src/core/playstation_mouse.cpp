@@ -96,7 +96,7 @@ void PlayStationMouse::SetBindState(u32 index, float value)
 
 u32 PlayStationMouse::GetButtonStateBits() const
 {
-  return m_button_state;
+  return m_button_state ^ 0xFFFF;
 }
 
 void PlayStationMouse::ResetTransferState()
@@ -151,7 +151,8 @@ bool PlayStationMouse::Transfer(const u8 data_in, u8* data_out)
 
     case TransferState::ButtonsMSB:
     {
-      *data_out = Truncate8(m_button_state >> 8);
+      // Bits 8-9 always read as 0.
+      *data_out = Truncate8(m_button_state >> 8) & 0xFCu;
       m_transfer_state = TransferState::DeltaX;
       return true;
     }

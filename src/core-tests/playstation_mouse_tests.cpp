@@ -27,9 +27,10 @@ const std::vector<u8> MOUSE_POLL = {0x01, 0x42, 0x00, 0x00, 0x00, 0x00, 0x00};
 static constexpr u16 LEFT_BIT = 1u << 11;
 static constexpr u16 RIGHT_BIT = 1u << 10;
 
+/// Bits 8-9 always read as 0.
 static std::vector<u8> MouseReply(u16 buttons, s8 dx = 0, s8 dy = 0)
 {
-  return DeviceReply(0x12, buttons, {static_cast<u8>(dx), static_cast<u8>(dy)});
+  return DeviceReply(0x12, buttons & 0xFCFF, {static_cast<u8>(dx), static_cast<u8>(dy)});
 }
 
 static void Move(Controller& controller, float dx, float dy)
@@ -54,7 +55,8 @@ TEST(PlayStationMouse, Poll)
   EXPECT_EQ(mouse.GetType(), ControllerType::PlayStationMouse);
   EXPECT_FALSE(mouse.GetAnalogInputBytes().has_value());
 
-  EXPECT_EQ(TransferCommand(mouse, MOUSE_POLL), MouseReply(NO_BUTTONS));
+  // Unused button bits read as 1, except bits 8-9 which read as 0.
+  EXPECT_EQ(TransferCommand(mouse, MOUSE_POLL), (std::vector<u8>{0xFF, 0x12, 0x5A, 0xFF, 0xFC, 0x00, 0x00}));
 
   // Back-to-back polls don't need a reset, and the bytes after 42h are ignored.
   EXPECT_EQ(TransferCommand(mouse, {0x01, 0x42, 0xFF, 0x5A, 0x01, 0x02, 0x03}), MouseReply(NO_BUTTONS));
@@ -107,12 +109,11 @@ TEST(PlayStationMouse, Buttons)
     EXPECT_EQ(mouse.GetBindState(index), 1.0f);
     EXPECT_EQ(TransferCommand(mouse, MOUSE_POLL), MouseReply(static_cast<u16>(~bit)));
 
-    // Current behaviour: GetButtonStateBits() is active low, unlike the pads.
-    EXPECT_EQ(mouse.GetButtonStateBits(), static_cast<u16>(~bit));
+    EXPECT_EQ(mouse.GetButtonStateBits(), bit);
 
     mouse.SetBindState(index, 0.0f);
     EXPECT_EQ(mouse.GetBindState(index), 0.0f);
-    EXPECT_EQ(mouse.GetButtonStateBits(), NO_BUTTONS);
+    EXPECT_EQ(mouse.GetButtonStateBits(), 0u);
   }
 
   // The pointer bindings don't read back.
