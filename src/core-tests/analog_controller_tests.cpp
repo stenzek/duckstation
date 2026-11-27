@@ -1030,19 +1030,23 @@ TEST_F(AnalogControllerTest, DisableSOCD)
 
 TEST_F(AnalogControllerTest, MemberDefaults)
 {
-  // Current behaviour: without LoadSettings(), the deadzone is zero so releasing a button presses it, and the analog
-  // button toggles on release. Automatic analog mode and the stick D-pad are off.
+  // Without LoadSettings(), the defaults are the same as the settings'.
   AnalogController controller(0);
   controller.SetBindState(static_cast<u32>(Button::Cross), 0.0f);
-  EXPECT_EQ(controller.GetBindState(static_cast<u32>(Button::Cross)), 1.0f);
-  controller.SetBindState(static_cast<u32>(Button::Analog), 0.0f);
-  EXPECT_EQ(controller.GetBindState(GetBindIndex(AnalogController::INFO, "AnalogLED")), 1.0f);
+  controller.SetBindState(static_cast<u32>(Button::Circle), 0.24f);
+  controller.SetBindState(static_cast<u32>(Button::Square), 0.25f);
+  EXPECT_EQ(controller.GetButtonStateBits(), ButtonBit(Button::Square));
+  controller.SetBindState(static_cast<u32>(Button::Analog), 0.24f);
+  EXPECT_EQ(controller.GetBindState(GetBindIndex(AnalogController::INFO, "AnalogLED")), 0.0f);
 
+  // Automatic analog mode and the stick D-pad are on.
+  controller.SetBindState(HalfAxisIndex(HalfAxis::LLeft), 1.0f);
+  EXPECT_EQ(TransferCommand(controller, POLL), PollReply(Pressed({Button::Square, Button::Left})));
   SetCanStartInAnalogMode(true);
   controller.Reset();
-  EXPECT_EQ(controller.GetBindState(GetBindIndex(AnalogController::INFO, "AnalogLED")), 0.0f);
-  controller.SetBindState(HalfAxisIndex(HalfAxis::LLeft), 1.0f);
-  EXPECT_EQ(TransferCommand(controller, POLL), PollReply(Pressed({Button::Cross})));
+  EXPECT_EQ(controller.GetBindState(GetBindIndex(AnalogController::INFO, "AnalogLED")), 1.0f);
+  EXPECT_EQ(TransferCommand(controller, ANALOG_POLL),
+            AnalogPollReply(Pressed({Button::Square}), 0x7F, 0x7F, 0x00, 0x7F));
 }
 
 TEST_F(AnalogControllerTest, SaveState_MapMotors)

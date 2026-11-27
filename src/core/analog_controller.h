@@ -133,13 +133,13 @@ private:
 
   float m_analog_deadzone = 0.0f;
   float m_analog_sensitivity = 1.33f;
-  float m_button_deadzone = 0.0f;
+  float m_button_deadzone = DEFAULT_BUTTON_DEADZONE;
   std::array<s16, NUM_MOTORS> m_vibration_bias{DEFAULT_SMALL_MOTOR_VIBRATION_BIAS, DEFAULT_LARGE_MOTOR_VIBRATION_BIAS};
   u8 m_invert_left_stick = 0;
   u8 m_invert_right_stick = 0;
 
-  bool m_force_analog_on_reset : 1 = false;
-  bool m_analog_dpad_in_digital_mode : 1 = false;
+  bool m_force_analog_on_reset : 1 = true;
+  bool m_analog_dpad_in_digital_mode : 1 = true;
   bool m_disable_socd : 1 = false;
   u8 m_analog_shoulder_buttons = 0;
   u8 m_analog_trigger_buttons = 0;
