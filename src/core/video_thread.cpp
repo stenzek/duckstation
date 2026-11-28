@@ -860,6 +860,7 @@ bool VideoThread::CreateDeviceOnThread(RenderAPI api, bool fullscreen, bool star
   s_state.render_window_info.surface_height = std::max<u16>(s_state.render_window_info.surface_height, 1);
   s_state.per_present_vsync = g_gpu_device->GetFeatures().per_present_vsync;
 
+  SetRunIdleReason(RunIdleReason::NoSurface, !g_gpu_device->HasMainSwapChain());
   UpdateRunIdle();
 
   // Switch to borderless if exclusive failed.
@@ -1593,6 +1594,7 @@ void VideoThread::RecreateRenderWindowOnThread(bool fullscreen, bool allow_exclu
   }
 
   g_gpu_device->DestroyMainSwapChain();
+  SetRunIdleReason(RunIdleReason::NoSurface, true);
 
   Error error;
   std::optional<WindowInfo> wi =
@@ -1613,6 +1615,8 @@ void VideoThread::RecreateRenderWindowOnThread(bool fullscreen, bool allow_exclu
       Host::ReportFatalError("Failed to change window after update", error.GetDescription());
       return;
     }
+
+    SetRunIdleReason(RunIdleReason::NoSurface, false);
   }
   else
   {
@@ -1733,7 +1737,7 @@ void VideoThread::SetRunIdleReason(RunIdleReason reason, bool enabled)
   {
     static constexpr const std::array reason_strings = {
       "NoGPUBackend",        "SystemPaused",        "OSDMessagesActive",         "FullscreenUIActive",
-      "NotificationsActive", "LoadingScreenActive", "AchievementOverlaysActive",
+      "NotificationsActive", "LoadingScreenActive", "AchievementOverlaysActive", "NoSurface",
     };
     for (u32 i = 0; i < reason_strings.size(); ++i)
     {
@@ -1764,16 +1768,19 @@ void VideoThread::UpdateRunIdle()
   DebugAssert(IsOnThread());
 
   // We require either invalid-system or paused for run idle.
+  // NoSurface blocks run idle instead of activating it, there's nothing to present to.
   static constexpr u8 REQUIRE_MASK = static_cast<u8>(RunIdleReason::NoGPUBackend) |
                                      static_cast<u8>(RunIdleReason::SystemPaused) |
                                      static_cast<u8>(RunIdleReason::LoadingScreenActive);
+  static constexpr u8 DISALLOW_MASK = static_cast<u8>(RunIdleReason::NoSurface);
   static constexpr u8 ACTIVATE_MASK =
     static_cast<u8>(RunIdleReason::OSDMessagesActive) | static_cast<u8>(RunIdleReason::FullscreenUIActive) |
     static_cast<u8>(RunIdleReason::NotificationsActive) | static_cast<u8>(RunIdleReason::LoadingScreenActive) |
     static_cast<u8>(RunIdleReason::AchievementOverlaysActive);
 
-  const bool new_flag = (g_gpu_device && ((s_state.run_idle_reasons & REQUIRE_MASK) != 0) &&
-                         ((s_state.run_idle_reasons & ACTIVATE_MASK) != 0));
+  const bool new_flag =
+    (g_gpu_device && ((s_state.run_idle_reasons & REQUIRE_MASK) != 0) &&
+     ((s_state.run_idle_reasons & ACTIVATE_MASK) != 0) && ((s_state.run_idle_reasons & DISALLOW_MASK) == 0));
   if (s_state.run_idle_flag == new_flag)
     return;
 

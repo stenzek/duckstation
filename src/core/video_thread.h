@@ -39,6 +39,7 @@ enum class RunIdleReason : u8
   NotificationsActive = (1 << 4),
   LoadingScreenActive = (1 << 5),
   AchievementOverlaysActive = (1 << 6),
+  NoSurface = (1 << 7),
 };
 
 /// Starts Big Picture UI.
