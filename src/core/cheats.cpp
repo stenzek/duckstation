@@ -3673,175 +3673,162 @@ void Cheats::GamesharkCheatCode::Apply() const
       case InstructionCode::ExtCheatRegisters: // 51
       {
         const u32 poke_value = inst.value32;
-        const u8 cht_reg_no1 = Truncate8(inst.address & 0xFFu);
-        const u8 cht_reg_no2 = Truncate8((inst.address & 0xFF00u) >> 8);
-        const u8 cht_reg_no3 = Truncate8(inst.value32 & 0xFFu);
-        const u8 sub_type = Truncate8((inst.address & 0xFF0000u) >> 16);
-        const u16 cht_offset = Truncate16((inst.value32 & 0xFFFF0000u) >> 16);
+        const u8 reg1_index = Truncate8(inst.address.GetValue());
+        const u8 reg2_index = Truncate8(inst.address.GetValue() >> 8);
+        u32& reg1 = s_locals.registers[reg1_index];
+        const u32 reg2 = s_locals.registers[reg2_index];
+        u32& reg3 = s_locals.registers[Truncate8(inst.value32.GetValue())];
+        const u8 sub_type = Truncate8(inst.address >> 16);
+        const u16 cht_offset = Truncate16(inst.value32 >> 16);
 
         switch (sub_type)
         {
-          case 0x00: // Write the u8 from cht_register[cht_reg_no1] to address
-            DoMemoryWrite<u8>(inst.value32, Truncate8(s_locals.registers[cht_reg_no1]) & 0xFFu);
+          case 0x00: // Write the u8 from Reg1 to address
+            DoMemoryWrite<u8>(inst.value32, Truncate8(reg1));
             break;
-          case 0x01: // Read the u8 from address to cht_register[cht_reg_no1]
-            s_locals.registers[cht_reg_no1] = DoMemoryRead<u8>(inst.value32);
+          case 0x01: // Read the u8 from address to Reg1
+            reg1 = DoMemoryRead<u8>(inst.value32);
             break;
-          case 0x02: // Write the u8 from address field to the address stored in cht_register[cht_reg_no1]
-            DoMemoryWrite<u8>(s_locals.registers[cht_reg_no1], Truncate8(poke_value & 0xFFu));
+          case 0x02: // Write the u8 from address field to the address stored in Reg1
+            DoMemoryWrite<u8>(reg1, Truncate8(poke_value));
             break;
-          case 0x03: // Write the u8 from cht_register[cht_reg_no2] to cht_register[cht_reg_no1]
-            // and add the u8 from the address field to it
-            s_locals.registers[cht_reg_no1] = Truncate8(s_locals.registers[cht_reg_no2] + poke_value);
+          case 0x03: // Write the u8 from Reg2 + poke_value to Reg1
+            reg1 = Truncate8(reg2 + poke_value);
             break;
-          case 0x04: // Write the u8 from the value stored in cht_register[cht_reg_no2] + poke_value to the address
-            // stored in cht_register[cht_reg_no1]
-            DoMemoryWrite<u8>(s_locals.registers[cht_reg_no1],
-                              Truncate8(s_locals.registers[cht_reg_no2] & 0xFFu) + Truncate8(poke_value & 0xFFu));
+          case 0x04: // Write the u8 from Reg2 + poke_value to the address stored in Reg1
+            DoMemoryWrite<u8>(reg1, Truncate8(reg2) + Truncate8(poke_value));
             break;
-          case 0x05: // Write the u8 poke value to cht_register[cht_reg_no1]
-            s_locals.registers[cht_reg_no1] = Truncate8(poke_value & 0xFFu);
+          case 0x05: // Write the u8 poke value to Reg1
+            reg1 = Truncate8(poke_value);
             break;
-          case 0x06: // Read the u8 value from the address (cht_register[cht_reg_no2] + poke_value) to
-            // cht_register[cht_reg_no1]
-            s_locals.registers[cht_reg_no1] = DoMemoryRead<u8>(s_locals.registers[cht_reg_no2] + poke_value);
+          case 0x06: // Read the u8 value from the address (Reg2 + poke_value) to Reg1
+            reg1 = DoMemoryRead<u8>(reg2 + poke_value);
             break;
           case 0x07: // Write the u8 poke_value to a specific index of a single array in a series of consecutive arrays
             // This cheat type requires a separate cheat to set up 4 consecutive cht_arrays before this will work
-            // cht_register[cht_reg_no1] = the base address of the first element of the first array
-            // cht_register[cht_reg_no1+1] = the array size (basically the address diff between the start of each array)
-            // cht_register[cht_reg_no1+2] = the index of which array in the series to poke (this must be greater than
-            // 0) cht_register[cht_reg_no1+3] must == 0xD0D0 to ensure it only pokes when the above cht_regs have been
-            // set
-            //                                     (safety valve)
-            // cht_offset = the index of the individual array to change (so must be 0 to cht_register[cht_reg_no1+1])
-            if ((cht_reg_no1 <= (std::size(s_locals.registers) - 4)) && s_locals.registers[cht_reg_no1 + 3] == 0xD0D0 &&
-                s_locals.registers[cht_reg_no1 + 2] > 0 && s_locals.registers[cht_reg_no1 + 1] >= cht_offset)
+            // Reg1 = the base address of the first element of the first array
+            // Reg1+1 = the array size (basically the address diff between the start of each array)
+            // Reg1+2 = the index of which array in the series to poke (this must be greater than 0)
+            // Reg1+3 must == 0xD0D0 to ensure it only pokes when the above registers have been set (safety valve)
+            // cht_offset = the index of the individual array to change (so must be 0 to Reg1+1)
+            if ((reg1_index <= (std::size(s_locals.registers) - 4)) && s_locals.registers[reg1_index + 3] == 0xD0D0 &&
+                s_locals.registers[reg1_index + 2] > 0 && s_locals.registers[reg1_index + 1] >= cht_offset)
             {
-              DoMemoryWrite<u8>((s_locals.registers[cht_reg_no1] - s_locals.registers[cht_reg_no1 + 1]) +
-                                  (s_locals.registers[cht_reg_no1 + 1] * s_locals.registers[cht_reg_no1 + 2]) +
+              DoMemoryWrite<u8>((reg1 - s_locals.registers[reg1_index + 1]) +
+                                  (s_locals.registers[reg1_index + 1] * s_locals.registers[reg1_index + 2]) +
                                   cht_offset,
-                                Truncate8(poke_value & 0xFFu));
+                                Truncate8(poke_value));
             }
             break;
 
-          case 0x40: // Write the u16 from cht_register[cht_reg_no1] to address
-            DoMemoryWrite<u16>(inst.value32, Truncate16(s_locals.registers[cht_reg_no1] & 0xFFFFu));
+          case 0x40: // Write the u16 from Reg1 to address
+            DoMemoryWrite<u16>(inst.value32, Truncate16(reg1));
             break;
-          case 0x41: // Read the u16 from address to cht_register[cht_reg_no1]
-            s_locals.registers[cht_reg_no1] = DoMemoryRead<u16>(inst.value32);
+          case 0x41: // Read the u16 from address to Reg1
+            reg1 = DoMemoryRead<u16>(inst.value32);
             break;
-          case 0x42: // Write the u16 from address field to the address stored in cht_register[cht_reg_no1]
-            DoMemoryWrite<u16>(s_locals.registers[cht_reg_no1], Truncate16(poke_value & 0xFFFFu));
+          case 0x42: // Write the u16 from address field to the address stored in Reg1
+            DoMemoryWrite<u16>(reg1, Truncate16(poke_value));
             break;
-          case 0x43: // Write the u16 from cht_register[cht_reg_no2] to cht_register[cht_reg_no1]
-            // and add the u16 from the address field to it
-            s_locals.registers[cht_reg_no1] = Truncate16(s_locals.registers[cht_reg_no2] + poke_value);
+          case 0x43: // Write the u16 from Reg2 + poke_value to Reg1
+            reg1 = Truncate16(reg2 + poke_value);
             break;
-          case 0x44: // Write the u16 from the value stored in cht_register[cht_reg_no2] + poke_value to the address
-            // stored in cht_register[cht_reg_no1]
-            DoMemoryWrite<u16>(s_locals.registers[cht_reg_no1], Truncate16(s_locals.registers[cht_reg_no2] & 0xFFFFu) +
-                                                                  Truncate16(poke_value & 0xFFFFu));
+          case 0x44: // Write the u16 from Reg2 + poke_value to the address stored in Reg1
+            DoMemoryWrite<u16>(reg1, Truncate16(reg2) + Truncate16(poke_value));
             break;
-          case 0x45: // Write the u16 poke value to cht_register[cht_reg_no1]
-            s_locals.registers[cht_reg_no1] = Truncate16(poke_value & 0xFFFFu);
+          case 0x45: // Write the u16 poke value to Reg1
+            reg1 = Truncate16(poke_value);
             break;
-          case 0x46: // Read the u16 value from the address (cht_register[cht_reg_no2] + poke_value) to
-            // cht_register[cht_reg_no1]
-            s_locals.registers[cht_reg_no1] = DoMemoryRead<u16>(s_locals.registers[cht_reg_no2] + poke_value);
+          case 0x46: // Read the u16 value from the address (Reg2 + poke_value) to Reg1
+            reg1 = DoMemoryRead<u16>(reg2 + poke_value);
             break;
           case 0x47: // Write the u16 poke_value to a specific index of a single array in a series of consecutive arrays
             // This cheat type requires a separate cheat to set up 4 consecutive cht_arrays before this will work
-            // cht_register[cht_reg_no1] = the base address of the first element of the first array
-            // cht_register[cht_reg_no1+1] = the array size (basically the address diff between the start of each array)
-            // cht_register[cht_reg_no1+2] = the index of which array in the series to poke (this must be greater than
-            // 0) cht_register[cht_reg_no1+3] must == 0xD0D0 to ensure it only pokes when the above cht_regs have been
-            // set
-            //                                     (safety valve)
-            // cht_offset = the index of the individual array to change (so must be 0 to cht_register[cht_reg_no1+1])
-            if ((cht_reg_no1 <= (std::size(s_locals.registers) - 4)) && s_locals.registers[cht_reg_no1 + 3] == 0xD0D0 &&
-                s_locals.registers[cht_reg_no1 + 2] > 0 && s_locals.registers[cht_reg_no1 + 1] >= cht_offset)
+            // Reg1 = the base address of the first element of the first array
+            // Reg1+1 = the array size (basically the address diff between the start of each array)
+            // Reg1+2 = the index of which array in the series to poke (this must be greater than 0)
+            // Reg1+3 must == 0xD0D0 to ensure it only pokes when the above registers have been set (safety valve)
+            // cht_offset = the index of the individual array to change (so must be 0 to Reg1+1)
+            if ((reg1_index <= (std::size(s_locals.registers) - 4)) && s_locals.registers[reg1_index + 3] == 0xD0D0 &&
+                s_locals.registers[reg1_index + 2] > 0 && s_locals.registers[reg1_index + 1] >= cht_offset)
             {
-              DoMemoryWrite<u16>((s_locals.registers[cht_reg_no1] - s_locals.registers[cht_reg_no1 + 1]) +
-                                   (s_locals.registers[cht_reg_no1 + 1] * s_locals.registers[cht_reg_no1 + 2]) +
+              DoMemoryWrite<u16>((reg1 - s_locals.registers[reg1_index + 1]) +
+                                   (s_locals.registers[reg1_index + 1] * s_locals.registers[reg1_index + 2]) +
                                    cht_offset,
-                                 Truncate16(poke_value & 0xFFFFu));
+                                 Truncate16(poke_value));
             }
             break;
 
-          case 0x80: // Write the u32 from cht_register[cht_reg_no1] to address
-            DoMemoryWrite<u32>(inst.value32, s_locals.registers[cht_reg_no1]);
+          case 0x80: // Write the u32 from Reg1 to address
+            DoMemoryWrite<u32>(inst.value32, reg1);
             break;
-          case 0x81: // Read the u32 from address to cht_register[cht_reg_no1]
-            s_locals.registers[cht_reg_no1] = DoMemoryRead<u32>(inst.value32);
+          case 0x81: // Read the u32 from address to Reg1
+            reg1 = DoMemoryRead<u32>(inst.value32);
             break;
-          case 0x82: // Write the u32 from address field to the address stored in cht_register[cht_reg_no]
-            DoMemoryWrite<u32>(s_locals.registers[cht_reg_no1], poke_value);
+          case 0x82: // Write the u32 from address field to the address stored in Reg1
+            DoMemoryWrite<u32>(reg1, poke_value);
             break;
-          case 0x83: // Write the u32 from cht_register[cht_reg_no2] to cht_register[cht_reg_no1]
-            // and add the u32 from the address field to it
-            s_locals.registers[cht_reg_no1] = s_locals.registers[cht_reg_no2] + poke_value;
+          case 0x83: // Write the u32 from Reg2 + poke_value to Reg1
+            reg1 = reg2 + poke_value;
             break;
-          case 0x84: // Write the u32 from the value stored in cht_register[cht_reg_no2] + poke_value to the address
-            // stored in cht_register[cht_reg_no1]
-            DoMemoryWrite<u32>(s_locals.registers[cht_reg_no1], s_locals.registers[cht_reg_no2] + poke_value);
+          case 0x84: // Write the u32 from Reg2 + poke_value to the address stored in Reg1
+            DoMemoryWrite<u32>(reg1, reg2 + poke_value);
             break;
-          case 0x85: // Write the u32 poke value to cht_register[cht_reg_no1]
-            s_locals.registers[cht_reg_no1] = poke_value;
+          case 0x85: // Write the u32 poke value to Reg1
+            reg1 = poke_value;
             break;
-          case 0x86: // Read the u32 value from the address (cht_register[cht_reg_no2] + poke_value) to
-            // cht_register[cht_reg_no1]
-            s_locals.registers[cht_reg_no1] = DoMemoryRead<u32>(s_locals.registers[cht_reg_no2] + poke_value);
+          case 0x86: // Read the u32 value from the address (Reg2 + poke_value) to Reg1
+            reg1 = DoMemoryRead<u32>(reg2 + poke_value);
             break;
             // Do not use 0x87 as it's not possible to duplicate 0x07, 0x47 for a 32 bit write as not enough characters
 
           case 0xC0: // Reg3 = Reg2 + Reg1
-            s_locals.registers[cht_reg_no3] = s_locals.registers[cht_reg_no2] + s_locals.registers[cht_reg_no1];
+            reg3 = reg2 + reg1;
             break;
           case 0xC1: // Reg3 = Reg2 - Reg1
-            s_locals.registers[cht_reg_no3] = s_locals.registers[cht_reg_no2] - s_locals.registers[cht_reg_no1];
+            reg3 = reg2 - reg1;
             break;
           case 0xC2: // Reg3 = Reg2 * Reg1
-            s_locals.registers[cht_reg_no3] = s_locals.registers[cht_reg_no2] * s_locals.registers[cht_reg_no1];
+            reg3 = reg2 * reg1;
             break;
           case 0xC3: // Reg3 = Reg2 / Reg1 with DIV0 handling
-            if (s_locals.registers[cht_reg_no1] == 0)
-              s_locals.registers[cht_reg_no3] = 0;
+            if (reg1 == 0)
+              reg3 = 0;
             else
-              s_locals.registers[cht_reg_no3] = s_locals.registers[cht_reg_no2] / s_locals.registers[cht_reg_no1];
+              reg3 = reg2 / reg1;
             break;
           case 0xC4: // Reg3 = Reg2 % Reg1 (with DIV0 handling)
-            if (s_locals.registers[cht_reg_no1] == 0)
-              s_locals.registers[cht_reg_no3] = s_locals.registers[cht_reg_no2];
+            if (reg1 == 0)
+              reg3 = reg2;
             else
-              s_locals.registers[cht_reg_no3] = s_locals.registers[cht_reg_no2] % s_locals.registers[cht_reg_no1];
+              reg3 = reg2 % reg1;
             break;
           case 0xC5: // Reg3 = Reg2 & Reg1
-            s_locals.registers[cht_reg_no3] = s_locals.registers[cht_reg_no2] & s_locals.registers[cht_reg_no1];
+            reg3 = reg2 & reg1;
             break;
           case 0xC6: // Reg3 = Reg2 | Reg1
-            s_locals.registers[cht_reg_no3] = s_locals.registers[cht_reg_no2] | s_locals.registers[cht_reg_no1];
+            reg3 = reg2 | reg1;
             break;
           case 0xC7: // Reg3 = Reg2 ^ Reg1
-            s_locals.registers[cht_reg_no3] = s_locals.registers[cht_reg_no2] ^ s_locals.registers[cht_reg_no1];
+            reg3 = reg2 ^ reg1;
             break;
           case 0xC8: // Reg3 = ~Reg1
-            s_locals.registers[cht_reg_no3] = ~s_locals.registers[cht_reg_no1];
+            reg3 = ~reg1;
             break;
           case 0xC9: // Reg3 = Reg1 << X, zero if X >= 32
-            s_locals.registers[cht_reg_no3] = (cht_reg_no2 < 32) ? (s_locals.registers[cht_reg_no1] << cht_reg_no2) : 0;
+            reg3 = (reg2_index < 32) ? (reg1 << reg2_index) : 0;
             break;
           case 0xCA: // Reg3 = Reg1 >> X, zero if X >= 32
-            s_locals.registers[cht_reg_no3] = (cht_reg_no2 < 32) ? (s_locals.registers[cht_reg_no1] >> cht_reg_no2) : 0;
+            reg3 = (reg2_index < 32) ? (reg1 >> reg2_index) : 0;
             break;
           case 0xD0: // Reg1 = Reg2 & poke_value
-            s_locals.registers[cht_reg_no1] = s_locals.registers[cht_reg_no2] & poke_value;
+            reg1 = reg2 & poke_value;
             break;
           case 0xD1: // Reg1 = Reg2 | poke_value
-            s_locals.registers[cht_reg_no1] = s_locals.registers[cht_reg_no2] | poke_value;
+            reg1 = reg2 | poke_value;
             break;
           case 0xD2: // Reg1 = Reg2 ^ poke_value
-            s_locals.registers[cht_reg_no1] = s_locals.registers[cht_reg_no2] ^ poke_value;
+            reg1 = reg2 ^ poke_value;
             break;
             // Lots of options exist for expanding into this space
           default:
