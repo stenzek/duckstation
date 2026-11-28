@@ -23,16 +23,11 @@
 
 LOG_CHANNEL(Controller);
 
-NeGconRumble::NeGconRumble(u32 index) : ConfigModeController(index)
+NeGconRumble::NeGconRumble(u32 index) : ConfigModeController(index, ControllerType::NeGconRumble)
 {
 }
 
 NeGconRumble::~NeGconRumble() = default;
-
-ControllerType NeGconRumble::GetType() const
-{
-  return ControllerType::NeGconRumble;
-}
 
 void NeGconRumble::Reset()
 {

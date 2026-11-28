@@ -22,16 +22,11 @@
 
 LOG_CHANNEL(Controller);
 
-JogCon::JogCon(u32 index) : ConfigModeController(index)
+JogCon::JogCon(u32 index) : ConfigModeController(index, ControllerType::JogCon)
 {
 }
 
 JogCon::~JogCon() = default;
-
-ControllerType JogCon::GetType() const
-{
-  return ControllerType::JogCon;
-}
 
 void JogCon::Reset()
 {

@@ -32,7 +32,7 @@ static constexpr std::array<const char*, NUM_CONTROLLER_AND_CARD_PORTS> s_event_
    "Justifier IRQ P5", "Justifier IRQ P6", "Justifier IRQ P7"}};
 
 Justifier::Justifier(u32 index)
-  : LightgunController(index, s_button_indices),
+  : LightgunController(index, ControllerType::Justifier, s_button_indices),
     m_irq_event(
       s_event_names[index], 1, 1, [](void* param, TickCount) { static_cast<Justifier*>(param)->IRQEvent(); }, this)
 {
@@ -41,11 +41,6 @@ Justifier::Justifier(u32 index)
 Justifier::~Justifier()
 {
   m_irq_event.Deactivate();
-}
-
-ControllerType Justifier::GetType() const
-{
-  return ControllerType::Justifier;
 }
 
 void Justifier::Reset()

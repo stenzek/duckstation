@@ -49,7 +49,7 @@ protected:
     BindingCount = 8,
   };
 
-  LightgunController(u32 index, const std::array<u8, 4>& button_indices);
+  LightgunController(u32 index, ControllerType type, const std::array<u8, 4>& button_indices);
 
   virtual void SetShootOffscreen(bool pressed) = 0;
 

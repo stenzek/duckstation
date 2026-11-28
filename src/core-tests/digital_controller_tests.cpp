@@ -30,7 +30,7 @@ static void Press(Controller& controller, Button button, float value = 1.0f)
 
 TEST(DigitalController, Poll)
 {
-  DigitalController controller(0, 0xFFFF);
+  DigitalController controller(0, ControllerType::DigitalController, 0xFFFF);
   LoadDefaultSettings(controller);
   EXPECT_EQ(controller.GetType(), ControllerType::DigitalController);
   EXPECT_FALSE(controller.GetAnalogInputBytes().has_value());
@@ -47,7 +47,7 @@ TEST(DigitalController, Poll)
 
 TEST(DigitalController, RejectedBytes)
 {
-  DigitalController controller(0, 0xFFFF);
+  DigitalController controller(0, ControllerType::DigitalController, 0xFFFF);
   LoadDefaultSettings(controller);
 
   // The ID byte is still sent for other commands, but not ACKed.
@@ -63,7 +63,7 @@ TEST(DigitalController, RejectedBytes)
 
 TEST(DigitalController, ResetTransferState)
 {
-  DigitalController controller(0, 0xFFFF);
+  DigitalController controller(0, ControllerType::DigitalController, 0xFFFF);
   LoadDefaultSettings(controller);
   Press(controller, Button::Triangle);
 
@@ -89,7 +89,7 @@ TEST(DigitalController, ResetTransferState)
 
 TEST(DigitalController, Buttons)
 {
-  DigitalController controller(0, 0xFFFF);
+  DigitalController controller(0, ControllerType::DigitalController, 0xFFFF);
   LoadDefaultSettings(controller);
 
   for (u32 i = 0; i < static_cast<u32>(Button::Count); i++)
@@ -145,7 +145,7 @@ TEST(DigitalController, BindingIndices)
 
 TEST(DigitalController, DisableSOCD)
 {
-  DigitalController controller(0, 0xFFFF);
+  DigitalController controller(0, ControllerType::DigitalController, 0xFFFF);
   LoadDefaultSettings(controller);
   Press(controller, Button::Up);
   Press(controller, Button::Down);
@@ -175,8 +175,7 @@ TEST(DigitalController, Popn)
   const std::unique_ptr<DigitalController> controller = DigitalController::Create(0, ControllerType::PopnController);
   LoadDefaultSettings(*controller);
 
-  // Current behaviour: the type is still reported as a digital controller.
-  EXPECT_EQ(controller->GetType(), ControllerType::DigitalController);
+  EXPECT_EQ(controller->GetType(), ControllerType::PopnController);
 
   // Right, Down and Left are grounded, so always read as pressed.
   const u16 grounded = Pressed({Button::Right, Button::Down, Button::Left});
@@ -208,7 +207,7 @@ TEST(DigitalController, Popn)
 
 TEST(DigitalController, SaveState)
 {
-  DigitalController controller(0, 0xFFFF);
+  DigitalController controller(0, ControllerType::DigitalController, 0xFFFF);
   LoadDefaultSettings(controller);
   Press(controller, Button::Circle);
 
@@ -216,7 +215,7 @@ TEST(DigitalController, SaveState)
   ExpectResumesAfterLoad(
     controller,
     [] {
-      auto loaded = std::make_unique<DigitalController>(0, 0xFFFF);
+      auto loaded = std::make_unique<DigitalController>(0, ControllerType::DigitalController, 0xFFFF);
       LoadDefaultSettings(*loaded);
       return loaded;
     },
@@ -224,7 +223,7 @@ TEST(DigitalController, SaveState)
 
   // Input state is only loaded if asked to.
   const std::vector<u8> state = SaveState(controller);
-  DigitalController loaded(0, 0xFFFF);
+  DigitalController loaded(0, ControllerType::DigitalController, 0xFFFF);
   LoadDefaultSettings(loaded);
   Press(loaded, Button::Square);
   LoadState(loaded, state, false);
@@ -244,7 +243,7 @@ TEST(DigitalController, LegacyState)
 {
   // Saved by version 104 partway through a poll, with Circle pressed.
   static const std::vector<u8> state = {0xFF, 0xDF, 0x03};
-  DigitalController controller(0, 0xFFFF);
+  DigitalController controller(0, ControllerType::DigitalController, 0xFFFF);
   LoadDefaultSettings(controller);
   LoadState(controller, state, true, 104);
 

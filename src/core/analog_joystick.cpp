@@ -21,18 +21,13 @@
 
 LOG_CHANNEL(Controller);
 
-AnalogJoystick::AnalogJoystick(u32 index) : Controller(index)
+AnalogJoystick::AnalogJoystick(u32 index) : Controller(index, ControllerType::AnalogJoystick)
 {
   m_axis_state.fill(AXIS_CENTER);
   Reset();
 }
 
 AnalogJoystick::~AnalogJoystick() = default;
-
-ControllerType AnalogJoystick::GetType() const
-{
-  return ControllerType::AnalogJoystick;
-}
 
 void AnalogJoystick::Reset()
 {

@@ -24,9 +24,8 @@ namespace {
 class TestLightgunController final : public LightgunController
 {
 public:
-  TestLightgunController() : LightgunController(0, {{2, 4, 6, 0}}) {}
+  TestLightgunController() : LightgunController(0, ControllerType::None, {{2, 4, 6, 0}}) {}
 
-  ControllerType GetType() const override { return ControllerType::None; }
   void Reset() override {}
   u8 GetIDByte() const override { return 0x41; }
   bool BeginCommand(u8) override { return false; }

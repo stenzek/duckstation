@@ -13,16 +13,11 @@
 #include "common/bitutils.h"
 #include "common/settings_interface.h"
 
-DDGoController::DDGoController(u32 index) : Controller(index)
+DDGoController::DDGoController(u32 index) : Controller(index, ControllerType::DDGoController)
 {
 }
 
 DDGoController::~DDGoController() = default;
-
-ControllerType DDGoController::GetType() const
-{
-  return ControllerType::DDGoController;
-}
 
 void DDGoController::Reset()
 {

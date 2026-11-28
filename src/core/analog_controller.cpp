@@ -23,17 +23,12 @@
 
 LOG_CHANNEL(Controller);
 
-AnalogController::AnalogController(u32 index) : ConfigModeController(index)
+AnalogController::AnalogController(u32 index) : ConfigModeController(index, ControllerType::AnalogController)
 {
   m_axis_state.fill(AXIS_CENTER);
 }
 
 AnalogController::~AnalogController() = default;
-
-ControllerType AnalogController::GetType() const
-{
-  return ControllerType::AnalogController;
-}
 
 void AnalogController::Reset()
 {

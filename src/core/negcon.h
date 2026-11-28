@@ -95,8 +95,6 @@ public:
 
   static std::unique_ptr<NeGcon> Create(u32 index);
 
-  ControllerType GetType() const override;
-
   void Reset() override;
   bool DoState(StateWrapper& sw, bool apply_input_state) override;
 

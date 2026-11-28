@@ -22,16 +22,11 @@ LOG_CHANNEL(Controller);
 static constexpr std::array<u8, static_cast<size_t>(PlayStationMouse::Binding::ButtonCount)> s_button_indices = {
   {11, 10}};
 
-PlayStationMouse::PlayStationMouse(u32 index) : Controller(index)
+PlayStationMouse::PlayStationMouse(u32 index) : Controller(index, ControllerType::PlayStationMouse)
 {
 }
 
 PlayStationMouse::~PlayStationMouse() = default;
-
-ControllerType PlayStationMouse::GetType() const
-{
-  return ControllerType::PlayStationMouse;
-}
 
 void PlayStationMouse::Reset()
 {

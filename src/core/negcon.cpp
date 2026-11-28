@@ -160,16 +160,11 @@ u8 GetScaledValue(float value, const NeGconInputs::AxisModifier& axis_modifier)
     std::clamp(std::round(axis_modifier.scaling * axis_modifier.unit * value + axis_modifier.zero), 0.0f, 255.0f));
 }
 
-NeGcon::NeGcon(u32 index) : Controller(index)
+NeGcon::NeGcon(u32 index) : Controller(index, ControllerType::NeGcon)
 {
 }
 
 NeGcon::~NeGcon() = default;
-
-ControllerType NeGcon::GetType() const
-{
-  return ControllerType::NeGcon;
-}
 
 void NeGcon::Reset()
 {

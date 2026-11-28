@@ -20,7 +20,7 @@
 
 LOG_CHANNEL(Controller);
 
-ConfigModeController::ConfigModeController(u32 index) : Controller(index)
+ConfigModeController::ConfigModeController(u32 index, ControllerType type) : Controller(index, type)
 {
   m_rumble_config.fill(0xFF);
 }

@@ -62,7 +62,7 @@ std::string_view Controller::ControllerInfo::GetBindingDisplayName(const Control
   return Host::TranslateToStringView(name, bi.display_name);
 }
 
-Controller::Controller(u32 index) : m_index(index)
+Controller::Controller(u32 index, ControllerType type) : m_index(index), m_type(type)
 {
 }
 

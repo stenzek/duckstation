@@ -57,11 +57,14 @@ public:
   /// Center position when dealing with axis values.
   static constexpr u8 AXIS_CENTER = 0x7F;
 
-  explicit Controller(u32 index);
+  Controller(u32 index, ControllerType type);
   virtual ~Controller();
 
+  /// Returns the index of the controller in the global pad list.
+  ALWAYS_INLINE u32 GetIndex() const { return m_index; }
+
   /// Returns the type of controller.
-  virtual ControllerType GetType() const = 0;
+  ALWAYS_INLINE ControllerType GetType() const { return m_type; }
 
   virtual void Reset() = 0;
 
@@ -158,6 +161,7 @@ protected:
   void SkipLegacyTransferState(StateWrapper& sw);
 
   u32 m_index;
+  ControllerType m_type;
 
   TransferState m_transfer_state = TransferState::Idle;
   u8 m_command_step = 0;

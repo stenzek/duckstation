@@ -35,12 +35,10 @@ public:
   static const Controller::ControllerInfo INFO_POPN;
   static const Controller::ControllerInfo INFO_DDGO;
 
-  DigitalController(u32 index, u16 button_mask);
+  DigitalController(u32 index, ControllerType type, u16 button_mask);
   ~DigitalController() override;
 
   static std::unique_ptr<DigitalController> Create(u32 index, ControllerType type);
-
-  ControllerType GetType() const override;
 
   void Reset() override;
   bool DoState(StateWrapper& sw, bool apply_input_state) override;

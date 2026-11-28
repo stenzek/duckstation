@@ -14,16 +14,12 @@
 #include "common/bitutils.h"
 #include "common/settings_interface.h"
 
-DigitalController::DigitalController(u32 index, u16 button_mask) : Controller(index), m_button_mask(button_mask)
+DigitalController::DigitalController(u32 index, ControllerType type, u16 button_mask)
+  : Controller(index, type), m_button_mask(button_mask)
 {
 }
 
 DigitalController::~DigitalController() = default;
-
-ControllerType DigitalController::GetType() const
-{
-  return ControllerType::DigitalController;
-}
 
 void DigitalController::Reset()
 {
@@ -105,7 +101,7 @@ std::unique_ptr<DigitalController> DigitalController::Create(u32 index, Controll
   if (type == ControllerType::PopnController)
     mask = POPN_BUTTON_MASK;
 
-  return std::make_unique<DigitalController>(index, mask);
+  return std::make_unique<DigitalController>(index, type, mask);
 }
 
 static constexpr SettingInfo s_settings[] = {

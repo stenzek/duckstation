@@ -45,7 +45,7 @@ protected:
 
   static constexpr s16 DEFAULT_VIBRATION_BIAS = 8;
 
-  explicit ConfigModeController(u32 index);
+  explicit ConfigModeController(u32 index, ControllerType type);
 
   /// Returns the high nibble of the ID byte in analog mode.
   virtual u8 GetAnalogModeID() const;

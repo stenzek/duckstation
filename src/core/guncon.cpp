@@ -22,16 +22,11 @@ LOG_CHANNEL(Controller);
 
 static constexpr std::array<u8, static_cast<size_t>(GunCon::Binding::ButtonCount)> s_button_indices = {{13, 3, 14, 0}};
 
-GunCon::GunCon(u32 index) : LightgunController(index, s_button_indices)
+GunCon::GunCon(u32 index) : LightgunController(index, ControllerType::GunCon, s_button_indices)
 {
 }
 
 GunCon::~GunCon() = default;
-
-ControllerType GunCon::GetType() const
-{
-  return ControllerType::GunCon;
-}
 
 void GunCon::Reset()
 {
