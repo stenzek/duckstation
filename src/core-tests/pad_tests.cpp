@@ -787,6 +787,35 @@ TEST_F(PadTest, TransferWaitsForSelectAndTXEN)
   }
 }
 
+TEST_F(PadTest, SaveStateWhileTransmitting)
+{
+  PlugController(0);
+  Select(0);
+  EXPECT_TRUE(Exchange(0x01).ack);
+
+  // The byte being shifted out is saved.
+  Pad::WriteRegister(JOY_DATA, 0x42);
+  Run(TRANSFER_TICKS / 2);
+  std::vector<u8> state(4096);
+  StateWrapper write_sw(std::span<u8>(state), StateWrapper::Mode::Write, SAVE_STATE_VERSION);
+  ASSERT_TRUE(Pad::DoState(write_sw, false));
+
+  // Send something else before loading, so the byte isn't left over from before.
+  ASSERT_NE(RunUntil(RXReady, TRANSFER_TICKS * 2), NOT_REACHED);
+  EXPECT_EQ(Truncate8(Pad::ReadRegister(JOY_DATA)), 0x41);
+  RunUntil(PadIRQPending, ACK_WINDOW);
+  AckIRQ();
+  Deselect();
+  Select(0);
+  EXPECT_TRUE(Exchange(0x01).ack);
+  StateWrapper read_sw(std::span<const u8>(state), StateWrapper::Mode::Read, SAVE_STATE_VERSION);
+  ASSERT_TRUE(Pad::DoState(read_sw, false));
+
+  ASSERT_NE(RunUntil(RXReady, TRANSFER_TICKS * 2), NOT_REACHED);
+  EXPECT_EQ(Truncate8(Pad::ReadRegister(JOY_DATA)), 0x41);
+  EXPECT_NE(RunUntil(PadIRQPending, ACK_WINDOW), NOT_REACHED);
+}
+
 TEST_F(PadTest, TXBufferOverwrite)
 {
   PlugController(0);

@@ -534,6 +534,9 @@ bool Pad::DoState(StateWrapper& sw, bool is_memory_state)
   sw.Do(&s_state.receive_buffer_full);
   sw.Do(&s_state.transmit_buffer_full);
 
+  // Older states didn't save the byte being shifted out. It's the buffer's value, unless the next byte was written.
+  sw.DoEx(&s_state.transmit_value, 104, s_state.transmit_buffer);
+
   // The multitap setting isn't part of the state, so don't continue a transfer that was going to a different device.
   if (sw.IsReading() && s_state.active_device != ActiveDevice::None &&
       (s_state.active_device == ActiveDevice::Multitap) != s_state.multitaps[s_state.JOY_CTRL.SLOT].enabled)
