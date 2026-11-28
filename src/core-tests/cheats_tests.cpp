@@ -1,11 +1,15 @@
 // SPDX-FileCopyrightText: 2019-2026 Connor McLaughlin <stenzek@gmail.com>
 // SPDX-License-Identifier: CC-BY-NC-ND-4.0
 
+#include "core/analog_controller.h"
 #include "core/bus.h"
 #include "core/cheats_private.h"
 #include "core/cpu_code_cache.h"
 #include "core/cpu_core_private.h"
+#include "core/digital_controller.h"
+#include "core/pad.h"
 #include "core/settings.h"
+#include "core/system.h"
 
 #include "common/error.h"
 #include "common/scoped_guard.h"
@@ -693,6 +697,12 @@ protected:
 
   void SetUp() override { std::memset(g_bus.unprotected_ram, 0, g_bus.ram_size); }
 
+  void TearDown() override
+  {
+    for (u32 i = 0; i < NUM_CONTROLLER_AND_CARD_PORTS; i++)
+      Pad::SetController(i, nullptr);
+  }
+
   static std::unique_ptr<Cheats::GamesharkCheatCode> Parse(std::string_view input)
   {
     Error error;
@@ -709,6 +719,34 @@ protected:
   }
 
   static void WriteWord(u32 address, u32 value) { std::memcpy(&g_bus.unprotected_ram[address], &value, sizeof(value)); }
+
+  static u16 ReadHalf(u32 address)
+  {
+    u16 value;
+    std::memcpy(&value, &g_bus.unprotected_ram[address], sizeof(value));
+    return value;
+  }
+
+  static void WriteHalf(u32 address, u16 value) { std::memcpy(&g_bus.unprotected_ram[address], &value, sizeof(value)); }
+  static u8 ReadByte(u32 address) { return g_bus.unprotected_ram[address]; }
+  static void WriteByte(u32 address, u8 value) { g_bus.unprotected_ram[address] = value; }
+
+  static void Run(std::string_view input)
+  {
+    std::unique_ptr<Cheats::GamesharkCheatCode> code = Parse(input);
+    ASSERT_NE(code, nullptr) << input;
+    code->Apply();
+  }
+
+  // The cheat registers are global and never reset, so tests set every register they read.
+  static void SetCheatRegister(u8 reg, u32 value) { Run(fmt::format("518500{:02X} {:08X}\n", reg, value)); }
+  static u32 GetCheatRegister(u8 reg)
+  {
+    Run(fmt::format("518000{:02X} {:08X}\n", reg, REGISTER_READBACK_ADDRESS));
+    return ReadWord(REGISTER_READBACK_ADDRESS);
+  }
+
+  static constexpr u32 REGISTER_READBACK_ADDRESS = 0x7F00;
 };
 
 } // namespace
@@ -1399,4 +1437,1505 @@ TEST_F(CheatsApply, MergedWritesMatchSequential)
   }
 
   EXPECT_GT(merged_count, 250u);
+}
+
+// Interpreter coverage, one or more tests per opcode. Fewer than four adjacent writes are used where merging into
+// FB-FE would otherwise change the instruction under test.
+
+TEST_F(CheatsApply, ConstantWrites)
+{
+  WriteWord(0x1000, 0xAAAAAAAA);
+  WriteWord(0x1010, 0xAAAAAAAA);
+  WriteWord(0x1020, 0xAAAAAAAA);
+
+  // Value bits above the write width are ignored.
+  Run("30001001 FFFFFF12\n"
+      "80001012 FFFF3456\n"
+      "90001020 89ABCDEF\n");
+  EXPECT_EQ(ReadWord(0x1000), 0xAAAA12AAu);
+  EXPECT_EQ(ReadWord(0x1010), 0x3456AAAAu);
+  EXPECT_EQ(ReadWord(0x1020), 0x89ABCDEFu);
+}
+
+TEST_F(CheatsApply, ScratchpadWrites)
+{
+  const auto read_scratchpad = [](u32 offset) {
+    u32 value = 0;
+    EXPECT_TRUE(CPU::SafeReadMemoryWord(CPU::SCRATCHPAD_ADDR | offset, &value));
+    return value;
+  };
+  for (const u32 offset : {0x10u, 0x20u, 0x3F0u})
+    CPU::SafeWriteMemoryWord(CPU::SCRATCHPAD_ADDR | offset, 0xAAAAAAAAu);
+
+  // The address is masked to the scratchpad size.
+  Run("1F000010 FFFF1234\n"
+      "A5000020 89ABCDEF\n"
+      "1F123FF0 00005678\n");
+  EXPECT_EQ(read_scratchpad(0x10), 0xAAAA1234u);
+  EXPECT_EQ(read_scratchpad(0x20), 0x89ABCDEFu);
+  EXPECT_EQ(read_scratchpad(0x3F0), 0xAAAA5678u);
+  EXPECT_EQ(ReadWord(0x10), 0u);
+}
+
+TEST_F(CheatsApply, BitSetAndClear)
+{
+  for (const u32 address : {0x1000u, 0x1010u, 0x1020u, 0x1024u})
+    WriteWord(address, 0x0F0F0F0F);
+
+  Run("31001000 FFFFFFF0\n"
+      "32001001 0000000F\n"
+      "81001010 0000F000\n");
+  Run("82001012 0000000F\n"
+      "91001020 F0000000\n"
+      "92001024 0000000F\n");
+  EXPECT_EQ(ReadWord(0x1000), 0x0F0F00FFu);
+  EXPECT_EQ(ReadWord(0x1010), 0x0F00FF0Fu);
+  EXPECT_EQ(ReadWord(0x1020), 0xFF0F0F0Fu);
+  EXPECT_EQ(ReadWord(0x1024), 0x0F0F0F00u);
+}
+
+TEST_F(CheatsApply, IncrementDecrement)
+{
+  WriteWord(0x1000, 0x1234FFFF);
+  WriteWord(0x1010, 0x12340001);
+  WriteWord(0x1020, 0x123455FF);
+  WriteWord(0x1030, 0x12345500);
+  WriteWord(0x1040, 0xFFFFFFFF);
+  WriteWord(0x1050, 0x00000001);
+
+  // All wrap, and don't touch the neighbouring bytes. Value bits above the width are ignored.
+  Run("10001000 00010002\n"
+      "11001010 00000002\n"
+      "20001020 00000101\n");
+  Run("21001030 00000001\n"
+      "60001040 00000002\n"
+      "61001050 00000002\n");
+  EXPECT_EQ(ReadWord(0x1000), 0x12340001u);
+  EXPECT_EQ(ReadWord(0x1010), 0x1234FFFFu);
+  EXPECT_EQ(ReadWord(0x1020), 0x12345500u);
+  EXPECT_EQ(ReadWord(0x1030), 0x123455FFu);
+  EXPECT_EQ(ReadWord(0x1040), 0x00000001u);
+  EXPECT_EQ(ReadWord(0x1050), 0xFFFFFFFFu);
+}
+
+TEST_F(CheatsApply, LineConditionals)
+{
+  struct Case
+  {
+    u8 opcode;
+    u32 width;
+    u32 memory;
+    u32 compare;
+    bool expected;
+  };
+  static constexpr std::array cases = {
+    Case{0xD0, 2, 0x1234, 0x1234, true},
+    Case{0xD0, 2, 0x1234, 0x1235, false},
+    Case{0xD0, 2, 0x1234, 0xFFFF1234, true},
+    Case{0xD1, 2, 0x1234, 0x1235, true},
+    Case{0xD1, 2, 0x1234, 0x1234, false},
+    Case{0xD2, 2, 0x1234, 0x1235, true},
+    Case{0xD2, 2, 0x1234, 0x1234, false},
+    Case{0xD2, 2, 0x8000, 0x7FFF, false},
+    Case{0xD3, 2, 0x1235, 0x1234, true},
+    Case{0xD3, 2, 0x1234, 0x1234, false},
+    Case{0xD3, 2, 0x8000, 0x7FFF, true},
+    Case{0xE0, 1, 0x34, 0x34, true},
+    Case{0xE0, 1, 0x34, 0x35, false},
+    Case{0xE0, 1, 0x34, 0xFFFFFF34, true},
+    Case{0xE1, 1, 0x34, 0x35, true},
+    Case{0xE1, 1, 0x34, 0x34, false},
+    Case{0xE2, 1, 0x34, 0x35, true},
+    Case{0xE2, 1, 0x34, 0x34, false},
+    Case{0xE2, 1, 0x80, 0x7F, false},
+    Case{0xE3, 1, 0x35, 0x34, true},
+    Case{0xE3, 1, 0x34, 0x34, false},
+    Case{0xE3, 1, 0x80, 0x7F, true},
+    Case{0xA0, 4, 0x12345678, 0x12345678, true},
+    Case{0xA0, 4, 0x12345678, 0x12345679, false},
+    Case{0xA1, 4, 0x12345678, 0x12345679, true},
+    Case{0xA1, 4, 0x12345678, 0x12345678, false},
+    Case{0xA2, 4, 0x12345678, 0x12345679, true},
+    Case{0xA2, 4, 0x12345678, 0x12345678, false},
+    Case{0xA2, 4, 0x80000000, 0x7FFFFFFF, false},
+    Case{0xA3, 4, 0x12345679, 0x12345678, true},
+    Case{0xA3, 4, 0x12345678, 0x12345678, false},
+    Case{0xA3, 4, 0x80000000, 0x7FFFFFFF, true},
+  };
+
+  for (const Case& c : cases)
+  {
+    SCOPED_TRACE(fmt::format("{:02X} {:X} {:X}", c.opcode, c.memory, c.compare));
+    // Bytes above the width are set, so a wider read would fail the compare.
+    const u32 width_mask = (c.width == 4) ? 0xFFFFFFFFu : ((1u << (c.width * 8)) - 1);
+    WriteWord(0x3000, c.memory | ~width_mask);
+    WriteWord(0x1000, 0);
+    WriteWord(0x1010, 0);
+    Run(fmt::format("{:02X}003000 {:08X}\n90001000 00000001\n90001010 00000002\n", c.opcode, c.compare));
+    EXPECT_EQ(ReadWord(0x1000), c.expected ? 1u : 0u);
+    EXPECT_EQ(ReadWord(0x1010), 2u);
+  }
+}
+
+TEST_F(CheatsApply, LineConditionalSkipsPayload)
+{
+  // A false compare skips the whole of the next instruction. If only its first line was skipped, the payload line
+  // would run as a 30 write to 0x1000.
+  for (const std::string_view instruction : {
+         "50000201 00000001\n30001000 00000011\n", // Slide
+         "53000002 00010001\n30001000 00000011\n", // ExtImprovedSlide
+         "C2001200 00000004\n30001000 00000011\n", // MemoryCopy
+         "F3001200 00800010\n30001000 00000011\n", // ExtConstantForceRange16
+         "F4001200 00EE0000\n30001000 00000011\n30001000 00000011\n30001000 00000011\n"
+         "30001000 00000011\n",                    // ExtFindAndReplace
+         "A9001200 00000002\n30001000 00000011\n", // ExtBlockWrite
+         "AB001200 00000001\n30001000 00000011\n", // ExtBlockWriteIfMatch
+       })
+  {
+    SCOPED_TRACE(instruction);
+    std::memset(g_bus.unprotected_ram, 0, 0x2000);
+    Run(fmt::format("D0003000 00001234\n{}90001100 00000099\n", instruction));
+    EXPECT_EQ(ReadWord(0x1000), 0u);
+    EXPECT_EQ(ReadWord(0x1200), 0u);
+    EXPECT_EQ(ReadWord(0x1100), 0x99u);
+  }
+}
+
+TEST_F(CheatsApply, ChainedLineConditionals)
+{
+  static constexpr std::string_view code = "D0003000 00001234\n"
+                                           "D0003002 00005678\n"
+                                           "90001000 00000001\n"
+                                           "90001010 00000002\n";
+  WriteHalf(0x3000, 0x1234);
+  WriteHalf(0x3002, 0x5678);
+  Run(code);
+  EXPECT_EQ(ReadWord(0x1000), 1u);
+  EXPECT_EQ(ReadWord(0x1010), 2u);
+
+  // Either failing skips the write, but nothing after it.
+  for (const u32 address : {0x3000u, 0x3002u})
+  {
+    SCOPED_TRACE(address);
+    WriteWord(0x1000, 0);
+    WriteWord(0x1010, 0);
+    WriteHalf(0x3000, 0x1234);
+    WriteHalf(0x3002, 0x5678);
+    WriteHalf(address, 0);
+    Run(code);
+    EXPECT_EQ(ReadWord(0x1000), 0u);
+    EXPECT_EQ(ReadWord(0x1010), 2u);
+  }
+}
+
+TEST_F(CheatsApply, LineConditionalAtEnd)
+{
+  for (const u16 value : {u16(0), u16(0x1234)})
+  {
+    WriteHalf(0x3000, value);
+    WriteWord(0x1000, 0);
+    Run("90001000 00000001\nD0003000 00001234\n");
+    EXPECT_EQ(ReadWord(0x1000), 1u);
+  }
+}
+
+TEST_F(CheatsApply, LineConditionalBeforeBlockConditional)
+{
+  // A false line compare only skips the C0 line, so the block body runs.
+  WriteHalf(0x3010, 0);
+  Run("D0003000 00001234\n"
+      "C0003010 00005555\n"
+      "90001000 00000001\n"
+      "00000000 0000FFFF\n"
+      "90001010 00000002\n");
+  EXPECT_EQ(ReadWord(0x1000), 1u);
+  EXPECT_EQ(ReadWord(0x1010), 2u);
+}
+
+TEST_F(CheatsApply, BlockConditionals)
+{
+  struct Case
+  {
+    u8 opcode;
+    u32 width;
+    u32 memory;
+    u32 compare;
+    bool expected;
+  };
+  static constexpr std::array cases = {
+    Case{0xC0, 2, 0x1234, 0x1234, true},
+    Case{0xC0, 2, 0x1234, 0x1235, false},
+    Case{0xC0, 2, 0x1234, 0xFFFF1234, true},
+    Case{0xA4, 4, 0x12345678, 0x12345678, true},
+    Case{0xA4, 4, 0x12345678, 0x12345679, false},
+    Case{0xA4, 4, 0x12345678, 0x00005678, false},
+    Case{0xC3, 1, 0x05, 0x06, true},
+    Case{0xC3, 1, 0x06, 0x06, false},
+    Case{0xC3, 1, 0x80, 0x7F, false},
+    Case{0xC4, 1, 0x07, 0x06, true},
+    Case{0xC4, 1, 0x06, 0x06, false},
+    Case{0xC4, 1, 0x80, 0x7F, true},
+    Case{0xC5, 2, 0x1233, 0x1234, true},
+    Case{0xC5, 2, 0x1234, 0x1234, false},
+    Case{0xC5, 2, 0x8000, 0x7FFF, false},
+    Case{0xC6, 2, 0x1235, 0x1234, true},
+    Case{0xC6, 2, 0x1234, 0x1234, false},
+    Case{0xC6, 2, 0x8000, 0x7FFF, true},
+  };
+
+  for (const Case& c : cases)
+  {
+    SCOPED_TRACE(fmt::format("{:02X} {:X} {:X}", c.opcode, c.memory, c.compare));
+    const u32 width_mask = (c.width == 4) ? 0xFFFFFFFFu : ((1u << (c.width * 8)) - 1);
+    WriteWord(0x3000, c.memory | ~width_mask);
+    std::memset(&g_bus.unprotected_ram[0x1000], 0, 0x100);
+    Run(fmt::format("{:02X}003000 {:08X}\n"
+                    "90001000 00000001\n"
+                    "90001004 00000002\n"
+                    "00000000 0000FFFF\n"
+                    "90001010 00000003\n",
+                    c.opcode, c.compare));
+    EXPECT_EQ(ReadWord(0x1000), c.expected ? 1u : 0u);
+    EXPECT_EQ(ReadWord(0x1004), c.expected ? 2u : 0u);
+    EXPECT_EQ(ReadWord(0x1010), 3u);
+  }
+}
+
+TEST_F(CheatsApply, BlockConditionalWithoutSeparator)
+{
+  Run("C0003000 00001234\n"
+      "90001000 00000001\n"
+      "90001010 00000002\n");
+  EXPECT_EQ(ReadWord(0x1000), 0u);
+  EXPECT_EQ(ReadWord(0x1010), 0u);
+}
+
+TEST_F(CheatsApply, BlockConditionalsDoNotNest)
+{
+  // The first separator ends both blocks.
+  static constexpr std::string_view code = "C0003000 00001111\n"
+                                           "C0003002 00002222\n"
+                                           "90001000 00000001\n"
+                                           "00000000 0000FFFF\n"
+                                           "90001010 00000002\n"
+                                           "00000000 0000FFFF\n"
+                                           "90001020 00000003\n";
+  for (const auto& [outer, inner, expected] :
+       {std::tuple{0x1111, 0x2222, 1u}, std::tuple{0x1111, 0, 0u}, std::tuple{0, 0x2222, 0u}, std::tuple{0, 0, 0u}})
+  {
+    SCOPED_TRACE(fmt::format("{:X} {:X}", outer, inner));
+    std::memset(&g_bus.unprotected_ram[0x1000], 0, 0x100);
+    WriteHalf(0x3000, static_cast<u16>(outer));
+    WriteHalf(0x3002, static_cast<u16>(inner));
+    Run(code);
+    EXPECT_EQ(ReadWord(0x1000), expected);
+    EXPECT_EQ(ReadWord(0x1010), 2u);
+    EXPECT_EQ(ReadWord(0x1020), 3u);
+  }
+}
+
+TEST_F(CheatsApply, BlockConditionalSkipsSlidePayload)
+{
+  // The slide's second line looks like a separator, but is skipped as part of the slide.
+  Run("C0003000 00001234\n"
+      "50000201 00000001\n"
+      "00000000 0000FFFF\n"
+      "90001004 00000001\n"
+      "00000000 0000FFFF\n"
+      "90001010 00000002\n");
+  EXPECT_EQ(ReadWord(0x1004), 0u);
+  EXPECT_EQ(ReadWord(0x1010), 2u);
+}
+
+TEST_F(CheatsApply, ButtonConditionals)
+{
+  using Button = DigitalController::Button;
+
+  // PSX button bit order to GameShark button bits.
+  static constexpr std::array<u16, 16> mapping = {0x0100, 0x0200, 0x0400, 0x0800, 0x1000, 0x2000, 0x4000, 0x8000,
+                                                  0x0001, 0x0002, 0x0004, 0x0008, 0x0010, 0x0020, 0x0040, 0x0080};
+
+  const auto check = [](u16 value) {
+    std::memset(&g_bus.unprotected_ram[0x1000], 0, 0x100);
+    Run(fmt::format("D4000000 {0:08X}\n"
+                    "90001000 00000001\n"
+                    "D5000000 {0:08X}\n"
+                    "90001010 00000001\n"
+                    "00000000 0000FFFF\n"
+                    "D6000000 {0:08X}\n"
+                    "90001020 00000001\n"
+                    "00000000 0000FFFF\n",
+                    value));
+    const bool d4 = (ReadWord(0x1000) != 0), d5 = (ReadWord(0x1010) != 0), d6 = (ReadWord(0x1020) != 0);
+    EXPECT_EQ(d4, d5);
+    EXPECT_NE(d5, d6);
+    return d4;
+  };
+
+  // No controllers, no buttons.
+  EXPECT_TRUE(check(0x0000));
+  EXPECT_FALSE(check(0x0100));
+
+  Pad::SetController(0, DigitalController::Create(0, ControllerType::DigitalController));
+  Controller* const pad = Pad::GetController(0);
+  EXPECT_TRUE(check(0x0000));
+  for (u32 i = 0; i < static_cast<u32>(Button::Count); i++)
+  {
+    SCOPED_TRACE(i);
+    pad->SetBindState(i, 1.0f);
+    EXPECT_TRUE(check(mapping[i]));
+    EXPECT_FALSE(check(0x0000));
+    pad->SetBindState(i, 0.0f);
+  }
+
+  // Must match exactly, and buttons from all controllers are combined.
+  pad->SetBindState(static_cast<u32>(Button::Select), 1.0f);
+  pad->SetBindState(static_cast<u32>(Button::Cross), 1.0f);
+  EXPECT_TRUE(check(0x0140));
+  EXPECT_FALSE(check(0x0100));
+  EXPECT_FALSE(check(0x0141));
+  Pad::SetController(1, DigitalController::Create(1, ControllerType::DigitalController));
+  Pad::GetController(1)->SetBindState(static_cast<u32>(Button::L2), 1.0f);
+  EXPECT_TRUE(check(0x0141));
+}
+
+TEST_F(CheatsApply, BitCompareButtons)
+{
+  using Button = DigitalController::Button;
+  static constexpr u8 REG = 0xE0;
+
+  Pad::SetController(0, DigitalController::Create(0, ControllerType::DigitalController));
+  Controller* const pad = Pad::GetController(0);
+  const auto set_select = [pad](bool pressed) {
+    pad->SetBindState(static_cast<u32>(Button::Select), pressed ? 1.0f : 0.0f);
+  };
+
+  // Returns whether the block ran.
+  const auto run = [](u32 mode, u32 check_value) {
+    WriteWord(0x1000, 0);
+    WriteWord(0x1010, 0);
+    Run(fmt::format("{:08X} {:02X}{:06X}\n"
+                    "90001000 00000001\n"
+                    "00000000 0000FFFF\n"
+                    "90001010 00000002\n",
+                    0xD7000000u | mode, REG, check_value));
+    EXPECT_EQ(ReadWord(0x1010), 2u);
+    return (ReadWord(0x1000) != 0);
+  };
+
+  // Mode 0, bits set: runs every frame the buttons are held, counting the frames in the register.
+  SetCheatRegister(REG, 0);
+  set_select(true);
+  EXPECT_TRUE(run(0x000000, 0x000100));
+  EXPECT_TRUE(run(0x000000, 0x000100));
+  EXPECT_EQ(GetCheatRegister(REG), 2u);
+  EXPECT_FALSE(run(0x000000, 0x000140));
+  EXPECT_EQ(GetCheatRegister(REG), 0u);
+  set_select(false);
+
+  // Bits clear.
+  SetCheatRegister(REG, 0);
+  EXPECT_TRUE(run(0x100000, 0x000100));
+  EXPECT_EQ(GetCheatRegister(REG), 1u);
+  set_select(true);
+  EXPECT_FALSE(run(0x100000, 0x000100));
+  EXPECT_EQ(GetCheatRegister(REG), 0u);
+
+  // Frame count comparisons against the low 16 bits, on frames 1-5.
+  struct Case
+  {
+    u32 mode;
+    std::array<bool, 5> expected;
+  };
+  static constexpr std::array cases = {
+    Case{0x010003, {false, false, true, false, false}},  // ==
+    Case{0x020003, {true, true, false, false, false}},   // <
+    Case{0x030003, {false, false, false, true, true}},   // >
+    Case{0x040003, {true, true, false, true, true}},     // !=
+    Case{0x050003, {false, false, false, false, false}}, // invalid
+    Case{0x110003, {false, false, true, false, false}},  // == with bits clear
+  };
+  for (const Case& c : cases)
+  {
+    SCOPED_TRACE(fmt::format("{:06X}", c.mode));
+    SetCheatRegister(REG, 0);
+    const bool bits_clear = (c.mode & 0x100000u) != 0;
+    set_select(!bits_clear);
+    for (u32 frame = 0; frame < c.expected.size(); frame++)
+      EXPECT_EQ(run(c.mode, 0x000100), c.expected[frame]) << frame;
+    EXPECT_EQ(GetCheatRegister(REG), 5u);
+
+    // Releasing resets the count.
+    set_select(bits_clear);
+    EXPECT_FALSE(run(c.mode, 0x000100));
+    EXPECT_EQ(GetCheatRegister(REG), 0u);
+  }
+}
+
+TEST_F(CheatsApply, BitCompareButtonsAnalogSticks)
+{
+  using HalfAxis = AnalogController::HalfAxis;
+  static constexpr u8 REG = 0xE1;
+
+  Pad::SetController(0, AnalogController::Create(0));
+  Controller* const pad = Pad::GetController(0);
+  const auto run = [](u32 check_value) {
+    WriteWord(0x1000, 0);
+    Run(fmt::format("D7000000 {:02X}{:06X}\n90001000 00000001\n00000000 0000FFFF\n", REG, check_value));
+    return (ReadWord(0x1000) != 0);
+  };
+
+  static constexpr std::array<std::pair<HalfAxis, u32>, 8> directions = {{
+    {HalfAxis::RUp, 0x010000},
+    {HalfAxis::RRight, 0x020000},
+    {HalfAxis::RDown, 0x040000},
+    {HalfAxis::RLeft, 0x080000},
+    {HalfAxis::LUp, 0x100000},
+    {HalfAxis::LRight, 0x200000},
+    {HalfAxis::LDown, 0x400000},
+    {HalfAxis::LLeft, 0x800000},
+  }};
+
+  // Centred sticks set no bits.
+  for (const auto& [axis, bit] : directions)
+    EXPECT_FALSE(run(bit)) << bit;
+
+  for (const auto& [axis, bit] : directions)
+  {
+    SCOPED_TRACE(bit);
+    const u32 bind = static_cast<u32>(AnalogController::Button::Count) + static_cast<u32>(axis);
+    pad->SetBindState(bind, 1.0f);
+    EXPECT_TRUE(run(bit));
+    for (const auto& [other_axis, other_bit] : directions)
+    {
+      if (other_bit != bit)
+        EXPECT_FALSE(run(other_bit)) << other_bit;
+    }
+    pad->SetBindState(bind, 0.0f);
+  }
+
+  // Combined with buttons.
+  pad->SetBindState(static_cast<u32>(AnalogController::Button::Cross), 1.0f);
+  pad->SetBindState(static_cast<u32>(AnalogController::Button::Count) + static_cast<u32>(HalfAxis::LUp), 1.0f);
+  EXPECT_TRUE(run(0x100040));
+  EXPECT_FALSE(run(0x200040));
+}
+
+TEST_F(CheatsApply, MultiConditionals)
+{
+  WriteHalf(0x3000, 0x1234);
+  WriteByte(0x3004, 0x5A);
+  WriteWord(0x3008, 0x80000000);
+
+  // Each condition with a passing and a failing value.
+  static constexpr std::array<std::pair<std::string_view, std::string_view>, 15> conditions = {{
+    {"D0003000 00001234", "D0003000 00001235"},
+    {"D1003000 00001235", "D1003000 00001234"},
+    {"D2003000 00001235", "D2003000 00001234"},
+    {"D3003000 00001233", "D3003000 00001234"},
+    {"E0003004 0000005A", "E0003004 0000005B"},
+    {"E1003004 0000005B", "E1003004 0000005A"},
+    {"E2003004 0000005B", "E2003004 0000005A"},
+    {"E3003004 00000059", "E3003004 0000005A"},
+    {"A0003008 80000000", "A0003008 7FFFFFFF"},
+    {"A1003008 7FFFFFFF", "A1003008 80000000"},
+    {"A2003008 80000001", "A2003008 80000000"},
+    {"A3003008 7FFFFFFF", "A3003008 80000000"},
+    {"E4003004 0000000A", "E4003004 00000005"}, // bits set
+    {"E5003004 00000005", "E5003004 0000000A"}, // bits clear
+    {"D7000000 E2000000", "D7100000 E2000000"}, // no buttons, check value 0
+  }};
+
+  // AND alongside a passing condition, OR alongside a failing one. Nothing follows the separator, since a failing F6
+  // doesn't stop there (see DISABLED_MultiConditionalFalseContinuesAfterSeparator).
+  for (const auto& [type, other] : {std::pair{0u, "D0003100 00000000"}, std::pair{1u, "D0003100 00000001"}})
+  {
+    for (const auto& [pass, fail] : conditions)
+    {
+      for (const bool expected : {true, false})
+      {
+        const std::string_view condition = expected ? pass : fail;
+        SCOPED_TRACE(fmt::format("{} {}", type, condition));
+        WriteWord(0x1000, 0);
+        Run(
+          fmt::format("F60000{:02X} 1F000002\n{}\n{}\n90001000 00000001\n00000000 0000FFFF\n", type, other, condition));
+        EXPECT_EQ(ReadWord(0x1000), expected ? 1u : 0u);
+
+        // Swapping the order makes no difference.
+        WriteWord(0x1000, 0);
+        Run(
+          fmt::format("F60000{:02X} 1F000002\n{}\n{}\n90001000 00000001\n00000000 0000FFFF\n", type, condition, other));
+        EXPECT_EQ(ReadWord(0x1000), expected ? 1u : 0u);
+      }
+    }
+  }
+
+  // A passing F6 continues after the separator.
+  WriteWord(0x1000, 0);
+  Run("F6000000 1F000001\nD0003000 00001234\n90001000 00000001\n00000000 0000FFFF\n90001010 00000002\n");
+  EXPECT_EQ(ReadWord(0x1000), 1u);
+  EXPECT_EQ(ReadWord(0x1010), 2u);
+}
+
+TEST_F(CheatsApply, MultiConditionalElse)
+{
+  // The else line directly follows the if body, without a separator.
+  static constexpr std::string_view code = "F6000000 1F000001\n"
+                                           "D0003000 00001234\n"
+                                           "90001000 00000001\n"
+                                           "F6000000 E15E0000\n"
+                                           "90001010 00000002\n"
+                                           "00000000 0000FFFF\n"
+                                           "90001020 00000003\n";
+  for (const auto& [value, expected] :
+       {std::pair{u16(0x1234), std::array{1u, 0u, 3u}}, std::pair{u16(0), std::array{0u, 2u, 3u}}})
+  {
+    SCOPED_TRACE(value);
+    std::memset(&g_bus.unprotected_ram[0x1000], 0, 0x100);
+    WriteHalf(0x3000, value);
+    Run(code);
+    EXPECT_EQ(ReadWord(0x1000), expected[0]);
+    EXPECT_EQ(ReadWord(0x1010), expected[1]);
+    EXPECT_EQ(ReadWord(0x1020), expected[2]);
+  }
+}
+
+TEST_F(CheatsApply, MultiConditionalElseIf)
+{
+  static constexpr std::string_view code = "F6000000 1F000001\n"
+                                           "D0003000 00001234\n"
+                                           "90001000 00000001\n"
+                                           "F6000000 E15E1F01\n"
+                                           "D0003000 00005678\n"
+                                           "90001010 00000002\n"
+                                           "F6000000 E15E0000\n"
+                                           "90001020 00000003\n"
+                                           "00000000 0000FFFF\n"
+                                           "90001030 00000004\n";
+  for (const auto& [value, expected] :
+       {std::pair{u16(0x1234), std::array{1u, 0u, 0u, 4u}}, std::pair{u16(0x5678), std::array{0u, 2u, 0u, 4u}},
+        std::pair{u16(0), std::array{0u, 0u, 3u, 4u}}})
+  {
+    SCOPED_TRACE(value);
+    std::memset(&g_bus.unprotected_ram[0x1000], 0, 0x100);
+    WriteHalf(0x3000, value);
+    Run(code);
+    EXPECT_EQ(ReadWord(0x1000), expected[0]);
+    EXPECT_EQ(ReadWord(0x1010), expected[1]);
+    EXPECT_EQ(ReadWord(0x1020), expected[2]);
+    EXPECT_EQ(ReadWord(0x1030), expected[3]);
+  }
+}
+
+TEST_F(CheatsApply, MultiConditionalElseOutsideIf)
+{
+  // Else/else-if lines outside an if are skipped to the separator.
+  for (const std::string_view line : {"F6000000 E15E0000", "F6000000 E15E1F01", "F6000000 12345678"})
+  {
+    SCOPED_TRACE(line);
+    std::memset(&g_bus.unprotected_ram[0x1000], 0, 0x100);
+    Run(fmt::format("{}\nD0003000 00000000\n90001000 00000001\n00000000 0000FFFF\n90001010 00000002\n", line));
+    EXPECT_EQ(ReadWord(0x1000), 0u);
+    EXPECT_EQ(ReadWord(0x1010), 2u);
+  }
+}
+
+TEST_F(CheatsApply, MultiConditionalErrorsStopCode)
+{
+  // No conditions, an unknown type, or an unsupported condition stop the rest of the code.
+  for (const std::string_view header :
+       {"F6000000 1F000000\n", "F6000002 1F000001\nD0003000 00000000\n", "F6000000 1F000001\n80003000 00000000\n",
+        "F6000001 1F000001\nC0003000 00000000\n"})
+  {
+    SCOPED_TRACE(header);
+    std::memset(&g_bus.unprotected_ram[0x1000], 0, 0x100);
+    Run(fmt::format("90001020 00000003\n{}90001000 00000001\n00000000 0000FFFF\n90001010 00000002\n", header));
+    EXPECT_EQ(ReadWord(0x1000), 0u);
+    EXPECT_EQ(ReadWord(0x1010), 0u);
+    EXPECT_EQ(ReadWord(0x1020), 3u);
+  }
+}
+
+TEST_F(CheatsApply, ForceRange)
+{
+  struct Case
+  {
+    std::string_view code;
+    u32 width;
+    u32 before;
+    u32 after;
+  };
+  static constexpr std::array cases = {
+    // F0: min 10, max 80, below 11, above EE.
+    Case{"F0001000 EE118010", 1, 0x05, 0x11},
+    Case{"F0001000 EE118010", 1, 0x90, 0xEE},
+    Case{"F0001000 EE118010", 1, 0x50, 0x50},
+    Case{"F0001000 EE118010", 1, 0x10, 0x10},
+    Case{"F0001000 EE118010", 1, 0x80, 0x80},
+    Case{"F0001000 EE118000", 1, 0x00, 0x00},
+    // F1: clamp.
+    Case{"F1001000 00800010", 2, 0x0005, 0x0010},
+    Case{"F1001000 00800010", 2, 0x0090, 0x0080},
+    Case{"F1001000 00800010", 2, 0x0050, 0x0050},
+    Case{"F1001000 00800010", 2, 0x0010, 0x0010},
+    Case{"F1001000 00800010", 2, 0x0080, 0x0080},
+    Case{"F1001000 00800000", 2, 0x0000, 0x0000},
+    Case{"F1001000 80000010", 2, 0x8001, 0x8000},
+    // F2: roll round.
+    Case{"F2001000 00800010", 2, 0x0005, 0x0080},
+    Case{"F2001000 00800010", 2, 0x0090, 0x0010},
+    Case{"F2001000 00800010", 2, 0x0050, 0x0050},
+    Case{"F2001000 00800010", 2, 0x0010, 0x0010},
+    Case{"F2001000 00800010", 2, 0x0080, 0x0080},
+    // F3: second line holds the below/above values.
+    Case{"F3001000 00800010\n00000000 EEEE1111", 2, 0x0005, 0x1111},
+    Case{"F3001000 00800010\n00000000 EEEE1111", 2, 0x0090, 0xEEEE},
+    Case{"F3001000 00800010\n00000000 EEEE1111", 2, 0x0050, 0x0050},
+    Case{"F3001000 00800010\n00000000 EEEE1111", 2, 0x0010, 0x0010},
+    Case{"F3001000 00800010\n00000000 EEEE1111", 2, 0x0080, 0x0080},
+    // F5: swap between two values.
+    Case{"F5001000 22221111", 2, 0x1111, 0x2222},
+    Case{"F5001000 22221111", 2, 0x2222, 0x1111},
+    Case{"F5001000 22221111", 2, 0x3333, 0x3333},
+  };
+
+  for (const Case& c : cases)
+  {
+    SCOPED_TRACE(fmt::format("{} {:X}", c.code, c.before));
+    const u32 width_mask = (1u << (c.width * 8)) - 1;
+    WriteWord(0x1000, (0xA5A5A5A5u & ~width_mask) | c.before);
+    WriteWord(0x1100, 0);
+    Run(fmt::format("{}\n90001100 00000099\n", c.code));
+    EXPECT_EQ(ReadWord(0x1000), (0xA5A5A5A5u & ~width_mask) | c.after);
+    EXPECT_EQ(ReadWord(0x1100), 0x99u);
+  }
+}
+
+TEST_F(CheatsApply, FindAndReplace)
+{
+  static constexpr std::array<u8, 16> pattern = {0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17,
+                                                 0x18, 0x19, 0x1A, 0x1B, 0x1C, 0x1D, 0x1E, 0x1F};
+  static constexpr std::array<u8, 16> replacement = {0xA0, 0xA1, 0xA2, 0xA3, 0xA4, 0xA5, 0xA6, 0xA7,
+                                                     0xA8, 0xA9, 0xAA, 0xAB, 0xAC, 0xAD, 0xAE, 0xAF};
+
+  // Searches 0x3FE0-0x4020 in steps of 2, with EE as the wildcard.
+  static constexpr std::string_view code = "F4004000 00EE0010\n"
+                                           "10111213 14151617\n"
+                                           "18191A1B 1C1D1E1F\n"
+                                           "A0A1A2A3 A4A5A6A7\n"
+                                           "A8A9AAAB ACADAEAF\n"
+                                           "90001100 00000099\n";
+
+  const auto setup = [](u32 address) {
+    std::memset(&g_bus.unprotected_ram[0x3F00], 0, 0x200);
+    std::memcpy(&g_bus.unprotected_ram[address], pattern.data(), pattern.size());
+    WriteWord(0x1100, 0);
+  };
+  const auto matches = [](u32 address, const std::array<u8, 16>& expected) {
+    return std::memcmp(&g_bus.unprotected_ram[address], expected.data(), expected.size()) == 0;
+  };
+
+  for (const u32 address : {0x3FE0u, 0x3FF2u, 0x4000u, 0x4010u, 0x4020u})
+  {
+    SCOPED_TRACE(address);
+    setup(address);
+    Run(code);
+    EXPECT_TRUE(matches(address, replacement));
+    EXPECT_EQ(ReadWord(0x1100), 0x99u);
+  }
+
+  // Outside the window, or not 2-byte aligned with it.
+  for (const u32 address : {0x3FDEu, 0x4022u, 0x4011u})
+  {
+    SCOPED_TRACE(address);
+    setup(address);
+    Run(code);
+    EXPECT_TRUE(matches(address, pattern));
+    EXPECT_EQ(ReadWord(0x1100), 0x99u);
+  }
+
+  // One byte different.
+  setup(0x4000);
+  WriteByte(0x400F, 0);
+  Run(code);
+  EXPECT_EQ(ReadByte(0x4000), 0x10u);
+
+  // Wildcards in the search match anything, and in the replacement leave the byte alone.
+  setup(0x4000);
+  WriteByte(0x4002, 0x77);
+  Run("F4004000 00EE0000\n"
+      "1011EE13 14151617\n"
+      "18191A1B 1C1D1EEE\n"
+      "A0EEA2A3 A4A5A6A7\n"
+      "A8A9AAAB ACADAEEE\n");
+  EXPECT_EQ(ReadByte(0x4000), 0xA0u);
+  EXPECT_EQ(ReadByte(0x4001), 0x11u);
+  EXPECT_EQ(ReadByte(0x4002), 0xA2u);
+  EXPECT_EQ(ReadByte(0x400E), 0xAEu);
+  EXPECT_EQ(ReadByte(0x400F), 0x1Fu);
+}
+
+TEST_F(CheatsApply, Slide)
+{
+  // 8-bit, wrapping the value at 0x100.
+  Run("50000401 00000010\n30001000 000000F0\n");
+  EXPECT_EQ(ReadWord(0x1000), 0x201000F0u);
+  EXPECT_EQ(ReadWord(0x1004), 0u);
+
+  // 16-bit, wrapping the value at 0x10000.
+  Run("50000302 00000001\n80001010 0000FFFE\n");
+  EXPECT_EQ(ReadWord(0x1010), 0xFFFFFFFEu);
+  EXPECT_EQ(ReadWord(0x1014), 0x00000000u);
+  EXPECT_EQ(ReadWord(0x1018), 0u);
+
+  // 32-bit.
+  Run("50000204 00000003\n90001020 00005678\n");
+  EXPECT_EQ(ReadWord(0x1020), 0x00005678u);
+  EXPECT_EQ(ReadWord(0x1024), 0x0000567Bu);
+  EXPECT_EQ(ReadWord(0x1028), 0u);
+
+  // A count of zero writes nothing, and other write types are skipped.
+  WriteWord(0x1100, 0);
+  Run("50000004 00000001\n90001030 00001234\n50000201 00000001\n10001040 00000001\n90001100 00000099\n");
+  EXPECT_EQ(ReadWord(0x1030), 0u);
+  EXPECT_EQ(ReadWord(0x1040), 0u);
+  EXPECT_EQ(ReadWord(0x1100), 0x99u);
+}
+
+TEST_F(CheatsApply, ImprovedSlide)
+{
+  struct Case
+  {
+    u8 opcode;
+    u32 value;
+    std::array<u32, 3> expected;
+  };
+  static constexpr std::array cases = {
+    Case{0x30, 0x12345610, {0xAAAAAA10, 0xAAAAAA11, 0xAAAAAA12}},
+    Case{0x80, 0x12341234, {0xAAAA1234, 0xAAAA1235, 0xAAAA1236}},
+    Case{0x90, 0x12345678, {0x12345678, 0x12345679, 0x1234567A}},
+    Case{0x31, 0x00000001, {0xAAAAAAAB, 0xAAAAAAAA, 0xAAAAAAAB}},
+    Case{0x32, 0x00000002, {0xAAAAAAA8, 0xAAAAAAA8, 0xAAAAAAAA}},
+    Case{0x81, 0x00000101, {0xAAAAABAB, 0xAAAAABAA, 0xAAAAABAB}},
+    Case{0x82, 0x00000002, {0xAAAAAAA8, 0xAAAAAAA8, 0xAAAAAAAA}},
+    Case{0x91, 0x01000001, {0xABAAAAAB, 0xABAAAAAA, 0xABAAAAAB}},
+    Case{0x92, 0x80000002, {0x2AAAAAA8, 0x2AAAAAA8, 0x2AAAAAAA}},
+  };
+
+  for (const Case& c : cases)
+  {
+    SCOPED_TRACE(fmt::format("{:02X}", c.opcode));
+    for (const bool negative : {false, true})
+    {
+      SCOPED_TRACE(negative);
+      for (u32 i = 0; i < 4; i++)
+        WriteWord(0x1000 + i * 4, 0xAAAAAAAA);
+
+      // Increasing addresses and values, or the same writes in reverse.
+      if (!negative)
+      {
+        Run(fmt::format("53000003 00040001\n{:02X}001000 {:08X}\n", c.opcode, c.value));
+        for (u32 i = 0; i < 3; i++)
+          EXPECT_EQ(ReadWord(0x1000 + i * 4), c.expected[i]) << i;
+      }
+      else
+      {
+        Run(fmt::format("53110003 00040001\n{:02X}001008 {:08X}\n", c.opcode, c.value + 2));
+        for (u32 i = 0; i < 3; i++)
+        {
+          // Bit set/clear values aren't symmetric, so only check the plain writes in reverse.
+          if (c.opcode == 0x30 || c.opcode == 0x80 || c.opcode == 0x90)
+            EXPECT_EQ(ReadWord(0x1000 + i * 4), c.expected[i]) << i;
+        }
+      }
+      EXPECT_EQ(ReadWord(0x100C), 0xAAAAAAAAu);
+    }
+  }
+
+  // Negative address with positive value, and the reverse.
+  std::memset(&g_bus.unprotected_ram[0x1000], 0, 0x100);
+  Run("53100003 00020010\n80001004 00001000\n");
+  EXPECT_EQ(ReadWord(0x1000), 0x10101020u);
+  EXPECT_EQ(ReadWord(0x1004), 0x00001000u);
+  Run("53010003 00020010\n80001010 00001000\n");
+  EXPECT_EQ(ReadWord(0x1010), 0x0FF01000u);
+  EXPECT_EQ(ReadWord(0x1014), 0x00000FE0u);
+
+  // Unsupported write types are skipped with their line.
+  WriteWord(0x1100, 0);
+  Run("53000002 00040001\n10001020 00000001\n90001100 00000099\n");
+  EXPECT_EQ(ReadWord(0x1020), 0u);
+  EXPECT_EQ(ReadWord(0x1100), 0x99u);
+}
+
+TEST_F(CheatsApply, MemoryCopy)
+{
+  WriteWord(0x1000, 0x44332211);
+  WriteWord(0x1004, 0x88776655);
+
+  // Only the low 16 bits are the count.
+  Run("C2001000 FFFF0005\n00002000 00000000\n");
+  EXPECT_EQ(ReadWord(0x2000), 0x44332211u);
+  EXPECT_EQ(ReadWord(0x2004), 0x00000055u);
+
+  // Copies forwards a byte at a time, so an overlapping copy repeats the first byte.
+  Run("C2001000 00000004\n00001001 00000000\n");
+  EXPECT_EQ(ReadWord(0x1000), 0x11111111u);
+  EXPECT_EQ(ReadWord(0x1004), 0x88776611u);
+}
+
+TEST_F(CheatsApply, DelayActivation)
+{
+  // The frame number is zero, so any non-zero delay stops the code at the C1 line.
+  ASSERT_EQ(System::GetFrameNumber(), 0u);
+  Run("90001000 00000001\nC1000000 00000001\n90001010 00000002\n");
+  EXPECT_EQ(ReadWord(0x1000), 1u);
+  EXPECT_EQ(ReadWord(0x1010), 0u);
+  Run("C1000000 00000000\n90001010 00000002\n");
+  EXPECT_EQ(ReadWord(0x1010), 2u);
+}
+
+TEST_F(CheatsApply, UnknownInstructionsAreSkipped)
+{
+  // Unknown codes, and E4/E5 outside F6, are skipped.
+  Run("40001000 00000001\n"
+      "E4001000 00000001\n"
+      "E5001000 00000001\n"
+      "90001010 00000002\n");
+  EXPECT_EQ(ReadWord(0x1000), 0u);
+  EXPECT_EQ(ReadWord(0x1010), 2u);
+}
+
+TEST_F(CheatsApply, IncompleteInstructionsAreIgnored)
+{
+  for (const std::string_view line :
+       {"50000201 00000001", "53000002 00040001", "C2001000 00000004", "F3001000 00800010"})
+  {
+    SCOPED_TRACE(line);
+    WriteWord(0x1000, 0);
+    Run(fmt::format("90001000 00000001\n{}\n", line));
+    EXPECT_EQ(ReadWord(0x1000), 1u);
+  }
+
+  // F4 needs four lines after it.
+  WriteWord(0x4000, 0x13121110);
+  Run("F4004000 00EE0000\n10111213 EEEEEEEE\nEEEEEEEE EEEEEEEE\nA0A1A2A3 EEEEEEEE\n");
+  EXPECT_EQ(ReadWord(0x4000), 0x13121110u);
+}
+
+TEST_F(CheatsApply, CheatRegisters)
+{
+  // 51 TT R2 R1 VVVVVVVV. Registers 0x10-0x1F are used here.
+  const auto setup = [](std::initializer_list<std::pair<u8, u32>> registers) {
+    std::memset(&g_bus.unprotected_ram[0x5000], 0, 0x200);
+    for (u8 reg = 0x10; reg < 0x20; reg++)
+      SetCheatRegister(reg, 0xCCCCCCCC);
+    for (const auto& [reg, value] : registers)
+      SetCheatRegister(reg, value);
+  };
+
+  // 8-bit.
+  setup({{0x10, 0x1234ABCD}});
+  Run("51000010 00005001\n");
+  EXPECT_EQ(ReadWord(0x5000), 0x0000CD00u);
+
+  setup({});
+  WriteWord(0x5000, 0x123456EF);
+  Run("51010010 00005000\n");
+  EXPECT_EQ(GetCheatRegister(0x10), 0xEFu);
+
+  setup({{0x10, 0x5004}});
+  Run("51020010 123456A5\n");
+  EXPECT_EQ(ReadWord(0x5004), 0x000000A5u);
+
+  setup({{0x11, 0x123401F0}});
+  Run("51031110 00000005\n");
+  EXPECT_EQ(GetCheatRegister(0x10), 0xF5u);
+
+  setup({{0x10, 0x5008}, {0x11, 0x12345610}});
+  Run("51041110 00000005\n");
+  EXPECT_EQ(ReadWord(0x5008), 0x00000015u);
+
+  setup({});
+  Run("51050010 12345678\n");
+  EXPECT_EQ(GetCheatRegister(0x10), 0x78u);
+
+  setup({{0x11, 0x5000}});
+  WriteWord(0x5010, 0x1234569A);
+  Run("51061110 00000010\n");
+  EXPECT_EQ(GetCheatRegister(0x10), 0x9Au);
+
+  // Array write: base + size * (index - 1) + offset, guarded by size >= offset, index > 0 and a D0D0 marker.
+  const auto array_write = [&setup](u32 size, u32 index, u32 marker, u32 offset, u8 reg = 0x10) {
+    setup({});
+    SetCheatRegister(reg, 0x5100);
+    SetCheatRegister(reg + 1, size);
+    SetCheatRegister(reg + 2, index);
+    SetCheatRegister(reg + 3, marker);
+    Run(fmt::format("510700{:02X} {:04X}12AB\n", reg, offset));
+    Run(fmt::format("514700{:02X} {:04X}CDEF\n", reg, offset + 1));
+  };
+  array_write(0x10, 2, 0xD0D0, 3);
+  EXPECT_EQ(ReadByte(0x5113), 0xABu);
+  EXPECT_EQ(ReadHalf(0x5114), 0xCDEFu);
+  EXPECT_EQ(ReadByte(0x5112), 0u);
+  array_write(0x10, 2, 0xD0D0, 0x10);
+  EXPECT_EQ(ReadByte(0x5120), 0xABu);
+  array_write(0x10, 2, 0xD0D1, 3);
+  EXPECT_EQ(ReadByte(0x5113), 0u);
+  EXPECT_EQ(ReadHalf(0x5114), 0u);
+  array_write(0x10, 0, 0xD0D0, 3);
+  EXPECT_EQ(ReadByte(0x50F3), 0u);
+  array_write(0x10, 2, 0xD0D0, 0x11);
+  EXPECT_EQ(ReadByte(0x5121), 0u);
+  EXPECT_EQ(ReadHalf(0x5122), 0u);
+
+  // 16-bit.
+  setup({{0x10, 0x1234ABCD}});
+  Run("51400010 00005002\n");
+  EXPECT_EQ(ReadWord(0x5000), 0xABCD0000u);
+
+  setup({});
+  WriteWord(0x5000, 0x123456EF);
+  Run("51410010 00005000\n");
+  EXPECT_EQ(GetCheatRegister(0x10), 0x56EFu);
+
+  setup({{0x10, 0x5004}});
+  Run("51420010 123456A5\n");
+  EXPECT_EQ(ReadWord(0x5004), 0x000056A5u);
+
+  setup({{0x11, 0x1234F000}});
+  Run("51431110 00000005\n");
+  EXPECT_EQ(GetCheatRegister(0x10), 0xF005u);
+
+  setup({{0x10, 0x5008}, {0x11, 0x12345610}});
+  Run("51441110 00000005\n");
+  EXPECT_EQ(ReadWord(0x5008), 0x00005615u);
+
+  setup({});
+  Run("51450010 12345678\n");
+  EXPECT_EQ(GetCheatRegister(0x10), 0x5678u);
+
+  setup({{0x11, 0x5000}});
+  WriteWord(0x5010, 0x1234569A);
+  Run("51461110 00000010\n");
+  EXPECT_EQ(GetCheatRegister(0x10), 0x569Au);
+
+  // 32-bit.
+  setup({{0x10, 0x1234ABCD}});
+  Run("51800010 00005004\n");
+  EXPECT_EQ(ReadWord(0x5004), 0x1234ABCDu);
+
+  setup({});
+  WriteWord(0x5000, 0x123456EF);
+  Run("51810010 00005000\n");
+  EXPECT_EQ(GetCheatRegister(0x10), 0x123456EFu);
+
+  setup({{0x10, 0x5004}});
+  Run("51820010 123456A5\n");
+  EXPECT_EQ(ReadWord(0x5004), 0x123456A5u);
+
+  setup({{0x11, 0xFFFFFFFF}});
+  Run("51831110 00000005\n");
+  EXPECT_EQ(GetCheatRegister(0x10), 4u);
+
+  setup({{0x10, 0x5008}, {0x11, 0x12345610}});
+  Run("51841110 00000005\n");
+  EXPECT_EQ(ReadWord(0x5008), 0x12345615u);
+
+  setup({{0x11, 0x5000}});
+  WriteWord(0x5010, 0x1234569A);
+  Run("51861110 00000010\n");
+  EXPECT_EQ(GetCheatRegister(0x10), 0x1234569Au);
+
+  // Arithmetic: R3 (value low byte) = R2 op R1, or R1 op R2-field for shifts.
+  struct ArithmeticCase
+  {
+    u8 sub_type;
+    u32 r1;
+    u32 r2;
+    u32 expected;
+  };
+  static constexpr std::array arithmetic = {
+    ArithmeticCase{0xC0, 0x00000003, 0xFFFFFFFF, 0x00000002}, ArithmeticCase{0xC1, 0x00000003, 0x00000001, 0xFFFFFFFE},
+    ArithmeticCase{0xC2, 0x00010001, 0x00010003, 0x00040003}, ArithmeticCase{0xC3, 0x00000003, 0x00000010, 0x00000005},
+    ArithmeticCase{0xC3, 0x00000000, 0x00000010, 0x00000000}, ArithmeticCase{0xC4, 0x00000003, 0x00000010, 0x00000001},
+    ArithmeticCase{0xC4, 0x00000000, 0x00000010, 0x00000010}, ArithmeticCase{0xC5, 0x0000FF0F, 0x00F0F0F0, 0x0000F000},
+    ArithmeticCase{0xC6, 0x0000FF0F, 0x00F0F0F0, 0x00F0FFFF}, ArithmeticCase{0xC7, 0x0000FF0F, 0x00F0F0F0, 0x00F00FFF},
+    ArithmeticCase{0xC8, 0x0000FF0F, 0x00F0F0F0, 0xFFFF00F0},
+  };
+  for (const ArithmeticCase& c : arithmetic)
+  {
+    SCOPED_TRACE(fmt::format("{:02X}", c.sub_type));
+    setup({{0x10, c.r1}, {0x11, c.r2}});
+    Run(fmt::format("51{:02X}1110 00000012\n", c.sub_type));
+    EXPECT_EQ(GetCheatRegister(0x12), c.expected);
+    EXPECT_EQ(GetCheatRegister(0x10), c.r1);
+    EXPECT_EQ(GetCheatRegister(0x11), c.r2);
+  }
+
+  // Shifts use the R2 field as the amount.
+  setup({{0x10, 0x80000001}});
+  Run("51C90410 00000013\n51CA0410 00000014\n");
+  EXPECT_EQ(GetCheatRegister(0x13), 0x00000010u);
+  EXPECT_EQ(GetCheatRegister(0x14), 0x08000000u);
+
+  // Unknown sub-types do nothing.
+  setup({{0x10, 0x5000}, {0x11, 0x5000}});
+  Run("51081110 00005000\n513F1110 00005000\n51871110 00005000\n51CB1110 00000012\n51FF1110 00005000\n");
+  for (u8 reg = 0x12; reg < 0x20; reg++)
+    EXPECT_EQ(GetCheatRegister(reg), 0xCCCCCCCCu) << static_cast<u32>(reg);
+  EXPECT_EQ(GetCheatRegister(0x10), 0x5000u);
+  EXPECT_EQ(ReadWord(0x5000), 0u);
+}
+
+TEST_F(CheatsApply, CheatRegisterCompare)
+{
+  // 52 TT R2 R1 VVVVVVVV, with R1 = 0x20 and R2 = 0x21. Sub-types repeat for 8/16/32-bit at +0x40.
+  // Groups: 0x reg vs reg, 1x reg vs immediate, 2x memory at reg vs memory at reg, 3x reg vs memory at immediate.
+  static constexpr u32 MEM_A = 0x6000, MEM_B = 0x6010, MEM_V = 0x6020;
+  struct Case
+  {
+    u8 sub_type;
+    u32 x; // 0x: R2, 1x/3x: R1, 2x: memory at R2
+    u32 y; // 0x: R1, 1x: R2, 2x: memory at R1, 3x: memory at the immediate
+    u32 imm;
+    u32 hi; // upper bound for the range sub-types
+    bool expected;
+  };
+  static constexpr std::array cases = {
+    Case{0x00, 5, 5, 0, 0, true},
+    Case{0x00, 5, 6, 0, 0, false},
+    Case{0x01, 5, 6, 0, 0, true},
+    Case{0x01, 5, 5, 0, 0, false},
+    Case{0x02, 6, 5, 0, 0, true},
+    Case{0x02, 5, 5, 0, 0, false},
+    Case{0x03, 5, 5, 0, 0, true},
+    Case{0x03, 4, 5, 0, 0, false},
+    Case{0x04, 4, 5, 0, 0, true},
+    Case{0x04, 5, 5, 0, 0, false},
+    Case{0x05, 5, 5, 0, 0, true},
+    Case{0x05, 6, 5, 0, 0, false},
+    Case{0x06, 0x0F, 0x05, 0, 0, true},
+    Case{0x06, 0x0A, 0x05, 0, 0, false},
+    Case{0x07, 0x0A, 0x05, 0, 0, true},
+    Case{0x07, 0x0F, 0x05, 0, 0, false},
+    Case{0x0A, 0x05, 0x0F, 0, 0, true},
+    Case{0x0A, 0x0F, 0x05, 0, 0, false},
+    Case{0x0B, 0x0F, 0x05, 0, 0, true},
+    Case{0x0B, 0x05, 0x0F, 0, 0, false},
+
+    Case{0x10, 5, 0, 5, 0, true},
+    Case{0x10, 5, 0, 6, 0, false},
+    Case{0x11, 5, 0, 6, 0, true},
+    Case{0x11, 5, 0, 5, 0, false},
+    Case{0x12, 6, 0, 5, 0, true},
+    Case{0x12, 5, 0, 5, 0, false},
+    Case{0x13, 5, 0, 5, 0, true},
+    Case{0x13, 4, 0, 5, 0, false},
+    Case{0x14, 4, 0, 5, 0, true},
+    Case{0x14, 5, 0, 5, 0, false},
+    Case{0x15, 5, 0, 5, 0, true},
+    Case{0x15, 6, 0, 5, 0, false},
+    Case{0x16, 0x0F, 0, 0x05, 0, true},
+    Case{0x16, 0x0A, 0, 0x05, 0, false},
+    Case{0x17, 0x0A, 0, 0x05, 0, true},
+    Case{0x17, 0x0F, 0, 0x05, 0, false},
+    Case{0x18, 5, 0, 4, 6, true},
+    Case{0x18, 6, 0, 4, 6, false},
+    Case{0x18, 4, 0, 4, 6, false},
+    Case{0x19, 6, 0, 4, 6, true},
+    Case{0x19, 4, 0, 4, 6, true},
+    Case{0x19, 7, 0, 4, 6, false},
+    Case{0x19, 3, 0, 4, 6, false},
+    // 1A is in DISABLED_CheatRegisterCompareMaskEqualImmediate.
+    Case{0x1B, 0x0F, 0, 0x05, 0, true},
+    Case{0x1B, 0x05, 0, 0x0F, 0, false},
+
+    Case{0x20, 5, 5, 0, 0, true},
+    Case{0x20, 5, 6, 0, 0, false},
+    Case{0x21, 5, 6, 0, 0, true},
+    Case{0x21, 5, 5, 0, 0, false},
+    Case{0x22, 6, 5, 0, 0, true},
+    Case{0x22, 5, 5, 0, 0, false},
+    Case{0x23, 5, 5, 0, 0, true},
+    Case{0x23, 4, 5, 0, 0, false},
+    Case{0x24, 4, 5, 0, 0, true},
+    Case{0x24, 5, 5, 0, 0, false},
+    Case{0x25, 5, 5, 0, 0, true},
+    Case{0x25, 6, 5, 0, 0, false},
+    Case{0x26, 0, 0x0F, 0x05, 0, true},
+    Case{0x26, 0, 0x0A, 0x05, 0, false},
+    Case{0x27, 0, 0x0A, 0x05, 0, true},
+    Case{0x27, 0, 0x0F, 0x05, 0, false},
+    Case{0x28, 0, 5, 4, 6, true},
+    Case{0x28, 0, 6, 4, 6, false},
+    Case{0x29, 0, 6, 4, 6, true},
+    Case{0x29, 0, 7, 4, 6, false},
+    Case{0x2A, 0, 0x05, 0x0F, 0, true},
+    Case{0x2A, 0, 0x0F, 0x05, 0, false},
+    Case{0x2B, 0, 0x0F, 0x05, 0, true},
+    Case{0x2B, 0, 0x05, 0x0F, 0, false},
+
+    Case{0x30, 5, 5, 0, 0, true},
+    Case{0x30, 5, 6, 0, 0, false},
+    Case{0x31, 5, 6, 0, 0, true},
+    Case{0x31, 5, 5, 0, 0, false},
+    Case{0x32, 6, 5, 0, 0, true},
+    Case{0x32, 5, 5, 0, 0, false},
+    Case{0x33, 5, 5, 0, 0, true},
+    Case{0x33, 4, 5, 0, 0, false},
+    Case{0x34, 4, 5, 0, 0, true},
+    Case{0x34, 5, 5, 0, 0, false},
+    // 35 is in DISABLED_CheatRegisterCompareLessEqualMemory.
+    Case{0x36, 0x0F, 0x05, 0, 0, true},
+    Case{0x36, 0x0A, 0x05, 0, 0, false},
+    Case{0x37, 0x0A, 0x05, 0, 0, true},
+    Case{0x37, 0x0F, 0x05, 0, 0, false},
+    Case{0x3A, 0x05, 0x0F, 0, 0, true},
+    Case{0x3A, 0x0F, 0x05, 0, 0, false},
+    Case{0x3B, 0x0F, 0x05, 0, 0, true},
+    Case{0x3B, 0x05, 0x0F, 0, 0, false},
+  };
+
+  // Returns whether the block ran.
+  const auto run = [](u8 sub_type, u32 r1, u32 r2, u32 value) {
+    SetCheatRegister(0x20, r1);
+    SetCheatRegister(0x21, r2);
+    WriteWord(0x7000, 0);
+    WriteWord(0x7010, 0);
+    Run(fmt::format("52{:02X}2120 {:08X}\n90007000 00000001\n00000000 0000FFFF\n90007010 00000002\n", sub_type, value));
+    EXPECT_EQ(ReadWord(0x7010), 2u);
+    return (ReadWord(0x7000) != 0);
+  };
+
+  for (const u32 width : {1u, 2u, 4u})
+  {
+    const u8 offset = (width == 1) ? 0x00 : ((width == 2) ? 0x40 : 0x80);
+    const u32 mask = (width == 4) ? 0xFFFFFFFFu : ((1u << (width * 8)) - 1);
+    for (const Case& c : cases)
+    {
+      const u8 group = c.sub_type & 0xF0;
+      const u8 op = c.sub_type & 0x0F;
+
+      // No range compares for 32-bit.
+      if (width == 4 && (op == 0x08 || op == 0x09))
+        continue;
+
+      const u8 sub_type = c.sub_type + offset;
+      SCOPED_TRACE(fmt::format("{:02X} x={:X} y={:X} imm={:X} hi={:X}", sub_type, c.x, c.y, c.imm, c.hi));
+
+      // Other bits are set in register values and around memory values, so a wider compare would fail.
+      const u32 x_reg = c.x | (0x12345678u & ~mask);
+      const u32 y_reg = c.y | (0x9ABCDEF0u & ~mask);
+      const u32 value = (width == 4) ? c.imm : (c.imm | (c.hi << 16) | ((width == 1) ? 0x5A00u : 0u));
+      std::memset(&g_bus.unprotected_ram[MEM_A - 0x10], 0xEE, 0x40);
+      const auto write_memory = [width](u32 address, u32 v) {
+        std::memcpy(&g_bus.unprotected_ram[address], &v, width);
+      };
+
+      bool result;
+      switch (group)
+      {
+        case 0x00:
+          result = run(sub_type, y_reg, x_reg, value);
+          break;
+        case 0x10:
+          result = run(sub_type, x_reg, y_reg, value);
+          break;
+        case 0x20:
+          write_memory(MEM_B, c.x);
+          write_memory(MEM_A, c.y);
+          result = run(sub_type, MEM_A, MEM_B, value);
+          break;
+        default:
+          write_memory(MEM_V, c.y);
+          result = run(sub_type, x_reg, 0, MEM_V);
+          break;
+      }
+      EXPECT_EQ(result, c.expected);
+    }
+  }
+
+  // Sub-types that don't exist never run the block.
+  for (const u8 sub_type : {0x08, 0x0C, 0x1C, 0x2C, 0x3C, 0x4C, 0x88, 0x98, 0xA8, 0xBC, 0xC0, 0xFF})
+  {
+    SCOPED_TRACE(static_cast<u32>(sub_type));
+    EXPECT_FALSE(run(sub_type, 0, 0, 0));
+  }
+}
+
+TEST_F(CheatsApply, WriteIfMatch)
+{
+  WriteWord(0x1000, 0x55551111);
+  WriteWord(0x1010, 0x55555511);
+  WriteWord(0x1020, 0x55551111);
+  std::unique_ptr<Cheats::GamesharkCheatCode> code = Parse("A6001000 1111AAAA\n"
+                                                           "A8001010 000011AA\n"
+                                                           "A7001020 1111AAAA\n");
+  ASSERT_NE(code, nullptr);
+  EXPECT_TRUE(code->HasRestorableOnDisableEffects());
+  code->Apply();
+  EXPECT_EQ(ReadWord(0x1000), 0x5555AAAAu);
+  EXPECT_EQ(ReadWord(0x1010), 0x555555AAu);
+  EXPECT_EQ(ReadWord(0x1020), 0x5555AAAAu);
+
+  // No match, no write.
+  WriteWord(0x1000, 0x55552222);
+  WriteWord(0x1010, 0x55555522);
+  WriteWord(0x1020, 0x55552222);
+  code->Apply();
+  EXPECT_EQ(ReadWord(0x1000), 0x55552222u);
+  EXPECT_EQ(ReadWord(0x1010), 0x55555522u);
+  EXPECT_EQ(ReadWord(0x1020), 0x55552222u);
+
+  Error error;
+  EXPECT_FALSE(ParseGamesharkCode("A6001000 1111AAAA\n", &error)->HasRestorableOnDisableEffects());
+  EXPECT_TRUE(ParseGamesharkCode("A7001000 1111AAAA\n", &error)->HasRestorableOnDisableEffects());
+  EXPECT_TRUE(ParseGamesharkCode("A8001000 000011AA\n", &error)->HasRestorableOnDisableEffects());
+}
+
+TEST_F(CheatsApply, WriteIfMatchRestore)
+{
+  // A6 isn't restored. A7/A8 are, only if the written value is still there, regardless of conditionals.
+  std::unique_ptr<Cheats::GamesharkCheatCode> code = Parse("A6001000 1111AAAA\n"
+                                                           "D0003000 00001234\n"
+                                                           "A8001010 000011AA\n"
+                                                           "C0003000 00001234\n"
+                                                           "A7001020 1111AAAA\n"
+                                                           "A7001030 1111AAAA\n"
+                                                           "00000000 0000FFFF\n");
+  ASSERT_NE(code, nullptr);
+  WriteWord(0x1000, 0x5555AAAA);
+  WriteWord(0x1010, 0x555555AA);
+  WriteWord(0x1020, 0x5555AAAA);
+  WriteWord(0x1030, 0x5555BBBB);
+
+  Cheats::RollbackLog rollback;
+  code->ApplyOnDisable(&rollback);
+  EXPECT_EQ(ReadWord(0x1000), 0x5555AAAAu);
+  EXPECT_EQ(ReadWord(0x1010), 0x55555511u);
+  EXPECT_EQ(ReadWord(0x1020), 0x55551111u);
+  EXPECT_EQ(ReadWord(0x1030), 0x5555BBBBu);
+  ASSERT_EQ(rollback.size(), 2u);
+  EXPECT_EQ(rollback[0].size, MemoryAccessSize::Byte);
+  EXPECT_EQ(rollback[0].address, 0x1010u);
+  EXPECT_EQ(rollback[0].value, 0xAAu);
+  EXPECT_EQ(rollback[1].size, MemoryAccessSize::HalfWord);
+  EXPECT_EQ(rollback[1].address, 0x1020u);
+  EXPECT_EQ(rollback[1].value, 0xAAAAu);
+
+  Cheats::ReapplyOnDisableCodes(rollback);
+  EXPECT_EQ(ReadWord(0x1010), 0x555555AAu);
+  EXPECT_EQ(ReadWord(0x1020), 0x5555AAAAu);
+
+  // Also works without a rollback list.
+  code->ApplyOnDisable(nullptr);
+  EXPECT_EQ(ReadWord(0x1010), 0x55555511u);
+  EXPECT_EQ(ReadWord(0x1020), 0x55551111u);
+}
+
+TEST_F(CheatsApply, ApplyOnDisableSkipsOtherInstructions)
+{
+  // Payload lines that look like A7 restores mustn't be treated as instructions.
+  std::unique_ptr<Cheats::GamesharkCheatCode> code = Parse("30001100 00000011\n"
+                                                           "80001100 00001111\n"
+                                                           "90001100 11111111\n"
+                                                           "31001100 00000011\n"
+                                                           "32001100 00000011\n"
+                                                           "81001100 00000011\n"
+                                                           "82001100 00000011\n"
+                                                           "91001100 00000011\n"
+                                                           "92001100 00000011\n"
+                                                           "1F001100 00000011\n"
+                                                           "A5001100 00000011\n"
+                                                           "10001100 00000011\n"
+                                                           "11001100 00000011\n"
+                                                           "20001100 00000011\n"
+                                                           "21001100 00000011\n"
+                                                           "60001100 00000011\n"
+                                                           "61001100 00000011\n"
+                                                           "F0001100 00000011\n"
+                                                           "F1001100 00000011\n"
+                                                           "F2001100 00000011\n"
+                                                           "F5001100 00000011\n"
+                                                           "C1000000 00000000\n"
+                                                           "A6001100 00000011\n"
+                                                           "51850030 00001100\n"
+                                                           "F3001100 00110000\n"
+                                                           "A7001010 1111AAAA\n"
+                                                           "50000201 00000001\n"
+                                                           "A7001010 1111AAAA\n"
+                                                           "53000002 00010001\n"
+                                                           "A7001010 1111AAAA\n"
+                                                           "C2001100 00000004\n"
+                                                           "A7001010 1111AAAA\n"
+                                                           "F4001100 00EE0000\n"
+                                                           "A7001010 1111AAAA\n"
+                                                           "A7001010 1111AAAA\n"
+                                                           "A7001010 1111AAAA\n"
+                                                           "A7001010 1111AAAA\n"
+                                                           "A9001100 00000002\n"
+                                                           "A7001010 1111AAAA\n"
+                                                           "AB001100 00000001\n"
+                                                           "A7001010 1111AAAA\n"
+                                                           "D0001100 00000000\n"
+                                                           "D4000000 00000000\n"
+                                                           "C0001100 00000000\n"
+                                                           "D7000000 E3000000\n"
+                                                           "F6000000 1F000001\n"
+                                                           "D0001100 00000000\n"
+                                                           "52002120 00000000\n"
+                                                           "00000000 0000FFFF\n"
+                                                           "A7001020 1111AAAA\n");
+  ASSERT_NE(code, nullptr);
+  WriteWord(0x1010, 0x5555AAAA);
+  WriteWord(0x1020, 0x5555AAAA);
+  WriteWord(0x1100, 0x12345678);
+  SetCheatRegister(0x30, 0);
+
+  Cheats::RollbackLog rollback;
+  code->ApplyOnDisable(&rollback);
+  EXPECT_EQ(ReadWord(0x1010), 0x5555AAAAu);
+  EXPECT_EQ(ReadWord(0x1020), 0x55551111u);
+  EXPECT_EQ(ReadWord(0x1100), 0x12345678u);
+  EXPECT_EQ(GetCheatRegister(0x30), 0u);
+  ASSERT_EQ(rollback.size(), 1u);
+  EXPECT_EQ(rollback[0].address, 0x1020u);
+}
+
+// Suspected bugs. These test the intended behaviour, and currently fail.
+
+TEST_F(CheatsApply, DISABLED_MultiConditionalFalseContinuesAfterSeparator)
+{
+  // A failing F6 re-evaluates the line before the separator as an F6 header, which stops the code.
+  Run("F6000000 1F000001\n"
+      "D0003000 00001234\n"
+      "90001000 00000001\n"
+      "00000000 0000FFFF\n"
+      "90001010 00000002\n");
+  EXPECT_EQ(ReadWord(0x1000), 0u);
+  EXPECT_EQ(ReadWord(0x1010), 2u);
+}
+
+TEST_F(CheatsApply, DISABLED_MultiConditionalFalseWithoutSeparator)
+{
+  // WARNING: currently hangs. A failing F6 with no separator re-evaluates the last line as an F6 header, and an
+  // OR header with no lines left to read never exits the loop.
+  Run("F6000001 1F000001\n"
+      "D0003000 00001234\n"
+      "90001001 00000005\n");
+  EXPECT_EQ(ReadWord(0x1000), 0u);
+}
+
+TEST_F(CheatsApply, DISABLED_MultiConditionalElseAfterSeparator)
+{
+  // An else after the separator isn't consumed, so it runs as a stray else and skips its own body.
+  static constexpr std::string_view code = "F6000000 1F000001\n"
+                                           "D0003000 00001234\n"
+                                           "90001000 00000001\n"
+                                           "00000000 0000FFFF\n"
+                                           "F6000000 E15E0000\n"
+                                           "90001010 00000002\n"
+                                           "00000000 0000FFFF\n"
+                                           "90001020 00000003\n";
+  for (const auto& [value, expected] :
+       {std::pair{u16(0x1234), std::array{1u, 0u, 3u}}, std::pair{u16(0), std::array{0u, 2u, 3u}}})
+  {
+    SCOPED_TRACE(value);
+    std::memset(&g_bus.unprotected_ram[0x1000], 0, 0x100);
+    WriteHalf(0x3000, value);
+    Run(code);
+    EXPECT_EQ(ReadWord(0x1000), expected[0]);
+    EXPECT_EQ(ReadWord(0x1010), expected[1]);
+    EXPECT_EQ(ReadWord(0x1020), expected[2]);
+  }
+}
+
+TEST_F(CheatsApply, DISABLED_MultiConditionalElseIfAfterSeparator)
+{
+  // An else-if after the separator reads the separator as its header (255 AND conditions), which stops the code.
+  static constexpr std::string_view code = "F6000000 1F000001\n"
+                                           "D0003000 00001234\n"
+                                           "90001000 00000001\n"
+                                           "00000000 0000FFFF\n"
+                                           "F6000000 E15E1F01\n"
+                                           "D0003000 00005678\n"
+                                           "90001010 00000002\n"
+                                           "00000000 0000FFFF\n"
+                                           "F6000000 E15E0000\n"
+                                           "90001020 00000003\n"
+                                           "00000000 0000FFFF\n"
+                                           "90001030 00000004\n";
+  for (const auto& [value, expected] :
+       {std::pair{u16(0x1234), std::array{1u, 0u, 0u, 4u}}, std::pair{u16(0x5678), std::array{0u, 2u, 0u, 4u}},
+        std::pair{u16(0), std::array{0u, 0u, 3u, 4u}}})
+  {
+    SCOPED_TRACE(value);
+    std::memset(&g_bus.unprotected_ram[0x1000], 0, 0x100);
+    WriteHalf(0x3000, value);
+    Run(code);
+    EXPECT_EQ(ReadWord(0x1000), expected[0]);
+    EXPECT_EQ(ReadWord(0x1010), expected[1]);
+    EXPECT_EQ(ReadWord(0x1020), expected[2]);
+    EXPECT_EQ(ReadWord(0x1030), expected[3]);
+  }
+}
+
+TEST_F(CheatsApply, DISABLED_FindAndReplaceAdjacentMatch)
+{
+  // After a match the search moves on by 18 bytes rather than 16, so a match straight after is missed.
+  static constexpr std::array<u8, 16> pattern = {0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17,
+                                                 0x18, 0x19, 0x1A, 0x1B, 0x1C, 0x1D, 0x1E, 0x1F};
+  std::memcpy(&g_bus.unprotected_ram[0x4000], pattern.data(), pattern.size());
+  std::memcpy(&g_bus.unprotected_ram[0x4010], pattern.data(), pattern.size());
+  Run("F4004010 00EE0008\n"
+      "10111213 14151617\n"
+      "18191A1B 1C1D1E1F\n"
+      "A0A1A2A3 A4A5A6A7\n"
+      "A8A9AAAB ACADAEAF\n");
+  EXPECT_EQ(ReadByte(0x4000), 0xA0u);
+  EXPECT_EQ(ReadByte(0x4010), 0xA0u);
+}
+
+TEST_F(CheatsApply, DISABLED_CheatRegisterCompareMaskEqualImmediate)
+{
+  // 1A/5A/9A compare (R2 & V) == R1, but the matching B sub-types and the other A sub-types use (R1 & V) == R1.
+  for (const u8 sub_type : {0x1A, 0x5A, 0x9A})
+  {
+    SCOPED_TRACE(static_cast<u32>(sub_type));
+    for (const auto& [r1, r2, expected] : {std::tuple{0x05u, 0x00u, true}, std::tuple{0x1Fu, 0x1Fu, false}})
+    {
+      SetCheatRegister(0x20, r1);
+      SetCheatRegister(0x21, r2);
+      WriteWord(0x7000, 0);
+      Run(fmt::format("52{:02X}2120 0000000F\n90007000 00000001\n00000000 0000FFFF\n", sub_type));
+      EXPECT_EQ(ReadWord(0x7000), expected ? 1u : 0u) << r1;
+    }
+  }
+}
+
+TEST_F(CheatsApply, DISABLED_CheatRegisterCompareLessEqualMemory)
+{
+  // 35/75/B5 (R1 <= memory) are missing, while every other compare has a <= sub-type.
+  for (const u8 sub_type : {0x35, 0x75, 0xB5})
+  {
+    SCOPED_TRACE(static_cast<u32>(sub_type));
+    for (const auto& [r1, expected] : {std::pair{5u, true}, std::pair{4u, true}, std::pair{6u, false}})
+    {
+      SetCheatRegister(0x20, r1);
+      WriteWord(0x6020, 5);
+      WriteWord(0x7000, 0);
+      Run(fmt::format("52{:02X}0020 00006020\n90007000 00000001\n00000000 0000FFFF\n", sub_type));
+      EXPECT_EQ(ReadWord(0x7000), expected ? 1u : 0u) << r1;
+    }
+  }
+}
+
+TEST_F(CheatsApply, DISABLED_Slide32BitValue)
+{
+  // A 50 slide of a 90 write only uses the low 16 bits of the value.
+  Run("50000204 00000001\n90001000 1234FFFF\n");
+  EXPECT_EQ(ReadWord(0x1000), 0x1234FFFFu);
+  EXPECT_EQ(ReadWord(0x1004), 0x12350000u);
 }
