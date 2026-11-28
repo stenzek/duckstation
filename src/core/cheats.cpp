@@ -3484,7 +3484,8 @@ void Cheats::GamesharkCheatCode::Apply() const
               DoMemoryWrite<u8>(address + 14, r15);
             if (r16 != wildcard)
               DoMemoryWrite<u8>(address + 15, r16);
-            address = address + 16;
+            // Continue after the replaced bytes, the loop adds the other 2.
+            address += 14;
           }
         }
         index += 5;

@@ -2913,9 +2913,8 @@ TEST_F(CheatsApply, MultiConditionalElseIfAfterSeparator)
   }
 }
 
-TEST_F(CheatsApply, DISABLED_FindAndReplaceAdjacentMatch)
+TEST_F(CheatsApply, FindAndReplaceAdjacentMatch)
 {
-  // After a match the search moves on by 18 bytes rather than 16, so a match straight after is missed.
   static constexpr std::array<u8, 16> pattern = {0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17,
                                                  0x18, 0x19, 0x1A, 0x1B, 0x1C, 0x1D, 0x1E, 0x1F};
   std::memcpy(&g_bus.unprotected_ram[0x4000], pattern.data(), pattern.size());
