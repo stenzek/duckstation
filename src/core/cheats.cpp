@@ -3968,7 +3968,8 @@ void Cheats::GamesharkCheatCode::Apply() const
                           ||
                           (bit_comparison_type == true && check_value != (value & check_value))) // Check Bits are clear
                       {
-                        cht_register[cht_reg_no] += 1;
+                        if (frame_comparison != 0x0) // Only count frames when comparing them
+                          cht_register[cht_reg_no] += 1;
 
                         const u32 cht_register_value = cht_register[cht_reg_no];
                         switch (frame_comparison)
@@ -3979,10 +3980,10 @@ void Cheats::GamesharkCheatCode::Apply() const
                           case 0x1: // Check if frame_compare_value == current count
                             conditions_check &= (cht_register_value == frame_compare_value);
                             break;
-                          case 0x2: // Check if frame_compare_value < current count
+                          case 0x2: // Check if current count < frame_compare_value
                             conditions_check &= (cht_register_value < frame_compare_value);
                             break;
-                          case 0x3: // Check if frame_compare_value > current count
+                          case 0x3: // Check if current count > frame_compare_value
                             conditions_check &= (cht_register_value > frame_compare_value);
                             break;
                           case 0x4: // Check if frame_compare_value != current count
@@ -3995,7 +3996,8 @@ void Cheats::GamesharkCheatCode::Apply() const
                       }
                       else
                       {
-                        cht_register[cht_reg_no] = 0;
+                        if (frame_comparison != 0x0)
+                          cht_register[cht_reg_no] = 0;
                         conditions_check &= false;
                       }
                       break;
@@ -4072,7 +4074,8 @@ void Cheats::GamesharkCheatCode::Apply() const
                           ||
                           (bit_comparison_type == true && check_value != (value & check_value))) // Check Bits are clear
                       {
-                        cht_register[cht_reg_no] += 1;
+                        if (frame_comparison != 0x0) // Only count frames when comparing them
+                          cht_register[cht_reg_no] += 1;
 
                         const u32 cht_register_value = cht_register[cht_reg_no];
                         switch (frame_comparison)
@@ -4083,10 +4086,10 @@ void Cheats::GamesharkCheatCode::Apply() const
                           case 0x1: // Check if frame_compare_value == current count
                             conditions_check |= (cht_register_value == frame_compare_value);
                             break;
-                          case 0x2: // Check if frame_compare_value < current count
+                          case 0x2: // Check if current count < frame_compare_value
                             conditions_check |= (cht_register_value < frame_compare_value);
                             break;
-                          case 0x3: // Check if frame_compare_value > current count
+                          case 0x3: // Check if current count > frame_compare_value
                             conditions_check |= (cht_register_value > frame_compare_value);
                             break;
                           case 0x4: // Check if frame_compare_value != current count
@@ -4099,7 +4102,8 @@ void Cheats::GamesharkCheatCode::Apply() const
                       }
                       else
                       {
-                        cht_register[cht_reg_no] = 0;
+                        if (frame_comparison != 0x0)
+                          cht_register[cht_reg_no] = 0;
                         conditions_check |= false;
                       }
                       break;
@@ -4214,7 +4218,8 @@ void Cheats::GamesharkCheatCode::Apply() const
         if ((bit_comparison_type == false && check_value == (value & check_value))    // Check Bits are set
             || (bit_comparison_type == true && check_value != (value & check_value))) // Check Bits are clear
         {
-          cht_register[cht_reg_no] += 1;
+          if (frame_comparison != 0x0) // Only count frames when comparing them
+            cht_register[cht_reg_no] += 1;
           switch (frame_comparison)
           {
             case 0x0: // No comparison on frame count, just do it
@@ -4223,10 +4228,10 @@ void Cheats::GamesharkCheatCode::Apply() const
             case 0x1: // Check if frame_compare_value == current count
               activate_codes = (cht_register[cht_reg_no] == frame_compare_value);
               break;
-            case 0x2: // Check if frame_compare_value < current count
+            case 0x2: // Check if current count < frame_compare_value
               activate_codes = (cht_register[cht_reg_no] < frame_compare_value);
               break;
-            case 0x3: // Check if frame_compare_value > current count
+            case 0x3: // Check if current count > frame_compare_value
               activate_codes = (cht_register[cht_reg_no] > frame_compare_value);
               break;
             case 0x4: // Check if frame_compare_value != current count
@@ -4239,7 +4244,8 @@ void Cheats::GamesharkCheatCode::Apply() const
         }
         else
         {
-          cht_register[cht_reg_no] = 0;
+          if (frame_comparison != 0x0)
+            cht_register[cht_reg_no] = 0;
           activate_codes = false;
         }
 

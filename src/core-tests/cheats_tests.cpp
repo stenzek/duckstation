@@ -1823,23 +1823,32 @@ TEST_F(CheatsApply, BitCompareButtons)
     return (ReadWord(0x1000) != 0);
   };
 
-  // Mode 0, bits set: runs every frame the buttons are held, counting the frames in the register.
-  SetCheatRegister(REG, 0);
+  // Mode 0, bits set: runs every frame the buttons are held. Without a frame comparison, the register is untouched.
+  SetCheatRegister(REG, 7);
   set_select(true);
   EXPECT_TRUE(run(0x000000, 0x000100));
   EXPECT_TRUE(run(0x000000, 0x000100));
-  EXPECT_EQ(GetCheatRegister(REG), 2u);
+  EXPECT_EQ(GetCheatRegister(REG), 7u);
   EXPECT_FALSE(run(0x000000, 0x000140));
-  EXPECT_EQ(GetCheatRegister(REG), 0u);
+  EXPECT_EQ(GetCheatRegister(REG), 7u);
   set_select(false);
 
   // Bits clear.
-  SetCheatRegister(REG, 0);
   EXPECT_TRUE(run(0x100000, 0x000100));
-  EXPECT_EQ(GetCheatRegister(REG), 1u);
+  EXPECT_EQ(GetCheatRegister(REG), 7u);
   set_select(true);
   EXPECT_FALSE(run(0x100000, 0x000100));
-  EXPECT_EQ(GetCheatRegister(REG), 0u);
+  EXPECT_EQ(GetCheatRegister(REG), 7u);
+
+  // So a mode 0 line for other buttons doesn't disturb a frame count sharing its register.
+  SetCheatRegister(REG, 0);
+  for (u32 frame = 0; frame < 3; frame++)
+  {
+    WriteWord(0x1000, 0);
+    Run(fmt::format("D7000000 {0:02X}000040\n00000000 0000FFFF\nD7010001 {0:02X}000100\n90001000 00000001\n", REG));
+    EXPECT_EQ(ReadWord(0x1000), (frame == 0) ? 1u : 0u) << frame;
+  }
+  EXPECT_EQ(GetCheatRegister(REG), 3u);
 
   // Frame count comparisons against the low 16 bits, on frames 1-5.
   struct Case
@@ -1978,6 +1987,22 @@ TEST_F(CheatsApply, MultiConditionals)
   Run("F6000000 1F000001\nD0003000 00001234\n90001000 00000001\n00000000 0000FFFF\n90001010 00000002\n");
   EXPECT_EQ(ReadWord(0x1000), 1u);
   EXPECT_EQ(ReadWord(0x1010), 2u);
+
+  // D7 conditions only count frames in the register when comparing them, with AND and OR.
+  static constexpr u8 REG = 0xE3;
+  for (const u32 type : {0u, 1u})
+  {
+    SCOPED_TRACE(type);
+    SetCheatRegister(REG, 7);
+    Run(fmt::format("F60000{0:02X} 1F000001\nD7100000 {1:02X}000100\n00000000 0000FFFF\n"
+                    "F60000{0:02X} 1F000001\nD7000000 {1:02X}000100\n00000000 0000FFFF\n",
+                    type, REG));
+    EXPECT_EQ(GetCheatRegister(REG), 7u);
+    Run(fmt::format("F60000{:02X} 1F000001\nD7110001 {:02X}000100\n00000000 0000FFFF\n", type, REG));
+    EXPECT_EQ(GetCheatRegister(REG), 8u);
+    Run(fmt::format("F60000{:02X} 1F000001\nD7010001 {:02X}000100\n00000000 0000FFFF\n", type, REG));
+    EXPECT_EQ(GetCheatRegister(REG), 0u);
+  }
 }
 
 TEST_F(CheatsApply, MultiConditionalElse)
