@@ -61,6 +61,22 @@ static std::array<u32, N> GetBlockPayloadWords(const Cheats::GamesharkCheatCode&
   return words;
 }
 
+template<typename F>
+static u32 CountLogErrors(F&& run)
+{
+  u32 errors = 0;
+  const Log::CallbackFunctionType count_errors = [](void* param, Log::MessageCategory category, const char*,
+                                                    std::string_view) {
+    if (Log::UnpackLevel(category) == Log::Level::Error)
+      (*static_cast<u32*>(param))++;
+  };
+  Log::RegisterCallback(count_errors, &errors);
+  ScopedGuard unregister([count_errors, &errors]() { Log::UnregisterCallback(count_errors, &errors); });
+  run();
+  unregister.Run();
+  return errors;
+}
+
 } // namespace
 
 TEST(Cheats, ParseCodeInfo)
@@ -987,6 +1003,40 @@ TEST_F(CheatsApply, BlockWriteSkippedByBlockConditional)
   EXPECT_EQ(ReadWord(0x1000), 0u);
   EXPECT_EQ(ReadWord(0x1020), 0u);
   EXPECT_EQ(ReadWord(0x1030), 0x88u);
+}
+
+TEST_F(CheatsApply, BlockConditionalSkipsMergedRestorePayload)
+{
+  // Four A8 lines merge into an FE whose first payload line has the same bits as a separator.
+  std::unique_ptr<Cheats::GamesharkCheatCode> code = Parse("C0003000 00001234\n"
+                                                           "A8002000 0000FF00\n"
+                                                           "A8002001 0000FF00\n"
+                                                           "A8002002 00000000\n"
+                                                           "A8002003 00000000\n"
+                                                           "00000001 0000FFFF\n"
+                                                           "90001000 00000001\n"
+                                                           "00000000 0000FFFF\n"
+                                                           "90001010 00000002\n");
+  ASSERT_NE(code, nullptr);
+  const auto instructions = code->GetInstructions();
+  ASSERT_GE(instructions.size(), 3u);
+  ASSERT_EQ(instructions[1].code, Cheats::GamesharkCheatCode::InstructionCode::InternalMatchWriteWithRestore8);
+  ASSERT_EQ(instructions[2].bits, 0xFFFFu);
+  WriteWord(0x2000, 0x0000FFFF);
+
+  code->Apply();
+  EXPECT_EQ(ReadWord(0x1000), 0u);
+  EXPECT_EQ(ReadWord(0x1010), 2u);
+  EXPECT_EQ(ReadWord(0x2000), 0xFFFFu);
+
+  WriteHalf(0x3000, 0x1234);
+  code->Apply();
+  EXPECT_EQ(ReadWord(0x1000), 1u);
+  EXPECT_EQ(ReadWord(0x2000), 0u);
+
+  WriteHalf(0x3000, 0);
+  code->ApplyOnDisable(nullptr);
+  EXPECT_EQ(ReadWord(0x2000), 0xFFFFu);
 }
 
 TEST_F(CheatsApply, FindAndReplacePayloadSkippedByBlockConditional)
@@ -2012,6 +2062,31 @@ TEST_F(CheatsApply, MultiConditionals)
   }
 }
 
+TEST_F(CheatsApply, MultiConditionalEvaluatesAllFrameCounters)
+{
+  static constexpr u8 INCREMENT_REG = 0xE4;
+  static constexpr u8 RESET_REG = 0xE5;
+  for (const bool is_or : {false, true})
+  {
+    SCOPED_TRACE(is_or);
+    SetCheatRegister(INCREMENT_REG, 7);
+    SetCheatRegister(RESET_REG, 7);
+    WriteWord(0x1000, 0);
+
+    // The first condition decides the result. Both D7 conditions still update their registers.
+    Run(fmt::format("F60000{:02X} 1F000003\n"
+                    "D0003000 {:08X}\n"
+                    "D7110008 {:02X}000100\n"
+                    "D7010008 {:02X}000100\n"
+                    "90001000 00000001\n"
+                    "00000000 0000FFFF\n",
+                    is_or ? 1u : 0u, is_or ? 0u : 1u, INCREMENT_REG, RESET_REG));
+    EXPECT_EQ(ReadWord(0x1000), is_or ? 1u : 0u);
+    EXPECT_EQ(GetCheatRegister(INCREMENT_REG), 8u);
+    EXPECT_EQ(GetCheatRegister(RESET_REG), 0u);
+  }
+}
+
 TEST_F(CheatsApply, MultiConditionalElse)
 {
   // The else line directly follows the if body, without a separator.
@@ -2059,6 +2134,65 @@ TEST_F(CheatsApply, MultiConditionalElseIf)
     EXPECT_EQ(ReadWord(0x1010), expected[1]);
     EXPECT_EQ(ReadWord(0x1020), expected[2]);
     EXPECT_EQ(ReadWord(0x1030), expected[3]);
+  }
+}
+
+TEST_F(CheatsApply, MultiConditionalSkipsBranchMarkersInPayload)
+{
+  // These slide operands look like else and separator lines. Only the actual else body runs.
+  Run("F6000000 1F000001\n"
+      "D0003000 00001234\n"
+      "50000201 00000001\n"
+      "F6000000 E15E0000\n"
+      "50000201 00000001\n"
+      "00000000 0000FFFF\n"
+      "90001000 00000001\n"
+      "00000000 0000FFFF\n"
+      "F6000000 E15E0000\n"
+      "90001010 00000002\n"
+      "00000000 0000FFFF\n"
+      "90001020 00000003\n");
+  EXPECT_EQ(ReadWord(0x1000), 0u);
+  EXPECT_EQ(ReadWord(0x1010), 2u);
+  EXPECT_EQ(ReadWord(0x1020), 3u);
+}
+
+TEST_F(CheatsApply, MultiConditionalElseIfChainFrameCounters)
+{
+  // Both else-if conditions share one counter. A branch that has already matched skips the later D7s.
+  static constexpr std::string_view code = "F6000000 1F000001\n"
+                                           "D0003000 00000001\n"
+                                           "30001000 00000001\n"
+                                           "00000000 0000FFFF\n"
+                                           "F6000001 E15E1F02\n"
+                                           "D0003000 00000002\n"
+                                           "D7010002 E6000000\n"
+                                           "30001001 00000002\n"
+                                           "00000000 0000FFFF\n"
+                                           "F6000000 E15E1F02\n"
+                                           "D0003000 00000003\n"
+                                           "D7010002 E6000000\n"
+                                           "30001002 00000003\n"
+                                           "00000000 0000FFFF\n"
+                                           "F6000000 E15E0000\n"
+                                           "30001003 00000004\n"
+                                           "00000000 0000FFFF\n";
+  static constexpr u8 COUNTER_REG = 0xE6;
+  static constexpr std::array cases = {
+    std::tuple{u16(1), 0x00000001u, 0u},
+    std::tuple{u16(2), 0x00000200u, 1u},
+    std::tuple{u16(3), 0x00030000u, 2u},
+    std::tuple{u16(4), 0x04000000u, 2u},
+  };
+  for (const auto& [value, expected, counter] : cases)
+  {
+    SCOPED_TRACE(value);
+    SetCheatRegister(COUNTER_REG, 0);
+    WriteHalf(0x3000, value);
+    WriteWord(0x1000, 0);
+    Run(code);
+    EXPECT_EQ(ReadWord(0x1000), expected);
+    EXPECT_EQ(GetCheatRegister(COUNTER_REG), counter);
   }
 }
 
@@ -2342,6 +2476,46 @@ TEST_F(CheatsApply, ImprovedSlide)
   Run("53000002 00040001\n10001020 00000001\n90001100 00000099\n");
   EXPECT_EQ(ReadWord(0x1020), 0u);
   EXPECT_EQ(ReadWord(0x1100), 0x99u);
+}
+
+TEST_F(CheatsApply, ImprovedSlideReverseBitSetAndClear)
+{
+  struct Case
+  {
+    u8 opcode;
+    u32 value;
+    std::array<u32, 3> expected;
+  };
+  static constexpr std::array cases = {
+    Case{0x31, 0x00000003, {0xAAAAAAAB, 0xAAAAAAAA, 0xAAAAAAAB}},
+    Case{0x32, 0x00000004, {0xAAAAAAA8, 0xAAAAAAA8, 0xAAAAAAAA}},
+    Case{0x81, 0x00000103, {0xAAAAABAB, 0xAAAAABAA, 0xAAAAABAB}},
+    Case{0x82, 0x00000204, {0xAAAAA8A8, 0xAAAAA8A8, 0xAAAAA8AA}},
+    Case{0x91, 0x01000003, {0xABAAAAAB, 0xABAAAAAA, 0xABAAAAAB}},
+    Case{0x92, 0x80000004, {0x2AAAAAA8, 0x2AAAAAA8, 0x2AAAAAAA}},
+  };
+  for (const Case& c : cases)
+  {
+    SCOPED_TRACE(fmt::format("{:02X}", c.opcode));
+    for (u32 i = 0; i < 4; i++)
+      WriteWord(0x1000 + i * 4, 0xAAAAAAAA);
+
+    Run(fmt::format("53110003 00040001\n{:02X}001008 {:08X}\n", c.opcode, c.value));
+    for (u32 i = 0; i < c.expected.size(); i++)
+      EXPECT_EQ(ReadWord(0x1000 + i * 4), c.expected[i]) << i;
+    EXPECT_EQ(ReadWord(0x100C), 0xAAAAAAAAu);
+  }
+}
+
+TEST_F(CheatsApply, ImprovedSlideFullCountAndSteps)
+{
+  // The count and both steps use 16 bits. The running write value wraps at 32 bits.
+  Run("53000102 01040101\n90001000 FFFFFFFE\n");
+  EXPECT_EQ(ReadWord(0x1000), 0xFFFFFFFEu);
+  EXPECT_EQ(ReadWord(0x1004), 0u);
+  EXPECT_EQ(ReadWord(0x1104), 0xFFu);
+  EXPECT_EQ(ReadWord(0x11504), 0x101FFu);
+  EXPECT_EQ(ReadWord(0x11608), 0u);
 }
 
 TEST_F(CheatsApply, MemoryCopy)
@@ -2782,6 +2956,35 @@ TEST_F(CheatsApply, CheatRegisterCompare)
   }
 }
 
+TEST_F(CheatsApply, CheatRegisterCompareRangeValueWidth)
+{
+  WriteByte(0x6000, 0x06);
+  WriteHalf(0x6010, 0x0180);
+  SetCheatRegister(0x20, 0x12340006);
+  SetCheatRegister(0x21, 0x12340180);
+  SetCheatRegister(0x22, 0x6000);
+  SetCheatRegister(0x23, 0x6010);
+
+  // Byte bounds ignore bits 8-15 and 24-31. Halfword bounds use all 16 bits on each side.
+  static constexpr std::array<std::pair<std::string_view, bool>, 8> cases = {{
+    {"52180020 A5065A04", false},
+    {"52190020 A5065A04", true},
+    {"52280022 A5065A04", false},
+    {"52290022 A5065A04", true},
+    {"52580021 02000100", true},
+    {"52590021 02000100", true},
+    {"52680023 02000100", true},
+    {"52690023 02000100", true},
+  }};
+  for (const auto& [condition, expected] : cases)
+  {
+    SCOPED_TRACE(condition);
+    WriteByte(0x1000, 0);
+    Run(fmt::format("{}\n30001000 00000001\n", condition));
+    EXPECT_EQ(ReadByte(0x1000), expected ? 1u : 0u);
+  }
+}
+
 TEST_F(CheatsApply, WriteIfMatch)
 {
   WriteWord(0x1000, 0x55551111);
@@ -2852,6 +3055,18 @@ TEST_F(CheatsApply, WriteIfMatchRestore)
   EXPECT_EQ(ReadWord(0x1020), 0x55551111u);
 }
 
+TEST_F(CheatsApply, WriteIfMatchRestoreByteIgnoresUpperHalfword)
+{
+  std::unique_ptr<Cheats::GamesharkCheatCode> code = Parse("A8001010 987611AA\n");
+  ASSERT_NE(code, nullptr);
+  WriteWord(0x1010, 0x55555511);
+
+  code->Apply();
+  EXPECT_EQ(ReadWord(0x1010), 0x555555AAu);
+  code->ApplyOnDisable(nullptr);
+  EXPECT_EQ(ReadWord(0x1010), 0x55555511u);
+}
+
 TEST_F(CheatsApply, ApplyOnDisableSkipsOtherInstructions)
 {
   // Payload lines that look like A7 restores mustn't be treated as instructions.
@@ -2915,24 +3130,24 @@ TEST_F(CheatsApply, ApplyOnDisableSkipsOtherInstructions)
   SetCheatRegister(0x30, 0);
 
   // Every instruction is known, so nothing is logged as an error.
-  u32 errors = 0;
-  const Log::CallbackFunctionType count_errors = [](void* param, Log::MessageCategory category, const char*,
-                                                    std::string_view) {
-    if (Log::UnpackLevel(category) == Log::Level::Error)
-      (*static_cast<u32*>(param))++;
-  };
-  Log::RegisterCallback(count_errors, &errors);
-  const ScopedGuard unregister([count_errors, &errors]() { Log::UnregisterCallback(count_errors, &errors); });
-
   Cheats::RollbackLog rollback;
-  code->ApplyOnDisable(&rollback);
-  EXPECT_EQ(errors, 0u);
+  EXPECT_EQ(CountLogErrors([&]() { code->ApplyOnDisable(&rollback); }), 0u);
   EXPECT_EQ(ReadWord(0x1010), 0x5555AAAAu);
   EXPECT_EQ(ReadWord(0x1020), 0x55551111u);
   EXPECT_EQ(ReadWord(0x1100), 0x12345678u);
   EXPECT_EQ(GetCheatRegister(0x30), 0u);
   ASSERT_EQ(rollback.size(), 1u);
   EXPECT_EQ(rollback[0].address, 0x1020u);
+}
+
+TEST_F(CheatsApply, ApplyOnDisableIgnoresUnknownOpcode)
+{
+  std::unique_ptr<Cheats::GamesharkCheatCode> code = Parse("40001000 00000001\nA8001010 000011AA\n");
+  ASSERT_NE(code, nullptr);
+  WriteByte(0x1010, 0xAA);
+
+  EXPECT_EQ(CountLogErrors([&]() { code->ApplyOnDisable(nullptr); }), 0u);
+  EXPECT_EQ(ReadByte(0x1010), 0x11u);
 }
 
 TEST_F(CheatsApply, MultiConditionalFalseContinuesAfterSeparator)
@@ -3020,6 +3235,21 @@ TEST_F(CheatsApply, FindAndReplaceAdjacentMatch)
       "A8A9AAAB ACADAEAF\n");
   EXPECT_EQ(ReadByte(0x4000), 0xA0u);
   EXPECT_EQ(ReadByte(0x4010), 0xA0u);
+}
+
+TEST_F(CheatsApply, FindAndReplaceSkipsOverlappingMatches)
+{
+  // An all-wildcard search matches every candidate. The replacements must be at least 16 bytes apart.
+  Run("F4004008 00EE0004\n"
+      "EEEEEEEE EEEEEEEE\n"
+      "EEEEEEEE EEEEEEEE\n"
+      "A0EEEEEE EEEEEEEE\n"
+      "EEEEEEEE EEEEEEEE\n");
+  EXPECT_EQ(ReadWord(0x4000), 0xA0u);
+  EXPECT_EQ(ReadWord(0x4004), 0u);
+  EXPECT_EQ(ReadWord(0x4008), 0u);
+  EXPECT_EQ(ReadWord(0x400C), 0u);
+  EXPECT_EQ(ReadWord(0x4010), 0xA0u);
 }
 
 TEST_F(CheatsApply, Slide32BitValue)

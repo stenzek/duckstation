@@ -2317,6 +2317,107 @@ bool Cheats::ImportOldChtFile(const std::string_view serial)
 // Gameshark codes
 //////////////////////////////////////////////////////////////////////////
 
+namespace Cheats::GamesharkHandlers {
+
+using Instruction = GamesharkCheatCode::Instruction;
+using InstructionCode = GamesharkCheatCode::InstructionCode;
+using InstructionList = std::vector<Instruction>;
+
+static bool IsConditionalInstruction(InstructionCode code)
+{
+  switch (code)
+  {
+    case InstructionCode::CompareEqual16:       // D0
+    case InstructionCode::CompareNotEqual16:    // D1
+    case InstructionCode::CompareLess16:        // D2
+    case InstructionCode::CompareGreater16:     // D3
+    case InstructionCode::CompareEqual8:        // E0
+    case InstructionCode::CompareNotEqual8:     // E1
+    case InstructionCode::CompareLess8:         // E2
+    case InstructionCode::CompareGreater8:      // E3
+    case InstructionCode::CompareButtons:       // D4
+    case InstructionCode::ExtCompareEqual32:    // A0
+    case InstructionCode::ExtCompareNotEqual32: // A1
+    case InstructionCode::ExtCompareLess32:     // A2
+    case InstructionCode::ExtCompareGreater32:  // A3
+      return true;
+
+    default:
+      return false;
+  }
+}
+
+static u32 GetBlockPayloadLength(const Instruction& inst)
+{
+  switch (inst.code)
+  {
+    case InstructionCode::ExtBlockWrite:
+      return (inst.value32 / 2) + (inst.value32 & 1);
+
+    case InstructionCode::ExtBlockWriteIfMatchWithRestore:
+    case InstructionCode::ExtBlockWriteIfMatch:
+      return inst.value32;
+
+    case InstructionCode::InternalMaskedWrite:
+      return (inst.value32 * 2 + sizeof(Instruction) - 1) / sizeof(Instruction);
+
+    case InstructionCode::InternalMatchWrite16:
+    case InstructionCode::InternalMatchWriteWithRestore16:
+    case InstructionCode::InternalMatchWriteWithRestore8:
+      return (inst.value32 * 3 + sizeof(Instruction) - 1) / sizeof(Instruction);
+
+    default:
+      return 0;
+  }
+}
+
+static u32 GetPayloadLength(const Instruction& inst)
+{
+  switch (inst.code)
+  {
+    case InstructionCode::ExtConstantForceRange16:
+    case InstructionCode::Slide:
+    case InstructionCode::ExtImprovedSlide:
+    case InstructionCode::MemoryCopy:
+      return 1;
+
+    case InstructionCode::ExtFindAndReplace:
+      return 4;
+
+    default:
+      return GetBlockPayloadLength(inst);
+  }
+}
+
+static std::tuple<InstructionCode, u32> GetMergeCode(InstructionCode code)
+{
+  switch (code)
+  {
+    case InstructionCode::ConstantWrite8:
+      return {InstructionCode::InternalMaskedWrite, static_cast<u32>(sizeof(u8))};
+
+    case InstructionCode::ConstantWrite16:
+      return {InstructionCode::InternalMaskedWrite, static_cast<u32>(sizeof(u16))};
+
+    case InstructionCode::ExtConstantWrite32:
+      return {InstructionCode::InternalMaskedWrite, static_cast<u32>(sizeof(u32))};
+
+    case InstructionCode::ExtConstantWriteIfMatch16:
+      return {InstructionCode::InternalMatchWrite16, static_cast<u32>(sizeof(u16))};
+
+    case InstructionCode::ExtConstantWriteIfMatchWithRestore16:
+      return {InstructionCode::InternalMatchWriteWithRestore16, static_cast<u32>(sizeof(u16))};
+
+    case InstructionCode::ExtConstantWriteIfMatchWithRestore8:
+      return {InstructionCode::InternalMatchWriteWithRestore8, static_cast<u32>(sizeof(u8))};
+
+    default:
+      return {InstructionCode::Nop, 0};
+  }
+}
+
+} // namespace Cheats::GamesharkHandlers
+
 Cheats::GamesharkCheatCode::GamesharkCheatCode(CodeMetadata metadata) : CheatCode(std::move(metadata))
 {
 }
@@ -2459,7 +2560,7 @@ bool Cheats::GamesharkCheatCode::DeinterleaveBlockInstructions(Error* error)
       case InstructionCode::ExtBlockWriteIfMatch:
       {
         const u32 num_words = inst.value32;
-        const u32 payload_length = GetBlockPayloadLength(inst);
+        const u32 payload_length = GamesharkHandlers::GetBlockPayloadLength(inst);
         if (num_words == 0 || payload_length > (count - index - 1))
         {
           Error::SetStringFmt(error, "Incomplete block write instruction: {:08X} {:08X}", inst.first, inst.second);
@@ -2510,7 +2611,7 @@ bool Cheats::GamesharkCheatCode::DeinterleaveBlockInstructions(Error* error)
       }
 
       default:
-        index += 1 + GetPayloadLength(inst);
+        index += 1 + GamesharkHandlers::GetPayloadLength(inst);
         break;
     }
   }
@@ -2535,7 +2636,7 @@ void Cheats::GamesharkCheatCode::MergeInstructions()
   static constexpr u32 MERGE_BOUNDARY = 0x100000;
   const auto get_merge_code = [this, &has_option](u32 index) -> std::tuple<InstructionCode, u32> {
     const Instruction& inst = instructions[index];
-    const auto& [merge_code, merge_width] = GetMergeCode(inst.code);
+    const auto& [merge_code, merge_width] = GamesharkHandlers::GetMergeCode(inst.code);
 
     // Must be in RAM, and not cross a merge boundary.
     const u32 address = inst.address;
@@ -2597,7 +2698,7 @@ void Cheats::GamesharkCheatCode::MergeInstructions()
         merged.push_back(header);
 
         const size_t payload_start = merged.size();
-        merged.resize(payload_start + GetBlockPayloadLength(header));
+        merged.resize(payload_start + GamesharkHandlers::GetBlockPayloadLength(header));
         u8* const data = reinterpret_cast<u8*>(&merged[payload_start]);
         u8* const mask = data + size * ((merge_code == InstructionCode::InternalMaskedWrite) ? 1 : 2);
         for (; index < run_end; index++)
@@ -2624,8 +2725,8 @@ void Cheats::GamesharkCheatCode::MergeInstructions()
             case InstructionCode::ExtConstantWriteIfMatch16:
             case InstructionCode::ExtConstantWriteIfMatchWithRestore16:
             {
-              const u16 compare_value = Truncate16(line.value32 >> 16);
-              const u16 write_value = Truncate16(line.value32 & 0xFFFFu);
+              const u16 compare_value = line.value32h;
+              const u16 write_value = line.value16;
               std::memcpy(&data[offset], &compare_value, sizeof(u16));
               std::memcpy(&data[size + offset], &write_value, sizeof(u16));
               std::memset(&mask[offset], 0xFF, sizeof(u16));
@@ -2633,8 +2734,8 @@ void Cheats::GamesharkCheatCode::MergeInstructions()
             break;
 
             case InstructionCode::ExtConstantWriteIfMatchWithRestore8:
-              data[offset] = Truncate8(line.value16 >> 8);
-              data[size + offset] = Truncate8(line.value16 & 0xFFu);
+              data[offset] = line.value16h;
+              data[size + offset] = line.value8;
               mask[offset] = 0xFF;
               break;
 
@@ -2651,8 +2752,8 @@ void Cheats::GamesharkCheatCode::MergeInstructions()
     }
 
     // Copy through, including any payload.
-    after_conditional = IsConditionalInstruction(inst.code);
-    const u32 end_index = std::min(index + 1 + GetPayloadLength(inst), count);
+    after_conditional = GamesharkHandlers::IsConditionalInstruction(inst.code);
+    const u32 end_index = std::min(index + 1 + GamesharkHandlers::GetPayloadLength(inst), count);
     for (; index < end_index; index++)
     {
       new_index[index] = static_cast<u32>(merged.size());
@@ -2887,7 +2988,7 @@ static void DoMatchWrite(PhysicalMemoryAddress address, u32 size, const u8* comp
   }
 }
 
-NEVER_INLINE static u32 GetControllerButtonBits()
+static u32 GetControllerButtonBits()
 {
   static constexpr std::array<u16, 16> button_mapping = {{
     0x0100, // Select
@@ -2928,155 +3029,208 @@ NEVER_INLINE static u32 GetControllerButtonBits()
   return translated_bits;
 }
 
-NEVER_INLINE static u32 GetControllerAnalogBits()
+static u32 GetControllerAnalogBits()
 {
-  // 0x010000 - Right Thumb Up
-  // 0x020000 - Right Thumb Right
-  // 0x040000 - Right Thumb Down
-  // 0x080000 - Right Thumb Left
-  // 0x100000 - Left Thumb Up
-  // 0x200000 - Left Thumb Right
-  // 0x400000 - Left Thumb Down
-  // 0x800000 - Left Thumb Left
-
   u32 bits = 0;
-  u8 l_ypos = 0;
-  u8 l_xpos = 0;
-  u8 r_ypos = 0;
-  u8 r_xpos = 0;
-
-  std::optional<u32> analog = 0;
   for (u32 i = 0; i < NUM_CONTROLLER_AND_CARD_PORTS; i++)
   {
     Controller* controller = System::GetController(i);
     if (!controller)
       continue;
 
-    analog = controller->GetAnalogInputBytes();
-    if (analog.has_value())
-    {
-      l_ypos = Truncate8((analog.value() & 0xFF000000u) >> 24);
-      l_xpos = Truncate8((analog.value() & 0x00FF0000u) >> 16);
-      r_ypos = Truncate8((analog.value() & 0x0000FF00u) >> 8);
-      r_xpos = Truncate8(analog.value() & 0x000000FFu);
-      if (l_ypos < 0x50)
-        bits |= 0x100000;
-      else if (l_ypos > 0xA0)
-        bits |= 0x400000;
-      if (l_xpos < 0x50)
-        bits |= 0x800000;
-      else if (l_xpos > 0xA0)
-        bits |= 0x200000;
-      if (r_ypos < 0x50)
-        bits |= 0x10000;
-      else if (r_ypos > 0xA0)
-        bits |= 0x40000;
-      if (r_xpos < 0x50)
-        bits |= 0x80000;
-      else if (r_xpos > 0xA0)
-        bits |= 0x20000;
-    }
+    const std::optional<u32> analog = controller->GetAnalogInputBytes();
+    if (!analog.has_value())
+      continue;
+
+    // 0x010000: Right Thumb Up
+    // 0x020000: Right Thumb Right
+    // 0x040000: Right Thumb Down
+    // 0x080000: Right Thumb Left
+    // 0x100000: Left Thumb Up
+    // 0x200000: Left Thumb Right
+    // 0x400000: Left Thumb Down
+    // 0x800000: Left Thumb Left
+    const u8 l_ypos = Truncate8((analog.value() & 0xFF000000u) >> 24);
+    const u8 l_xpos = Truncate8((analog.value() & 0x00FF0000u) >> 16);
+    const u8 r_ypos = Truncate8((analog.value() & 0x0000FF00u) >> 8);
+    const u8 r_xpos = Truncate8(analog.value() & 0x000000FFu);
+
+    if (l_ypos < 0x50)
+      bits |= 0x100000u;
+    else if (l_ypos > 0xA0)
+      bits |= 0x400000u;
+
+    if (l_xpos < 0x50)
+      bits |= 0x800000u;
+    else if (l_xpos > 0xA0)
+      bits |= 0x200000u;
+
+    if (r_ypos < 0x50)
+      bits |= 0x10000u;
+    else if (r_ypos > 0xA0)
+      bits |= 0x40000u;
+
+    if (r_xpos < 0x50)
+      bits |= 0x80000u;
+    else if (r_xpos > 0xA0)
+      bits |= 0x20000u;
   }
+
   return bits;
 }
 
-bool Cheats::GamesharkCheatCode::IsConditionalInstruction(InstructionCode code)
+namespace Cheats::GamesharkHandlers {
+
+static constexpr u64 SEPARATOR_VALUE = UINT64_C(0x000000000000FFFF); // 00000000 FFFF
+
+// Each handler applies the instruction at index, and returns the index of the next instruction to execute.
+// Returning the instruction count stops the code.
+using ApplyHandler = size_t (*)(const InstructionList& instructions, size_t index, const Instruction& inst);
+
+enum class ModifyOp : u8
 {
-  switch (code)
+  Write,
+  Set,
+  Clear,
+  Add,
+  Sub,
+};
+
+template<typename T>
+static T GetValue(const Instruction& inst)
+{
+  if constexpr (std::is_same_v<T, u8>)
+    return inst.value8;
+  else if constexpr (std::is_same_v<T, u16>)
+    return inst.value16;
+  else
+    return inst.value32;
+}
+
+// Upper half of the value, used as the compare value by the 8/16-bit write if match codes.
+template<typename T>
+static T GetUpperValue(const Instruction& inst)
+{
+  if constexpr (std::is_same_v<T, u8>)
+    return inst.value16h;
+  else
+    return inst.value32h;
+}
+
+template<typename T, ModifyOp op>
+static void DoModify(u32 address, T value)
+{
+  if constexpr (op == ModifyOp::Write)
+    DoMemoryWrite<T>(address, value);
+  else if constexpr (op == ModifyOp::Set)
+    DoMemoryWrite<T>(address, static_cast<T>(DoMemoryRead<T>(address) | value));
+  else if constexpr (op == ModifyOp::Clear)
+    DoMemoryWrite<T>(address, static_cast<T>(DoMemoryRead<T>(address) & ~value));
+  else if constexpr (op == ModifyOp::Add)
+    DoMemoryWrite<T>(address, static_cast<T>(DoMemoryRead<T>(address) + value));
+  else // if constexpr (op == ModifyOp::Sub)
+    DoMemoryWrite<T>(address, static_cast<T>(DoMemoryRead<T>(address) - value));
+}
+
+template<typename T, ModifyOp op>
+static void DoSlide(u32 address, u32 value, u32 count, u32 address_step, u32 value_step)
+{
+  for (u32 i = 0; i < count; i++)
   {
-    case InstructionCode::CompareEqual16:       // D0
-    case InstructionCode::CompareNotEqual16:    // D1
-    case InstructionCode::CompareLess16:        // D2
-    case InstructionCode::CompareGreater16:     // D3
-    case InstructionCode::CompareEqual8:        // E0
-    case InstructionCode::CompareNotEqual8:     // E1
-    case InstructionCode::CompareLess8:         // E2
-    case InstructionCode::CompareGreater8:      // E3
-    case InstructionCode::CompareButtons:       // D4
-    case InstructionCode::ExtCompareEqual32:    // A0
+    DoModify<T, op>(address, static_cast<T>(value));
+    address += address_step;
+    value += value_step;
+  }
+}
+
+template<typename T, typename Compare>
+static bool CompareMemory(const Instruction& inst)
+{
+  return Compare()(DoMemoryRead<T>(inst.address), GetValue<T>(inst));
+}
+
+static bool EvaluateBitCompareButtons(const Instruction& inst)
+{
+  const u32 frame_compare_value = inst.address & 0xFFFFu;
+  u32& frame_count = s_locals.registers[Truncate8(inst.value32.GetValue() >> 24)];
+  const bool bit_comparison_type = ((inst.address & 0x100000u) >> 20);
+  const u8 frame_comparison = Truncate8((inst.address & 0xF0000u) >> 16);
+  const u32 check_value = (inst.value32 & 0xFFFFFFu);
+  const u32 value = GetControllerButtonBits() | GetControllerAnalogBits();
+
+  if ((!bit_comparison_type && check_value == (value & check_value)) || // Check Bits are set
+      (bit_comparison_type && check_value != (value & check_value)))    // Check Bits are clear
+  {
+    if (frame_comparison != 0x0) // Only count frames when comparing them
+      frame_count++;
+
+    switch (frame_comparison)
+    {
+      case 0x0: // No comparison on frame count, just do it
+        return true;
+      case 0x1: // Check if frame_compare_value == current count
+        return (frame_count == frame_compare_value);
+      case 0x2: // Check if current count < frame_compare_value
+        return (frame_count < frame_compare_value);
+      case 0x3: // Check if current count > frame_compare_value
+        return (frame_count > frame_compare_value);
+      case 0x4: // Check if frame_compare_value != current count
+        return (frame_count != frame_compare_value);
+      default:
+        return false;
+    }
+  }
+
+  if (frame_comparison != 0x0)
+    frame_count = 0;
+
+  return false;
+}
+
+// Conditions that can be used inside ExtMultiConditionals (F6).
+static std::optional<bool> EvaluateMultiCondition(const Instruction& inst)
+{
+  switch (inst.code)
+  {
+    case InstructionCode::CompareEqual16: // D0
+      return CompareMemory<u16, std::equal_to<>>(inst);
+    case InstructionCode::CompareNotEqual16: // D1
+      return CompareMemory<u16, std::not_equal_to<>>(inst);
+    case InstructionCode::CompareLess16: // D2
+      return CompareMemory<u16, std::less<>>(inst);
+    case InstructionCode::CompareGreater16: // D3
+      return CompareMemory<u16, std::greater<>>(inst);
+    case InstructionCode::CompareEqual8: // E0
+      return CompareMemory<u8, std::equal_to<>>(inst);
+    case InstructionCode::CompareNotEqual8: // E1
+      return CompareMemory<u8, std::not_equal_to<>>(inst);
+    case InstructionCode::CompareLess8: // E2
+      return CompareMemory<u8, std::less<>>(inst);
+    case InstructionCode::CompareGreater8: // E3
+      return CompareMemory<u8, std::greater<>>(inst);
+    case InstructionCode::ExtCompareEqual32: // A0
+      return CompareMemory<u32, std::equal_to<>>(inst);
     case InstructionCode::ExtCompareNotEqual32: // A1
-    case InstructionCode::ExtCompareLess32:     // A2
-    case InstructionCode::ExtCompareGreater32:  // A3
-      return true;
-
+      return CompareMemory<u32, std::not_equal_to<>>(inst);
+    case InstructionCode::ExtCompareLess32: // A2
+      return CompareMemory<u32, std::less<>>(inst);
+    case InstructionCode::ExtCompareGreater32: // A3
+      return CompareMemory<u32, std::greater<>>(inst);
+    case InstructionCode::ExtCompareBitsSet8: // E4
+      return (inst.value8 == (DoMemoryRead<u8>(inst.address) & inst.value8));
+    case InstructionCode::ExtCompareBitsClear8: // E5
+      return ((DoMemoryRead<u8>(inst.address) & inst.value8) == 0);
+    case InstructionCode::ExtBitCompareButtons: // D7
+      return EvaluateBitCompareButtons(inst);
     default:
-      return false;
+      return std::nullopt;
   }
 }
 
-u32 Cheats::GamesharkCheatCode::GetBlockPayloadLength(const Instruction& inst)
+// Line conditionals skip the next non-conditional instruction when false.
+static size_t GetNextNonConditionalInstruction(const InstructionList& instructions, size_t index)
 {
-  switch (inst.code)
-  {
-    case InstructionCode::ExtBlockWrite:
-      return (inst.value32 / 2) + (inst.value32 & 1);
-
-    case InstructionCode::ExtBlockWriteIfMatchWithRestore:
-    case InstructionCode::ExtBlockWriteIfMatch:
-      return inst.value32;
-
-    case InstructionCode::InternalMaskedWrite:
-      return (inst.value32 * 2 + sizeof(Instruction) - 1) / sizeof(Instruction);
-
-    case InstructionCode::InternalMatchWrite16:
-    case InstructionCode::InternalMatchWriteWithRestore16:
-    case InstructionCode::InternalMatchWriteWithRestore8:
-      return (inst.value32 * 3 + sizeof(Instruction) - 1) / sizeof(Instruction);
-
-    default:
-      return 0;
-  }
-}
-
-u32 Cheats::GamesharkCheatCode::GetPayloadLength(const Instruction& inst)
-{
-  switch (inst.code)
-  {
-    case InstructionCode::ExtConstantForceRange16:
-    case InstructionCode::Slide:
-    case InstructionCode::ExtImprovedSlide:
-    case InstructionCode::MemoryCopy:
-      return 1;
-
-    case InstructionCode::ExtFindAndReplace:
-      return 4;
-
-    default:
-      return GetBlockPayloadLength(inst);
-  }
-}
-
-std::tuple<Cheats::GamesharkCheatCode::InstructionCode, u32>
-Cheats::GamesharkCheatCode::GetMergeCode(InstructionCode code)
-{
-  switch (code)
-  {
-    case InstructionCode::ConstantWrite8:
-      return {InstructionCode::InternalMaskedWrite, static_cast<u32>(sizeof(u8))};
-
-    case InstructionCode::ConstantWrite16:
-      return {InstructionCode::InternalMaskedWrite, static_cast<u32>(sizeof(u16))};
-
-    case InstructionCode::ExtConstantWrite32:
-      return {InstructionCode::InternalMaskedWrite, static_cast<u32>(sizeof(u32))};
-
-    case InstructionCode::ExtConstantWriteIfMatch16:
-      return {InstructionCode::InternalMatchWrite16, static_cast<u32>(sizeof(u16))};
-
-    case InstructionCode::ExtConstantWriteIfMatchWithRestore16:
-      return {InstructionCode::InternalMatchWriteWithRestore16, static_cast<u32>(sizeof(u16))};
-
-    case InstructionCode::ExtConstantWriteIfMatchWithRestore8:
-      return {InstructionCode::InternalMatchWriteWithRestore8, static_cast<u32>(sizeof(u8))};
-
-    default:
-      return {InstructionCode::Nop, 0};
-  }
-}
-
-u32 Cheats::GamesharkCheatCode::GetNextNonConditionalInstruction(u32 index) const
-{
-  const u32 count = static_cast<u32>(instructions.size());
+  const size_t count = instructions.size();
   for (; index < count; index++)
   {
     if (!IsConditionalInstruction(instructions[index].code))
@@ -3089,1977 +3243,873 @@ u32 Cheats::GamesharkCheatCode::GetNextNonConditionalInstruction(u32 index) cons
   return index;
 }
 
+// Block conditionals skip to after the next separator (00000000 FFFF) when false, or the end.
+static size_t SkipToSeparator(const InstructionList& instructions, size_t index)
+{
+  const size_t count = instructions.size();
+  while (index < count)
+  {
+    // we don't want to execute the separator instruction
+    const Instruction& skipped = instructions[index++];
+    if (skipped.bits == SEPARATOR_VALUE)
+      break;
+
+    // don't treat multi-line instruction data as instructions
+    index += GetPayloadLength(skipped);
+  }
+
+  return index;
+}
+
+static size_t ApplyUnhandled(const InstructionList& instructions, size_t index, const Instruction& inst)
+{
+  ERROR_LOG("Unhandled instruction code 0x{:02X} ({:08X} {:08X})", static_cast<u8>(inst.code.GetValue()), inst.first,
+            inst.second);
+  return index + 1;
+}
+
+static size_t ApplyNop(const InstructionList& instructions, size_t index, const Instruction& inst)
+{
+  return index + 1;
+}
+
+template<typename T, ModifyOp op>
+static size_t ApplyModify(const InstructionList& instructions, size_t index, const Instruction& inst)
+{
+  DoModify<T, op>(inst.address, GetValue<T>(inst));
+  return index + 1;
+}
+
+template<typename T>
+static size_t ApplyScratchpadWrite(const InstructionList& instructions, size_t index, const Instruction& inst)
+{
+  DoMemoryWrite<T>(CPU::SCRATCHPAD_ADDR | (inst.address & CPU::SCRATCHPAD_OFFSET_MASK), GetValue<T>(inst));
+  return index + 1;
+}
+
+template<typename T, typename Compare>
+static size_t ApplyLineConditional(const InstructionList& instructions, size_t index, const Instruction& inst)
+{
+  return CompareMemory<T, Compare>(inst) ? (index + 1) : GetNextNonConditionalInstruction(instructions, index);
+}
+
+static size_t ApplyCompareButtons(const InstructionList& instructions, size_t index, const Instruction& inst)
+{
+  return (inst.value16 == GetControllerButtonBits()) ? (index + 1) :
+                                                       GetNextNonConditionalInstruction(instructions, index);
+}
+
+template<typename T, typename Compare>
+static size_t ApplyBlockConditional(const InstructionList& instructions, size_t index, const Instruction& inst)
+{
+  return CompareMemory<T, Compare>(inst) ? (index + 1) : SkipToSeparator(instructions, index + 1);
+}
+
+template<typename Compare>
+static size_t ApplySkipIfButtons(const InstructionList& instructions, size_t index, const Instruction& inst)
+{
+  return Compare()(GetControllerButtonBits(), inst.value16) ? (index + 1) : SkipToSeparator(instructions, index + 1);
+}
+
+static size_t ApplyBitCompareButtons(const InstructionList& instructions, size_t index, const Instruction& inst)
+{
+  return EvaluateBitCompareButtons(inst) ? (index + 1) : SkipToSeparator(instructions, index + 1);
+}
+
+static size_t ApplyMultiConditionals(const InstructionList& instructions, size_t index, const Instruction& inst)
+{
+  const size_t count = instructions.size();
+  index++;
+
+  // Ensure any else if or else that are hit outside the if context are skipped
+  bool activate_codes = false;
+  if ((inst.value32 & 0xFFFFFF00u) == 0x1F000000)
+  {
+    for (;;)
+    {
+      const u8 totalConds = instructions[index - 1].value8;
+      const u8 conditionType = Truncate8(instructions[index - 1].address & 0x000000FFu);
+      if ((conditionType != 0x00 && conditionType != 0x01) || totalConds == 0)
+      {
+        ERROR_LOG("Incomplete multi conditional instruction");
+        return count;
+      }
+
+      // 00 = AND, 01 = OR. All conditions are evaluated, since D7 updates its frame counter.
+      const bool is_or = (conditionType == 0x01);
+      bool conditions_check = !is_or;
+      for (int i = 1; totalConds >= i && index < count; index++, i++)
+      {
+        const std::optional<bool> result = EvaluateMultiCondition(instructions[index]);
+        if (!result.has_value())
+        {
+          ERROR_LOG("Incorrect conditional instruction (see chtdb.txt for supported instructions)");
+          return count;
+        }
+
+        conditions_check = is_or ? (conditions_check || result.value()) : (conditions_check && result.value());
+      }
+
+      if (conditions_check)
+      {
+        activate_codes = true;
+        break;
+      }
+
+      // parse through to 00000000 FFFF and peek if next line is a F6 type associated with a ELSE
+      activate_codes = false;
+
+      // skip to the next separator (00000000 FFFF), or end
+      constexpr u64 else_value = UINT64_C(0x00000000E15E0000);
+      constexpr u64 elseif_value = UINT64_C(0x00000000E15E1F00);
+      while (index < count)
+      {
+        const Instruction& skipped = instructions[index++];
+        const u64 bits = skipped.bits;
+        index += GetPayloadLength(skipped);
+        if (bits == SEPARATOR_VALUE)
+        {
+          // Continue after the separator, unless an else-if or else follows, which is consumed.
+          activate_codes = true;
+          if (index < count && instructions[index].code == InstructionCode::ExtMultiConditionals)
+          {
+            const u64 bits_ahead = instructions[index].bits;
+            if ((bits_ahead & 0xFFFFFF00u) == elseif_value)
+            {
+              index++;
+              activate_codes = false;
+            }
+            else if ((bits_ahead & 0xFFFF0000u) == else_value)
+            {
+              index++;
+            }
+          }
+
+          break;
+        }
+
+        // Only F6 lines are else-if/else, a write could have the same value.
+        if (skipped.code == InstructionCode::ExtMultiConditionals && (bits & 0xFFFFFF00u) == elseif_value)
+          break;
+
+        if (skipped.code == InstructionCode::ExtMultiConditionals && (bits & 0xFFFFFFFFu) == else_value)
+        {
+          activate_codes = true;
+          break;
+        }
+      }
+
+      // Nothing left to evaluate.
+      if (activate_codes || index >= count)
+        break;
+    }
+  }
+
+  return activate_codes ? index : SkipToSeparator(instructions, index);
+}
+
+static size_t ApplyCheatRegisters(const InstructionList& instructions, size_t index, const Instruction& inst)
+{
+  const u32 poke_value = inst.value32;
+  const u8 reg1_index = Truncate8(inst.address.GetValue());
+  const u8 reg2_index = Truncate8(inst.address.GetValue() >> 8);
+  u32& reg1 = s_locals.registers[reg1_index];
+  const u32 reg2 = s_locals.registers[reg2_index];
+  u32& reg3 = s_locals.registers[Truncate8(inst.value32.GetValue())];
+  const u8 sub_type = Truncate8(inst.address >> 16);
+  const u16 cht_offset = inst.value32h;
+
+  switch (sub_type)
+  {
+    case 0x00: // Write the u8 from Reg1 to address
+      DoMemoryWrite<u8>(inst.value32, Truncate8(reg1));
+      break;
+    case 0x01: // Read the u8 from address to Reg1
+      reg1 = DoMemoryRead<u8>(inst.value32);
+      break;
+    case 0x02: // Write the u8 from address field to the address stored in Reg1
+      DoMemoryWrite<u8>(reg1, Truncate8(poke_value));
+      break;
+    case 0x03: // Write the u8 from Reg2 + poke_value to Reg1
+      reg1 = Truncate8(reg2 + poke_value);
+      break;
+    case 0x04: // Write the u8 from Reg2 + poke_value to the address stored in Reg1
+      DoMemoryWrite<u8>(reg1, Truncate8(reg2) + Truncate8(poke_value));
+      break;
+    case 0x05: // Write the u8 poke value to Reg1
+      reg1 = Truncate8(poke_value);
+      break;
+    case 0x06: // Read the u8 value from the address (Reg2 + poke_value) to Reg1
+      reg1 = DoMemoryRead<u8>(reg2 + poke_value);
+      break;
+    case 0x07: // Write the u8 poke_value to a specific index of a single array in a series of consecutive arrays
+      // This cheat type requires a separate cheat to set up 4 consecutive cht_arrays before this will work
+      // Reg1 = the base address of the first element of the first array
+      // Reg1+1 = the array size (basically the address diff between the start of each array)
+      // Reg1+2 = the index of which array in the series to poke (this must be greater than 0)
+      // Reg1+3 must == 0xD0D0 to ensure it only pokes when the above registers have been set (safety valve)
+      // cht_offset = the index of the individual array to change (so must be 0 to Reg1+1)
+      if ((reg1_index <= (std::size(s_locals.registers) - 4)) && s_locals.registers[reg1_index + 3] == 0xD0D0 &&
+          s_locals.registers[reg1_index + 2] > 0 && s_locals.registers[reg1_index + 1] >= cht_offset)
+      {
+        DoMemoryWrite<u8>((reg1 - s_locals.registers[reg1_index + 1]) +
+                            (s_locals.registers[reg1_index + 1] * s_locals.registers[reg1_index + 2]) + cht_offset,
+                          Truncate8(poke_value));
+      }
+      break;
+
+    case 0x40: // Write the u16 from Reg1 to address
+      DoMemoryWrite<u16>(inst.value32, Truncate16(reg1));
+      break;
+    case 0x41: // Read the u16 from address to Reg1
+      reg1 = DoMemoryRead<u16>(inst.value32);
+      break;
+    case 0x42: // Write the u16 from address field to the address stored in Reg1
+      DoMemoryWrite<u16>(reg1, Truncate16(poke_value));
+      break;
+    case 0x43: // Write the u16 from Reg2 + poke_value to Reg1
+      reg1 = Truncate16(reg2 + poke_value);
+      break;
+    case 0x44: // Write the u16 from Reg2 + poke_value to the address stored in Reg1
+      DoMemoryWrite<u16>(reg1, Truncate16(reg2) + Truncate16(poke_value));
+      break;
+    case 0x45: // Write the u16 poke value to Reg1
+      reg1 = Truncate16(poke_value);
+      break;
+    case 0x46: // Read the u16 value from the address (Reg2 + poke_value) to Reg1
+      reg1 = DoMemoryRead<u16>(reg2 + poke_value);
+      break;
+    case 0x47: // Write the u16 poke_value to a specific index of a single array in a series of consecutive arrays
+      // This cheat type requires a separate cheat to set up 4 consecutive cht_arrays before this will work
+      // Reg1 = the base address of the first element of the first array
+      // Reg1+1 = the array size (basically the address diff between the start of each array)
+      // Reg1+2 = the index of which array in the series to poke (this must be greater than 0)
+      // Reg1+3 must == 0xD0D0 to ensure it only pokes when the above registers have been set (safety valve)
+      // cht_offset = the index of the individual array to change (so must be 0 to Reg1+1)
+      if ((reg1_index <= (std::size(s_locals.registers) - 4)) && s_locals.registers[reg1_index + 3] == 0xD0D0 &&
+          s_locals.registers[reg1_index + 2] > 0 && s_locals.registers[reg1_index + 1] >= cht_offset)
+      {
+        DoMemoryWrite<u16>((reg1 - s_locals.registers[reg1_index + 1]) +
+                             (s_locals.registers[reg1_index + 1] * s_locals.registers[reg1_index + 2]) + cht_offset,
+                           Truncate16(poke_value));
+      }
+      break;
+
+    case 0x80: // Write the u32 from Reg1 to address
+      DoMemoryWrite<u32>(inst.value32, reg1);
+      break;
+    case 0x81: // Read the u32 from address to Reg1
+      reg1 = DoMemoryRead<u32>(inst.value32);
+      break;
+    case 0x82: // Write the u32 from address field to the address stored in Reg1
+      DoMemoryWrite<u32>(reg1, poke_value);
+      break;
+    case 0x83: // Write the u32 from Reg2 + poke_value to Reg1
+      reg1 = reg2 + poke_value;
+      break;
+    case 0x84: // Write the u32 from Reg2 + poke_value to the address stored in Reg1
+      DoMemoryWrite<u32>(reg1, reg2 + poke_value);
+      break;
+    case 0x85: // Write the u32 poke value to Reg1
+      reg1 = poke_value;
+      break;
+    case 0x86: // Read the u32 value from the address (Reg2 + poke_value) to Reg1
+      reg1 = DoMemoryRead<u32>(reg2 + poke_value);
+      break;
+      // Do not use 0x87 as it's not possible to duplicate 0x07, 0x47 for a 32 bit write as not enough characters
+
+    case 0xC0: // Reg3 = Reg2 + Reg1
+      reg3 = reg2 + reg1;
+      break;
+    case 0xC1: // Reg3 = Reg2 - Reg1
+      reg3 = reg2 - reg1;
+      break;
+    case 0xC2: // Reg3 = Reg2 * Reg1
+      reg3 = reg2 * reg1;
+      break;
+    case 0xC3: // Reg3 = Reg2 / Reg1 with DIV0 handling
+      if (reg1 == 0)
+        reg3 = 0;
+      else
+        reg3 = reg2 / reg1;
+      break;
+    case 0xC4: // Reg3 = Reg2 % Reg1 (with DIV0 handling)
+      if (reg1 == 0)
+        reg3 = reg2;
+      else
+        reg3 = reg2 % reg1;
+      break;
+    case 0xC5: // Reg3 = Reg2 & Reg1
+      reg3 = reg2 & reg1;
+      break;
+    case 0xC6: // Reg3 = Reg2 | Reg1
+      reg3 = reg2 | reg1;
+      break;
+    case 0xC7: // Reg3 = Reg2 ^ Reg1
+      reg3 = reg2 ^ reg1;
+      break;
+    case 0xC8: // Reg3 = ~Reg1
+      reg3 = ~reg1;
+      break;
+    case 0xC9: // Reg3 = Reg1 << X, zero if X >= 32
+      reg3 = (reg2_index < 32) ? (reg1 << reg2_index) : 0;
+      break;
+    case 0xCA: // Reg3 = Reg1 >> X, zero if X >= 32
+      reg3 = (reg2_index < 32) ? (reg1 >> reg2_index) : 0;
+      break;
+    case 0xD0: // Reg1 = Reg2 & poke_value
+      reg1 = reg2 & poke_value;
+      break;
+    case 0xD1: // Reg1 = Reg2 | poke_value
+      reg1 = reg2 | poke_value;
+      break;
+    case 0xD2: // Reg1 = Reg2 ^ poke_value
+      reg1 = reg2 ^ poke_value;
+      break;
+      // Lots of options exist for expanding into this space
+    default:
+      break;
+  }
+  return index + 1;
+}
+
+// 52 sub-types are WWSSOOOO: width (u8/u16/u32), operands, then comparison. See cheat-format.md in chtdb.
+template<typename T>
+static bool CompareCheatRegisters(u8 operands, u8 comparison, u32 reg1, u32 reg2, const Instruction& inst)
+{
+  // Comparisons 6-B of the memory operands compare against the value, like operands 1. Range comparisons take their
+  // upper bound from the upper half of the value, so they need a value to compare against, and don't exist at 32 bits.
+  const bool compare_value = (operands == 1 || (operands == 2 && comparison >= 0x6));
+  if (comparison > 0xB || ((comparison == 0x8 || comparison == 0x9) && (!compare_value || std::is_same_v<T, u32>)))
+    return false;
+
+  T a, b;
+  switch (operands)
+  {
+    case 0: // Reg2 vs Reg1
+      a = static_cast<T>(reg2);
+      b = static_cast<T>(reg1);
+      break;
+    case 1: // Reg1 vs value
+      a = static_cast<T>(reg1);
+      b = GetValue<T>(inst);
+      break;
+    case 2: // (Reg2) vs (Reg1), or (Reg1) vs value
+      a = DoMemoryRead<T>(compare_value ? reg1 : reg2);
+      b = compare_value ? GetValue<T>(inst) : DoMemoryRead<T>(reg1);
+      break;
+    default: // Reg1 vs (address)
+      a = static_cast<T>(reg1);
+      b = DoMemoryRead<T>(inst.value32);
+      break;
+  }
+
+  const T upper = static_cast<T>(inst.value32h.GetValue());
+  switch (comparison)
+  {
+    case 0x0:
+      return (a == b);
+    case 0x1:
+      return (a != b);
+    case 0x2:
+      return (a > b);
+    case 0x3:
+      return (a >= b);
+    case 0x4:
+      return (a < b);
+    case 0x5:
+      return (a <= b);
+    case 0x6:
+      return ((a & b) == b);
+    case 0x7:
+      return ((a & b) != b);
+    case 0x8:
+      return (a > b && a < upper);
+    case 0x9:
+      return (a >= b && a <= upper);
+    case 0xA:
+      return ((a & b) == a);
+    default:
+      return ((a & b) != a);
+  }
+}
+
+static size_t ApplyCheatRegistersCompare(const InstructionList& instructions, size_t index, const Instruction& inst)
+{
+  const u32 reg1 = s_locals.registers[Truncate8(inst.address.GetValue())];
+  const u32 reg2 = s_locals.registers[Truncate8(inst.address.GetValue() >> 8)];
+  const u8 sub_type = Truncate8(inst.address.GetValue() >> 16);
+  const u8 operands = (sub_type >> 4) & 0x3;
+  const u8 comparison = sub_type & 0xF;
+
+  bool activate_codes;
+  switch (sub_type >> 6)
+  {
+    case 0:
+      activate_codes = CompareCheatRegisters<u8>(operands, comparison, reg1, reg2, inst);
+      break;
+    case 1:
+      activate_codes = CompareCheatRegisters<u16>(operands, comparison, reg1, reg2, inst);
+      break;
+    case 2:
+      activate_codes = CompareCheatRegisters<u32>(operands, comparison, reg1, reg2, inst);
+      break;
+    default:
+      activate_codes = false;
+      break;
+  }
+
+  return activate_codes ? (index + 1) : SkipToSeparator(instructions, index + 1);
+}
+
+template<typename T>
+static size_t ApplyWriteIfMatch(const InstructionList& instructions, size_t index, const Instruction& inst)
+{
+  if (DoMemoryRead<T>(inst.address) == GetUpperValue<T>(inst))
+  {
+    DoMemoryWrite<T>(inst.address, GetValue<T>(inst));
+    CPU::InvalidateICacheForRAM(inst.address, sizeof(T));
+  }
+
+  return index + 1;
+}
+
+template<typename T>
+static void RestoreWriteIfMatch(const Instruction& inst, RollbackLog* rollback_list)
+{
+  const T compare_value = GetUpperValue<T>(inst);
+  const T new_value = GetValue<T>(inst);
+  if (DoMemoryRead<T>(inst.address) == new_value)
+  {
+    if (rollback_list)
+    {
+      rollback_list->emplace_back(std::is_same_v<T, u8> ? MemoryAccessSize::Byte : MemoryAccessSize::HalfWord,
+                                  inst.address, new_value);
+    }
+
+    DoMemoryWrite<T>(inst.address, compare_value);
+    CPU::InvalidateICacheForRAM(inst.address, sizeof(T));
+  }
+}
+
+static size_t ApplyForceRange8(const InstructionList& instructions, size_t index, const Instruction& inst)
+{
+  const u8 value = DoMemoryRead<u8>(inst.address);
+  const u8 min = inst.value8;
+  const u8 max = inst.value16h;
+  const u8 overmin = Truncate8(inst.value32h.GetValue());
+  const u8 overmax = Truncate8(inst.value32h.GetValue() >> 8);
+  if (value < min)
+    DoMemoryWrite<u8>(inst.address, overmin);
+  else if (value > max)
+    DoMemoryWrite<u8>(inst.address, overmax);
+  return index + 1;
+}
+
+static size_t ApplyForceRangeLimits16(const InstructionList& instructions, size_t index, const Instruction& inst)
+{
+  const u16 value = DoMemoryRead<u16>(inst.address);
+  const u16 min = inst.value16;
+  const u16 max = inst.value32h;
+  if (value < min)
+    DoMemoryWrite<u16>(inst.address, min);
+  else if (value > max)
+    DoMemoryWrite<u16>(inst.address, max);
+  return index + 1;
+}
+
+static size_t ApplyForceRangeRollRound16(const InstructionList& instructions, size_t index, const Instruction& inst)
+{
+  const u16 value = DoMemoryRead<u16>(inst.address);
+  const u16 min = inst.value16;
+  const u16 max = inst.value32h;
+  if (value < min)
+    DoMemoryWrite<u16>(inst.address, max);
+  else if (value > max)
+    DoMemoryWrite<u16>(inst.address, min);
+  return index + 1;
+}
+
+static size_t ApplyForceRange16(const InstructionList& instructions, size_t index, const Instruction& inst)
+{
+  if ((index + 1) >= instructions.size()) [[unlikely]]
+  {
+    ERROR_LOG("Incomplete ExtConstantForceRange16 instruction");
+    return instructions.size();
+  }
+
+  const u16 min = inst.value16;
+  const u16 max = inst.value32h;
+  const u16 value = DoMemoryRead<u16>(inst.address);
+  const Instruction& inst2 = instructions[index + 1];
+  const u16 overmin = inst2.value16;
+  const u16 overmax = inst2.value32h;
+  if (value < min)
+    DoMemoryWrite<u16>(inst.address, overmin);
+  else if (value > max)
+    DoMemoryWrite<u16>(inst.address, overmax);
+  return index + 2;
+}
+
+static size_t ApplyConstantSwap16(const InstructionList& instructions, size_t index, const Instruction& inst)
+{
+  const u16 value1 = inst.value16;
+  const u16 value2 = inst.value32h;
+  const u16 value = DoMemoryRead<u16>(inst.address);
+  if (value == value1)
+    DoMemoryWrite<u16>(inst.address, value2);
+  else if (value == value2)
+    DoMemoryWrite<u16>(inst.address, value1);
+  return index + 1;
+}
+
+static size_t ApplyFindAndReplace(const InstructionList& instructions, size_t index, const Instruction& inst)
+{
+  static constexpr u32 PATTERN_SIZE = 16;
+
+  if ((index + 4) >= instructions.size()) [[unlikely]]
+  {
+    ERROR_LOG("Incomplete ExtFindAndReplace instruction");
+    return instructions.size();
+  }
+
+  const u32 offset = static_cast<u32>(inst.value16) << 1;
+  const u8 wildcard = Truncate8(inst.value32h.GetValue());
+  const u32 minaddress = inst.address - std::min<u32>(inst.address, offset); // clamped to 0
+  const u32 maxaddress = inst.address + offset;
+
+  // The search bytes are packed MSB first into the two lines after the instruction, then the replacement bytes.
+  std::array<u8, PATTERN_SIZE> search, replace;
+  const auto get_pattern_byte = [&instructions](size_t line_index, u32 i) {
+    const Instruction& line = instructions[line_index + (i / 8)];
+    return Truncate8(((i & 4) ? line.second : line.first) >> (24 - (i & 3) * 8));
+  };
+  for (u32 i = 0; i < PATTERN_SIZE; i++)
+  {
+    search[i] = get_pattern_byte(index + 1, i);
+    replace[i] = get_pattern_byte(index + 3, i);
+  }
+
+  for (u32 address = minaddress; address <= maxaddress; address += 2)
+  {
+    u32 i = 0;
+    while (i < PATTERN_SIZE && (search[i] == wildcard || DoMemoryRead<u8>(address + i) == search[i]))
+      i++;
+    if (i != PATTERN_SIZE)
+      continue;
+
+    for (i = 0; i < PATTERN_SIZE; i++)
+    {
+      if (replace[i] != wildcard)
+        DoMemoryWrite<u8>(address + i, replace[i]);
+    }
+
+    // Continue after the replaced bytes, the loop adds the other 2.
+    address += PATTERN_SIZE - 2;
+  }
+
+  return index + 5;
+}
+
+static size_t ApplyBlockWrite(const InstructionList& instructions, size_t index, const Instruction& inst)
+{
+  const u32 payload_length = GetBlockPayloadLength(inst);
+  if (payload_length > (instructions.size() - index - 1)) [[unlikely]]
+  {
+    ERROR_LOG("Incomplete ExtBlockWrite instruction");
+    return instructions.size();
+  }
+
+  const u32 size = inst.value32 * sizeof(u32);
+  const u8* data = reinterpret_cast<const u8*>(&instructions[index + 1]);
+  if (u8* ram = GetBlockRAMPointer(inst.address, size)) [[likely]]
+  {
+    if (std::memcmp(ram, data, size) != 0)
+    {
+      std::memcpy(ram, data, size);
+      InvalidateCodeRange(inst.address, size);
+    }
+  }
+  else
+  {
+    ERROR_LOG("Block write at 0x{:06X} of {} bytes is outside RAM", inst.address.GetValue(), size);
+  }
+
+  return index + 1 + payload_length;
+}
+
+static size_t ApplyBlockWriteIfMatch(const InstructionList& instructions, size_t index, const Instruction& inst)
+{
+  const u32 payload_length = GetBlockPayloadLength(inst);
+  if (payload_length > (instructions.size() - index - 1)) [[unlikely]]
+  {
+    ERROR_LOG("Incomplete ExtBlockWriteIfMatch instruction");
+    return instructions.size();
+  }
+
+  const u32 size = inst.value32 * sizeof(u32);
+  const u8* compare_data = reinterpret_cast<const u8*>(&instructions[index + 1]);
+  const u8* write_data = compare_data + size;
+  if (u8* ram = GetBlockRAMPointer(inst.address, size)) [[likely]]
+  {
+    if (std::memcmp(ram, compare_data, size) == 0)
+    {
+      std::memcpy(ram, write_data, size);
+      InvalidateCodeRange(inst.address, size);
+    }
+  }
+  else
+  {
+    ERROR_LOG("Block write at 0x{:06X} of {} bytes is outside RAM", inst.address.GetValue(), size);
+  }
+
+  return index + 1 + payload_length;
+}
+
+static size_t ApplyMaskedWrite(const InstructionList& instructions, size_t index, const Instruction& inst)
+{
+  const u32 size = inst.value32;
+  const u8* data = reinterpret_cast<const u8*>(&instructions[index + 1]);
+  (IsICacheInUse() ? DoMaskedWrite<true> : DoMaskedWrite<false>)(inst.address, size, data, data + size);
+  return index + 1 + GetBlockPayloadLength(inst);
+}
+
+template<u32 width>
+static size_t ApplyMatchWrite(const InstructionList& instructions, size_t index, const Instruction& inst)
+{
+  const u32 size = inst.value32;
+  const u8* compare_data = reinterpret_cast<const u8*>(&instructions[index + 1]);
+  (IsICacheInUse() ? DoMatchWrite<width, true> : DoMatchWrite<width, false>)(inst.address, size, compare_data,
+                                                                             compare_data + size,
+                                                                             compare_data + size * 2, nullptr);
+  return index + 1 + GetBlockPayloadLength(inst);
+}
+
+static size_t ApplyDelayActivation(const InstructionList& instructions, size_t index, const Instruction& inst)
+{
+  // A value of around 4000 or 5000 will usually give you a good 20-30 second delay before codes are activated.
+  // Frame number * 0.3 -> (20 * 60) * 10 / 3 => 4000
+  const u32 comp_value = (System::GetFrameNumber() * 10) / 3;
+  return (comp_value < inst.value16) ? instructions.size() : (index + 1);
+}
+
+static size_t ApplySlide(const InstructionList& instructions, size_t index, const Instruction& inst)
+{
+  if ((index + 1) >= instructions.size()) [[unlikely]]
+  {
+    ERROR_LOG("Incomplete Slide instruction");
+    return instructions.size();
+  }
+
+  const u32 slide_count = (inst.first >> 8) & 0xFFu;
+  const u32 address_increment = inst.first & 0xFFu;
+  const u16 value_increment = inst.value16;
+  const Instruction& inst2 = instructions[index + 1];
+  switch (inst2.code)
+  {
+    case InstructionCode::ConstantWrite8:
+      DoSlide<u8, ModifyOp::Write>(inst2.address, inst2.value32, slide_count, address_increment, value_increment);
+      break;
+    case InstructionCode::ConstantWrite16:
+      DoSlide<u16, ModifyOp::Write>(inst2.address, inst2.value32, slide_count, address_increment, value_increment);
+      break;
+    case InstructionCode::ExtConstantWrite32:
+      DoSlide<u32, ModifyOp::Write>(inst2.address, inst2.value32, slide_count, address_increment, value_increment);
+      break;
+    default:
+      ERROR_LOG("Invalid command in second slide parameter 0x{:02X}", static_cast<unsigned>(inst2.code.GetValue()));
+      break;
+  }
+
+  return index + 2;
+}
+
+static size_t ApplyImprovedSlide(const InstructionList& instructions, size_t index, const Instruction& inst)
+{
+  if ((index + 1) >= instructions.size()) [[unlikely]]
+  {
+    ERROR_LOG("Incomplete ExtImprovedSlide instruction");
+    return instructions.size();
+  }
+
+  const u32 slide_count = inst.first & 0xFFFFu;
+  const u32 address_change = inst.value32h;
+  const u32 value_change = inst.value16;
+  const bool address_change_negative = (inst.first >> 20) & 0x1u;
+  const bool value_change_negative = (inst.first >> 16) & 0x1u;
+  const u32 address_step = address_change_negative ? (0u - address_change) : address_change;
+  const u32 value_step = value_change_negative ? (0u - value_change) : value_change;
+  const Instruction& inst2 = instructions[index + 1];
+  const u32 address = inst2.address;
+  const u32 value = inst2.value32;
+  switch (inst2.code)
+  {
+    case InstructionCode::ConstantWrite8:
+      DoSlide<u8, ModifyOp::Write>(address, value, slide_count, address_step, value_step);
+      break;
+    case InstructionCode::ConstantWrite16:
+      DoSlide<u16, ModifyOp::Write>(address, value, slide_count, address_step, value_step);
+      break;
+    case InstructionCode::ExtConstantWrite32:
+      DoSlide<u32, ModifyOp::Write>(address, value, slide_count, address_step, value_step);
+      break;
+    case InstructionCode::ExtConstantBitClear8:
+      DoSlide<u8, ModifyOp::Clear>(address, value, slide_count, address_step, value_step);
+      break;
+    case InstructionCode::ExtConstantBitSet8:
+      DoSlide<u8, ModifyOp::Set>(address, value, slide_count, address_step, value_step);
+      break;
+    case InstructionCode::ExtConstantBitClear16:
+      DoSlide<u16, ModifyOp::Clear>(address, value, slide_count, address_step, value_step);
+      break;
+    case InstructionCode::ExtConstantBitSet16:
+      DoSlide<u16, ModifyOp::Set>(address, value, slide_count, address_step, value_step);
+      break;
+    case InstructionCode::ExtConstantBitClear32:
+      DoSlide<u32, ModifyOp::Clear>(address, value, slide_count, address_step, value_step);
+      break;
+    case InstructionCode::ExtConstantBitSet32:
+      DoSlide<u32, ModifyOp::Set>(address, value, slide_count, address_step, value_step);
+      break;
+    default:
+      ERROR_LOG("Invalid command in second slide parameter 0x{:02X}", static_cast<unsigned>(inst2.code.GetValue()));
+      break;
+  }
+
+  return index + 2;
+}
+
+static size_t ApplyMemoryCopy(const InstructionList& instructions, size_t index, const Instruction& inst)
+{
+  if ((index + 1) >= instructions.size())
+  {
+    ERROR_LOG("Incomplete MemoryCopy instruction");
+    return instructions.size();
+  }
+
+  const Instruction& inst2 = instructions[index + 1];
+  const u32 byte_count = inst.value16;
+  u32 src_address = inst.address;
+  u32 dst_address = inst2.address;
+
+  for (u32 i = 0; i < byte_count; i++)
+  {
+    u8 value = DoMemoryRead<u8>(src_address);
+    DoMemoryWrite<u8>(dst_address, value);
+    src_address++;
+    dst_address++;
+  }
+
+  return index + 2;
+}
+
+static constexpr std::array<ApplyHandler, 256> s_apply_handlers = []() {
+  std::array<ApplyHandler, 256> handlers = {};
+  handlers.fill(&ApplyUnhandled);
+
+  const auto set = [&handlers](InstructionCode code, ApplyHandler handler) {
+    handlers[static_cast<u8>(code)] = handler;
+  };
+
+  using enum InstructionCode;
+  set(Nop, &ApplyNop);
+  set(ConstantWrite8, &ApplyModify<u8, ModifyOp::Write>);
+  set(ConstantWrite16, &ApplyModify<u16, ModifyOp::Write>);
+  set(ExtConstantWrite32, &ApplyModify<u32, ModifyOp::Write>);
+  set(ExtConstantBitSet8, &ApplyModify<u8, ModifyOp::Set>);
+  set(ExtConstantBitSet16, &ApplyModify<u16, ModifyOp::Set>);
+  set(ExtConstantBitSet32, &ApplyModify<u32, ModifyOp::Set>);
+  set(ExtConstantBitClear8, &ApplyModify<u8, ModifyOp::Clear>);
+  set(ExtConstantBitClear16, &ApplyModify<u16, ModifyOp::Clear>);
+  set(ExtConstantBitClear32, &ApplyModify<u32, ModifyOp::Clear>);
+  set(Increment8, &ApplyModify<u8, ModifyOp::Add>);
+  set(Increment16, &ApplyModify<u16, ModifyOp::Add>);
+  set(ExtIncrement32, &ApplyModify<u32, ModifyOp::Add>);
+  set(Decrement8, &ApplyModify<u8, ModifyOp::Sub>);
+  set(Decrement16, &ApplyModify<u16, ModifyOp::Sub>);
+  set(ExtDecrement32, &ApplyModify<u32, ModifyOp::Sub>);
+  set(ScratchpadWrite16, &ApplyScratchpadWrite<u16>);
+  set(ExtScratchpadWrite32, &ApplyScratchpadWrite<u32>);
+
+  set(CompareEqual16, &ApplyLineConditional<u16, std::equal_to<>>);
+  set(CompareNotEqual16, &ApplyLineConditional<u16, std::not_equal_to<>>);
+  set(CompareLess16, &ApplyLineConditional<u16, std::less<>>);
+  set(CompareGreater16, &ApplyLineConditional<u16, std::greater<>>);
+  set(CompareEqual8, &ApplyLineConditional<u8, std::equal_to<>>);
+  set(CompareNotEqual8, &ApplyLineConditional<u8, std::not_equal_to<>>);
+  set(CompareLess8, &ApplyLineConditional<u8, std::less<>>);
+  set(CompareGreater8, &ApplyLineConditional<u8, std::greater<>>);
+  set(ExtCompareEqual32, &ApplyLineConditional<u32, std::equal_to<>>);
+  set(ExtCompareNotEqual32, &ApplyLineConditional<u32, std::not_equal_to<>>);
+  set(ExtCompareLess32, &ApplyLineConditional<u32, std::less<>>);
+  set(ExtCompareGreater32, &ApplyLineConditional<u32, std::greater<>>);
+  set(CompareButtons, &ApplyCompareButtons);
+
+  set(SkipIfNotEqual16, &ApplyBlockConditional<u16, std::equal_to<>>);
+  set(ExtSkipIfNotEqual32, &ApplyBlockConditional<u32, std::equal_to<>>);
+  set(ExtSkipIfNotLess8, &ApplyBlockConditional<u8, std::less<>>);
+  set(ExtSkipIfNotGreater8, &ApplyBlockConditional<u8, std::greater<>>);
+  set(ExtSkipIfNotLess16, &ApplyBlockConditional<u16, std::less<>>);
+  set(ExtSkipIfNotGreater16, &ApplyBlockConditional<u16, std::greater<>>);
+  set(SkipIfButtonsNotEqual, &ApplySkipIfButtons<std::equal_to<>>);
+  set(SkipIfButtonsEqual, &ApplySkipIfButtons<std::not_equal_to<>>);
+  set(ExtBitCompareButtons, &ApplyBitCompareButtons);
+  set(ExtMultiConditionals, &ApplyMultiConditionals);
+  set(ExtCheatRegisters, &ApplyCheatRegisters);
+  set(ExtCheatRegistersCompare, &ApplyCheatRegistersCompare);
+
+  set(ExtConstantWriteIfMatch16, &ApplyWriteIfMatch<u16>);
+  set(ExtConstantWriteIfMatchWithRestore16, &ApplyWriteIfMatch<u16>);
+  set(ExtConstantWriteIfMatchWithRestore8, &ApplyWriteIfMatch<u8>);
+  set(ExtConstantForceRange8, &ApplyForceRange8);
+  set(ExtConstantForceRangeLimits16, &ApplyForceRangeLimits16);
+  set(ExtConstantForceRangeRollRound16, &ApplyForceRangeRollRound16);
+  set(ExtConstantForceRange16, &ApplyForceRange16);
+  set(ExtConstantSwap16, &ApplyConstantSwap16);
+  set(ExtFindAndReplace, &ApplyFindAndReplace);
+  set(ExtBlockWrite, &ApplyBlockWrite);
+  set(ExtBlockWriteIfMatchWithRestore, &ApplyBlockWriteIfMatch);
+  set(ExtBlockWriteIfMatch, &ApplyBlockWriteIfMatch);
+  set(InternalMaskedWrite, &ApplyMaskedWrite);
+  set(InternalMatchWrite16, &ApplyMatchWrite<sizeof(u16)>);
+  set(InternalMatchWriteWithRestore16, &ApplyMatchWrite<sizeof(u16)>);
+  set(InternalMatchWriteWithRestore8, &ApplyMatchWrite<sizeof(u8)>);
+
+  set(DelayActivation, &ApplyDelayActivation);
+  set(Slide, &ApplySlide);
+  set(ExtImprovedSlide, &ApplyImprovedSlide);
+  set(MemoryCopy, &ApplyMemoryCopy);
+
+  return handlers;
+}();
+
+} // namespace Cheats::GamesharkHandlers
+
 void Cheats::GamesharkCheatCode::Apply() const
 {
-  const u32 count = static_cast<u32>(instructions.size());
-  u32 index = 0;
-  for (; index < count;)
+  for (size_t index = 0; index < instructions.size();)
   {
     const Instruction& inst = instructions[index];
-    switch (inst.code)
-    {
-      case InstructionCode::Nop:
-      {
-        index++;
-      }
-      break;
-
-      case InstructionCode::ConstantWrite8:
-      {
-        DoMemoryWrite<u8>(inst.address, inst.value8);
-        index++;
-      }
-      break;
-
-      case InstructionCode::ConstantWrite16:
-      {
-        DoMemoryWrite<u16>(inst.address, inst.value16);
-        index++;
-      }
-      break;
-
-      case InstructionCode::ExtConstantWrite32:
-      {
-        DoMemoryWrite<u32>(inst.address, inst.value32);
-        index++;
-      }
-      break;
-
-      case InstructionCode::ExtConstantBitSet8:
-      {
-        const u8 value = DoMemoryRead<u8>(inst.address) | inst.value8;
-        DoMemoryWrite<u8>(inst.address, value);
-        index++;
-      }
-      break;
-
-      case InstructionCode::ExtConstantBitSet16:
-      {
-        const u16 value = DoMemoryRead<u16>(inst.address) | inst.value16;
-        DoMemoryWrite<u16>(inst.address, value);
-        index++;
-      }
-      break;
-
-      case InstructionCode::ExtConstantBitSet32:
-      {
-        const u32 value = DoMemoryRead<u32>(inst.address) | inst.value32;
-        DoMemoryWrite<u32>(inst.address, value);
-        index++;
-      }
-      break;
-
-      case InstructionCode::ExtConstantBitClear8:
-      {
-        const u8 value = DoMemoryRead<u8>(inst.address) & ~inst.value8;
-        DoMemoryWrite<u8>(inst.address, value);
-        index++;
-      }
-      break;
-
-      case InstructionCode::ExtConstantBitClear16:
-      {
-        const u16 value = DoMemoryRead<u16>(inst.address) & ~inst.value16;
-        DoMemoryWrite<u16>(inst.address, value);
-        index++;
-      }
-      break;
-
-      case InstructionCode::ExtConstantBitClear32:
-      {
-        const u32 value = DoMemoryRead<u32>(inst.address) & ~inst.value32;
-        DoMemoryWrite<u32>(inst.address, value);
-        index++;
-      }
-      break;
-
-      case InstructionCode::ScratchpadWrite16:
-      {
-        DoMemoryWrite<u16>(CPU::SCRATCHPAD_ADDR | (inst.address & CPU::SCRATCHPAD_OFFSET_MASK), inst.value16);
-        index++;
-      }
-      break;
-
-      case InstructionCode::ExtScratchpadWrite32:
-      {
-        DoMemoryWrite<u32>(CPU::SCRATCHPAD_ADDR | (inst.address & CPU::SCRATCHPAD_OFFSET_MASK), inst.value32);
-        index++;
-      }
-      break;
-
-      case InstructionCode::ExtIncrement32:
-      {
-        const u32 value = DoMemoryRead<u32>(inst.address);
-        DoMemoryWrite<u32>(inst.address, value + inst.value32);
-        index++;
-      }
-      break;
-
-      case InstructionCode::ExtDecrement32:
-      {
-        const u32 value = DoMemoryRead<u32>(inst.address);
-        DoMemoryWrite<u32>(inst.address, value - inst.value32);
-        index++;
-      }
-      break;
-
-      case InstructionCode::Increment16:
-      {
-        const u16 value = DoMemoryRead<u16>(inst.address);
-        DoMemoryWrite<u16>(inst.address, value + inst.value16);
-        index++;
-      }
-      break;
-
-      case InstructionCode::Decrement16:
-      {
-        const u16 value = DoMemoryRead<u16>(inst.address);
-        DoMemoryWrite<u16>(inst.address, value - inst.value16);
-        index++;
-      }
-      break;
-
-      case InstructionCode::Increment8:
-      {
-        const u8 value = DoMemoryRead<u8>(inst.address);
-        DoMemoryWrite<u8>(inst.address, value + inst.value8);
-        index++;
-      }
-      break;
-
-      case InstructionCode::Decrement8:
-      {
-        const u8 value = DoMemoryRead<u8>(inst.address);
-        DoMemoryWrite<u8>(inst.address, value - inst.value8);
-        index++;
-      }
-      break;
-
-      case InstructionCode::ExtCompareEqual32:
-      {
-        const u32 value = DoMemoryRead<u32>(inst.address);
-        if (value == inst.value32)
-          index++;
-        else
-          index = GetNextNonConditionalInstruction(index);
-      }
-      break;
-
-      case InstructionCode::ExtCompareNotEqual32:
-      {
-        const u32 value = DoMemoryRead<u32>(inst.address);
-        if (value != inst.value32)
-          index++;
-        else
-          index = GetNextNonConditionalInstruction(index);
-      }
-      break;
-
-      case InstructionCode::ExtCompareLess32:
-      {
-        const u32 value = DoMemoryRead<u32>(inst.address);
-        if (value < inst.value32)
-          index++;
-        else
-          index = GetNextNonConditionalInstruction(index);
-      }
-      break;
-
-      case InstructionCode::ExtCompareGreater32:
-      {
-        const u32 value = DoMemoryRead<u32>(inst.address);
-        if (value > inst.value32)
-          index++;
-        else
-          index = GetNextNonConditionalInstruction(index);
-      }
-      break;
-
-      case InstructionCode::ExtConstantWriteIfMatch16:
-      case InstructionCode::ExtConstantWriteIfMatchWithRestore16:
-      {
-        const u16 value = DoMemoryRead<u16>(inst.address);
-        const u16 comparevalue = Truncate16(inst.value32 >> 16);
-        const u16 newvalue = Truncate16(inst.value32 & 0xFFFFu);
-        if (value == comparevalue)
-        {
-          DoMemoryWrite<u16>(inst.address, newvalue);
-          CPU::InvalidateICacheForRAM(inst.address, sizeof(u16));
-        }
-
-        index++;
-      }
-      break;
-
-      case InstructionCode::ExtConstantWriteIfMatchWithRestore8:
-      {
-        const u8 value = DoMemoryRead<u8>(inst.address);
-        const u8 comparevalue = Truncate8(inst.value16 >> 8);
-        const u8 newvalue = Truncate8(inst.value16 & 0xFFu);
-        if (value == comparevalue)
-        {
-          DoMemoryWrite<u8>(inst.address, newvalue);
-          CPU::InvalidateICacheForRAM(inst.address, sizeof(u8));
-        }
-
-        index++;
-      }
-      break;
-
-      case InstructionCode::ExtConstantForceRange8:
-      {
-        const u8 value = DoMemoryRead<u8>(inst.address);
-        const u8 min = Truncate8(inst.value32 & 0x000000FFu);
-        const u8 max = Truncate8((inst.value32 & 0x0000FF00u) >> 8);
-        const u8 overmin = Truncate8((inst.value32 & 0x00FF0000u) >> 16);
-        const u8 overmax = Truncate8((inst.value32 & 0xFF000000u) >> 24);
-        if (value < min)
-          DoMemoryWrite<u8>(inst.address, overmin);
-        else if (value > max)
-          DoMemoryWrite<u8>(inst.address, overmax);
-        index++;
-      }
-      break;
-
-      case InstructionCode::ExtConstantForceRangeLimits16:
-      {
-        const u16 value = DoMemoryRead<u16>(inst.address);
-        const u16 min = Truncate16(inst.value32 & 0x0000FFFFu);
-        const u16 max = Truncate16((inst.value32 & 0xFFFF0000u) >> 16);
-        if (value < min)
-          DoMemoryWrite<u16>(inst.address, min);
-        else if (value > max)
-          DoMemoryWrite<u16>(inst.address, max);
-        index++;
-      }
-      break;
-
-      case InstructionCode::ExtConstantForceRangeRollRound16:
-      {
-        const u16 value = DoMemoryRead<u16>(inst.address);
-        const u16 min = Truncate16(inst.value32 & 0x0000FFFFu);
-        const u16 max = Truncate16((inst.value32 & 0xFFFF0000u) >> 16);
-        if (value < min)
-          DoMemoryWrite<u16>(inst.address, max);
-        else if (value > max)
-          DoMemoryWrite<u16>(inst.address, min);
-        index++;
-      }
-      break;
-
-      case InstructionCode::ExtConstantForceRange16:
-      {
-        if ((index + 1) >= count) [[unlikely]]
-        {
-          ERROR_LOG("Incomplete ExtConstantForceRange16 instruction");
-          return;
-        }
-
-        const u16 min = Truncate16(inst.value32 & 0x0000FFFFu);
-        const u16 max = Truncate16((inst.value32 & 0xFFFF0000u) >> 16);
-        const u16 value = DoMemoryRead<u16>(inst.address);
-        const Instruction& inst2 = instructions[index + 1];
-        const u16 overmin = Truncate16(inst2.value32 & 0x0000FFFFu);
-        const u16 overmax = Truncate16((inst2.value32 & 0xFFFF0000u) >> 16);
-
-        if (value < min)
-          DoMemoryWrite<u16>(inst.address, overmin);
-        else if (value > max)
-          DoMemoryWrite<u16>(inst.address, overmax);
-        index += 2;
-      }
-      break;
-
-      case InstructionCode::ExtConstantSwap16:
-      {
-        const u16 value1 = Truncate16(inst.value32 & 0x0000FFFFu);
-        const u16 value2 = Truncate16((inst.value32 & 0xFFFF0000u) >> 16);
-        const u16 value = DoMemoryRead<u16>(inst.address);
-
-        if (value == value1)
-          DoMemoryWrite<u16>(inst.address, value2);
-        else if (value == value2)
-          DoMemoryWrite<u16>(inst.address, value1);
-        index++;
-      }
-      break;
-
-      case InstructionCode::ExtFindAndReplace:
-      {
-        if ((index + 4) >= count) [[unlikely]]
-        {
-          ERROR_LOG("Incomplete ExtFindAndReplace instruction");
-          return;
-        }
-
-        const Instruction& inst2 = instructions[index + 1];
-        const Instruction& inst3 = instructions[index + 2];
-        const Instruction& inst4 = instructions[index + 3];
-        const Instruction& inst5 = instructions[index + 4];
-
-        const u32 offset = Truncate16(inst.value32 & 0x0000FFFFu) << 1;
-        const u8 wildcard = Truncate8((inst.value32 & 0x00FF0000u) >> 16);
-        const u32 minaddress = inst.address - std::min<u32>(inst.address, offset); // clamped to 0
-        const u32 maxaddress = inst.address + offset;
-        const u8 f1 = Truncate8((inst2.first & 0xFF000000u) >> 24);
-        const u8 f2 = Truncate8((inst2.first & 0x00FF0000u) >> 16);
-        const u8 f3 = Truncate8((inst2.first & 0x0000FF00u) >> 8);
-        const u8 f4 = Truncate8(inst2.first & 0x000000FFu);
-        const u8 f5 = Truncate8((inst2.value32 & 0xFF000000u) >> 24);
-        const u8 f6 = Truncate8((inst2.value32 & 0x00FF0000u) >> 16);
-        const u8 f7 = Truncate8((inst2.value32 & 0x0000FF00u) >> 8);
-        const u8 f8 = Truncate8(inst2.value32 & 0x000000FFu);
-        const u8 f9 = Truncate8((inst3.first & 0xFF000000u) >> 24);
-        const u8 f10 = Truncate8((inst3.first & 0x00FF0000u) >> 16);
-        const u8 f11 = Truncate8((inst3.first & 0x0000FF00u) >> 8);
-        const u8 f12 = Truncate8(inst3.first & 0x000000FFu);
-        const u8 f13 = Truncate8((inst3.value32 & 0xFF000000u) >> 24);
-        const u8 f14 = Truncate8((inst3.value32 & 0x00FF0000u) >> 16);
-        const u8 f15 = Truncate8((inst3.value32 & 0x0000FF00u) >> 8);
-        const u8 f16 = Truncate8(inst3.value32 & 0x000000FFu);
-        const u8 r1 = Truncate8((inst4.first & 0xFF000000u) >> 24);
-        const u8 r2 = Truncate8((inst4.first & 0x00FF0000u) >> 16);
-        const u8 r3 = Truncate8((inst4.first & 0x0000FF00u) >> 8);
-        const u8 r4 = Truncate8(inst4.first & 0x000000FFu);
-        const u8 r5 = Truncate8((inst4.value32 & 0xFF000000u) >> 24);
-        const u8 r6 = Truncate8((inst4.value32 & 0x00FF0000u) >> 16);
-        const u8 r7 = Truncate8((inst4.value32 & 0x0000FF00u) >> 8);
-        const u8 r8 = Truncate8(inst4.value32 & 0x000000FFu);
-        const u8 r9 = Truncate8((inst5.first & 0xFF000000u) >> 24);
-        const u8 r10 = Truncate8((inst5.first & 0x00FF0000u) >> 16);
-        const u8 r11 = Truncate8((inst5.first & 0x0000FF00u) >> 8);
-        const u8 r12 = Truncate8(inst5.first & 0x000000FFu);
-        const u8 r13 = Truncate8((inst5.value32 & 0xFF000000u) >> 24);
-        const u8 r14 = Truncate8((inst5.value32 & 0x00FF0000u) >> 16);
-        const u8 r15 = Truncate8((inst5.value32 & 0x0000FF00u) >> 8);
-        const u8 r16 = Truncate8(inst5.value32 & 0x000000FFu);
-
-        for (u32 address = minaddress; address <= maxaddress; address += 2)
-        {
-          if ((DoMemoryRead<u8>(address) == f1 || f1 == wildcard) &&
-              (DoMemoryRead<u8>(address + 1) == f2 || f2 == wildcard) &&
-              (DoMemoryRead<u8>(address + 2) == f3 || f3 == wildcard) &&
-              (DoMemoryRead<u8>(address + 3) == f4 || f4 == wildcard) &&
-              (DoMemoryRead<u8>(address + 4) == f5 || f5 == wildcard) &&
-              (DoMemoryRead<u8>(address + 5) == f6 || f6 == wildcard) &&
-              (DoMemoryRead<u8>(address + 6) == f7 || f7 == wildcard) &&
-              (DoMemoryRead<u8>(address + 7) == f8 || f8 == wildcard) &&
-              (DoMemoryRead<u8>(address + 8) == f9 || f9 == wildcard) &&
-              (DoMemoryRead<u8>(address + 9) == f10 || f10 == wildcard) &&
-              (DoMemoryRead<u8>(address + 10) == f11 || f11 == wildcard) &&
-              (DoMemoryRead<u8>(address + 11) == f12 || f12 == wildcard) &&
-              (DoMemoryRead<u8>(address + 12) == f13 || f13 == wildcard) &&
-              (DoMemoryRead<u8>(address + 13) == f14 || f14 == wildcard) &&
-              (DoMemoryRead<u8>(address + 14) == f15 || f15 == wildcard) &&
-              (DoMemoryRead<u8>(address + 15) == f16 || f16 == wildcard))
-          {
-            if (r1 != wildcard)
-              DoMemoryWrite<u8>(address, r1);
-            if (r2 != wildcard)
-              DoMemoryWrite<u8>(address + 1, r2);
-            if (r3 != wildcard)
-              DoMemoryWrite<u8>(address + 2, r3);
-            if (r4 != wildcard)
-              DoMemoryWrite<u8>(address + 3, r4);
-            if (r5 != wildcard)
-              DoMemoryWrite<u8>(address + 4, r5);
-            if (r6 != wildcard)
-              DoMemoryWrite<u8>(address + 5, r6);
-            if (r7 != wildcard)
-              DoMemoryWrite<u8>(address + 6, r7);
-            if (r8 != wildcard)
-              DoMemoryWrite<u8>(address + 7, r8);
-            if (r9 != wildcard)
-              DoMemoryWrite<u8>(address + 8, r9);
-            if (r10 != wildcard)
-              DoMemoryWrite<u8>(address + 9, r10);
-            if (r11 != wildcard)
-              DoMemoryWrite<u8>(address + 10, r11);
-            if (r12 != wildcard)
-              DoMemoryWrite<u8>(address + 11, r12);
-            if (r13 != wildcard)
-              DoMemoryWrite<u8>(address + 12, r13);
-            if (r14 != wildcard)
-              DoMemoryWrite<u8>(address + 13, r14);
-            if (r15 != wildcard)
-              DoMemoryWrite<u8>(address + 14, r15);
-            if (r16 != wildcard)
-              DoMemoryWrite<u8>(address + 15, r16);
-            // Continue after the replaced bytes, the loop adds the other 2.
-            address += 14;
-          }
-        }
-        index += 5;
-      }
-      break;
-
-      case InstructionCode::ExtBlockWrite:
-      {
-        if (GetBlockPayloadLength(inst) > (count - index - 1)) [[unlikely]]
-        {
-          ERROR_LOG("Incomplete ExtBlockWrite instruction");
-          return;
-        }
-
-        const u32 size = inst.value32 * sizeof(u32);
-        const u8* data = reinterpret_cast<const u8*>(&instructions[index + 1]);
-        if (u8* ram = GetBlockRAMPointer(inst.address, size)) [[likely]]
-        {
-          if (std::memcmp(ram, data, size) != 0)
-          {
-            std::memcpy(ram, data, size);
-            InvalidateCodeRange(inst.address, size);
-          }
-        }
-        else
-        {
-          ERROR_LOG("Block write at 0x{:06X} of {} bytes is outside RAM", inst.address.GetValue(), size);
-        }
-
-        index += 1 + GetBlockPayloadLength(inst);
-      }
-      break;
-
-      case InstructionCode::ExtBlockWriteIfMatchWithRestore:
-      case InstructionCode::ExtBlockWriteIfMatch:
-      {
-        if (GetBlockPayloadLength(inst) > (count - index - 1)) [[unlikely]]
-        {
-          ERROR_LOG("Incomplete ExtBlockWriteIfMatch instruction");
-          return;
-        }
-
-        const u32 size = inst.value32 * sizeof(u32);
-        const u8* compare_data = reinterpret_cast<const u8*>(&instructions[index + 1]);
-        const u8* write_data = compare_data + size;
-        if (u8* ram = GetBlockRAMPointer(inst.address, size)) [[likely]]
-        {
-          if (std::memcmp(ram, compare_data, size) == 0)
-          {
-            std::memcpy(ram, write_data, size);
-            InvalidateCodeRange(inst.address, size);
-          }
-        }
-        else
-        {
-          ERROR_LOG("Block write at 0x{:06X} of {} bytes is outside RAM", inst.address.GetValue(), size);
-        }
-
-        index += 1 + GetBlockPayloadLength(inst);
-      }
-      break;
-
-      case InstructionCode::InternalMaskedWrite:
-      {
-        const u32 size = inst.value32;
-        const u8* data = reinterpret_cast<const u8*>(&instructions[index + 1]);
-        (IsICacheInUse() ? DoMaskedWrite<true> : DoMaskedWrite<false>)(inst.address, size, data, data + size);
-        index += 1 + GetBlockPayloadLength(inst);
-      }
-      break;
-
-      case InstructionCode::InternalMatchWrite16:
-      case InstructionCode::InternalMatchWriteWithRestore16:
-      {
-        const u32 size = inst.value32;
-        const u8* compare_data = reinterpret_cast<const u8*>(&instructions[index + 1]);
-        (IsICacheInUse() ? DoMatchWrite<sizeof(u16), true> :
-                           DoMatchWrite<sizeof(u16), false>)(inst.address, size, compare_data, compare_data + size,
-                                                             compare_data + size * 2, nullptr);
-        index += 1 + GetBlockPayloadLength(inst);
-      }
-      break;
-
-      case InstructionCode::InternalMatchWriteWithRestore8:
-      {
-        const u32 size = inst.value32;
-        const u8* compare_data = reinterpret_cast<const u8*>(&instructions[index + 1]);
-        (IsICacheInUse() ? DoMatchWrite<sizeof(u8), true> :
-                           DoMatchWrite<sizeof(u8), false>)(inst.address, size, compare_data, compare_data + size,
-                                                            compare_data + size * 2, nullptr);
-        index += 1 + GetBlockPayloadLength(inst);
-      }
-      break;
-
-      case InstructionCode::CompareEqual16:
-      {
-        const u16 value = DoMemoryRead<u16>(inst.address);
-        if (value == inst.value16)
-          index++;
-        else
-          index = GetNextNonConditionalInstruction(index);
-      }
-      break;
-
-      case InstructionCode::CompareNotEqual16:
-      {
-        const u16 value = DoMemoryRead<u16>(inst.address);
-        if (value != inst.value16)
-          index++;
-        else
-          index = GetNextNonConditionalInstruction(index);
-      }
-      break;
-
-      case InstructionCode::CompareLess16:
-      {
-        const u16 value = DoMemoryRead<u16>(inst.address);
-        if (value < inst.value16)
-          index++;
-        else
-          index = GetNextNonConditionalInstruction(index);
-      }
-      break;
-
-      case InstructionCode::CompareGreater16:
-      {
-        const u16 value = DoMemoryRead<u16>(inst.address);
-        if (value > inst.value16)
-          index++;
-        else
-          index = GetNextNonConditionalInstruction(index);
-      }
-      break;
-
-      case InstructionCode::CompareEqual8:
-      {
-        const u8 value = DoMemoryRead<u8>(inst.address);
-        if (value == inst.value8)
-          index++;
-        else
-          index = GetNextNonConditionalInstruction(index);
-      }
-      break;
-
-      case InstructionCode::CompareNotEqual8:
-      {
-        const u8 value = DoMemoryRead<u8>(inst.address);
-        if (value != inst.value8)
-          index++;
-        else
-          index = GetNextNonConditionalInstruction(index);
-      }
-      break;
-
-      case InstructionCode::CompareLess8:
-      {
-        const u8 value = DoMemoryRead<u8>(inst.address);
-        if (value < inst.value8)
-          index++;
-        else
-          index = GetNextNonConditionalInstruction(index);
-      }
-      break;
-
-      case InstructionCode::CompareGreater8:
-      {
-        const u8 value = DoMemoryRead<u8>(inst.address);
-        if (value > inst.value8)
-          index++;
-        else
-          index = GetNextNonConditionalInstruction(index);
-      }
-      break;
-
-      case InstructionCode::CompareButtons: // D4
-      {
-        if (inst.value16 == GetControllerButtonBits())
-          index++;
-        else
-          index = GetNextNonConditionalInstruction(index);
-      }
-      break;
-
-      case InstructionCode::ExtCheatRegisters: // 51
-      {
-        const u32 poke_value = inst.value32;
-        const u8 reg1_index = Truncate8(inst.address.GetValue());
-        const u8 reg2_index = Truncate8(inst.address.GetValue() >> 8);
-        u32& reg1 = s_locals.registers[reg1_index];
-        const u32 reg2 = s_locals.registers[reg2_index];
-        u32& reg3 = s_locals.registers[Truncate8(inst.value32.GetValue())];
-        const u8 sub_type = Truncate8(inst.address >> 16);
-        const u16 cht_offset = Truncate16(inst.value32 >> 16);
-
-        switch (sub_type)
-        {
-          case 0x00: // Write the u8 from Reg1 to address
-            DoMemoryWrite<u8>(inst.value32, Truncate8(reg1));
-            break;
-          case 0x01: // Read the u8 from address to Reg1
-            reg1 = DoMemoryRead<u8>(inst.value32);
-            break;
-          case 0x02: // Write the u8 from address field to the address stored in Reg1
-            DoMemoryWrite<u8>(reg1, Truncate8(poke_value));
-            break;
-          case 0x03: // Write the u8 from Reg2 + poke_value to Reg1
-            reg1 = Truncate8(reg2 + poke_value);
-            break;
-          case 0x04: // Write the u8 from Reg2 + poke_value to the address stored in Reg1
-            DoMemoryWrite<u8>(reg1, Truncate8(reg2) + Truncate8(poke_value));
-            break;
-          case 0x05: // Write the u8 poke value to Reg1
-            reg1 = Truncate8(poke_value);
-            break;
-          case 0x06: // Read the u8 value from the address (Reg2 + poke_value) to Reg1
-            reg1 = DoMemoryRead<u8>(reg2 + poke_value);
-            break;
-          case 0x07: // Write the u8 poke_value to a specific index of a single array in a series of consecutive arrays
-            // This cheat type requires a separate cheat to set up 4 consecutive cht_arrays before this will work
-            // Reg1 = the base address of the first element of the first array
-            // Reg1+1 = the array size (basically the address diff between the start of each array)
-            // Reg1+2 = the index of which array in the series to poke (this must be greater than 0)
-            // Reg1+3 must == 0xD0D0 to ensure it only pokes when the above registers have been set (safety valve)
-            // cht_offset = the index of the individual array to change (so must be 0 to Reg1+1)
-            if ((reg1_index <= (std::size(s_locals.registers) - 4)) && s_locals.registers[reg1_index + 3] == 0xD0D0 &&
-                s_locals.registers[reg1_index + 2] > 0 && s_locals.registers[reg1_index + 1] >= cht_offset)
-            {
-              DoMemoryWrite<u8>((reg1 - s_locals.registers[reg1_index + 1]) +
-                                  (s_locals.registers[reg1_index + 1] * s_locals.registers[reg1_index + 2]) +
-                                  cht_offset,
-                                Truncate8(poke_value));
-            }
-            break;
-
-          case 0x40: // Write the u16 from Reg1 to address
-            DoMemoryWrite<u16>(inst.value32, Truncate16(reg1));
-            break;
-          case 0x41: // Read the u16 from address to Reg1
-            reg1 = DoMemoryRead<u16>(inst.value32);
-            break;
-          case 0x42: // Write the u16 from address field to the address stored in Reg1
-            DoMemoryWrite<u16>(reg1, Truncate16(poke_value));
-            break;
-          case 0x43: // Write the u16 from Reg2 + poke_value to Reg1
-            reg1 = Truncate16(reg2 + poke_value);
-            break;
-          case 0x44: // Write the u16 from Reg2 + poke_value to the address stored in Reg1
-            DoMemoryWrite<u16>(reg1, Truncate16(reg2) + Truncate16(poke_value));
-            break;
-          case 0x45: // Write the u16 poke value to Reg1
-            reg1 = Truncate16(poke_value);
-            break;
-          case 0x46: // Read the u16 value from the address (Reg2 + poke_value) to Reg1
-            reg1 = DoMemoryRead<u16>(reg2 + poke_value);
-            break;
-          case 0x47: // Write the u16 poke_value to a specific index of a single array in a series of consecutive arrays
-            // This cheat type requires a separate cheat to set up 4 consecutive cht_arrays before this will work
-            // Reg1 = the base address of the first element of the first array
-            // Reg1+1 = the array size (basically the address diff between the start of each array)
-            // Reg1+2 = the index of which array in the series to poke (this must be greater than 0)
-            // Reg1+3 must == 0xD0D0 to ensure it only pokes when the above registers have been set (safety valve)
-            // cht_offset = the index of the individual array to change (so must be 0 to Reg1+1)
-            if ((reg1_index <= (std::size(s_locals.registers) - 4)) && s_locals.registers[reg1_index + 3] == 0xD0D0 &&
-                s_locals.registers[reg1_index + 2] > 0 && s_locals.registers[reg1_index + 1] >= cht_offset)
-            {
-              DoMemoryWrite<u16>((reg1 - s_locals.registers[reg1_index + 1]) +
-                                   (s_locals.registers[reg1_index + 1] * s_locals.registers[reg1_index + 2]) +
-                                   cht_offset,
-                                 Truncate16(poke_value));
-            }
-            break;
-
-          case 0x80: // Write the u32 from Reg1 to address
-            DoMemoryWrite<u32>(inst.value32, reg1);
-            break;
-          case 0x81: // Read the u32 from address to Reg1
-            reg1 = DoMemoryRead<u32>(inst.value32);
-            break;
-          case 0x82: // Write the u32 from address field to the address stored in Reg1
-            DoMemoryWrite<u32>(reg1, poke_value);
-            break;
-          case 0x83: // Write the u32 from Reg2 + poke_value to Reg1
-            reg1 = reg2 + poke_value;
-            break;
-          case 0x84: // Write the u32 from Reg2 + poke_value to the address stored in Reg1
-            DoMemoryWrite<u32>(reg1, reg2 + poke_value);
-            break;
-          case 0x85: // Write the u32 poke value to Reg1
-            reg1 = poke_value;
-            break;
-          case 0x86: // Read the u32 value from the address (Reg2 + poke_value) to Reg1
-            reg1 = DoMemoryRead<u32>(reg2 + poke_value);
-            break;
-            // Do not use 0x87 as it's not possible to duplicate 0x07, 0x47 for a 32 bit write as not enough characters
-
-          case 0xC0: // Reg3 = Reg2 + Reg1
-            reg3 = reg2 + reg1;
-            break;
-          case 0xC1: // Reg3 = Reg2 - Reg1
-            reg3 = reg2 - reg1;
-            break;
-          case 0xC2: // Reg3 = Reg2 * Reg1
-            reg3 = reg2 * reg1;
-            break;
-          case 0xC3: // Reg3 = Reg2 / Reg1 with DIV0 handling
-            if (reg1 == 0)
-              reg3 = 0;
-            else
-              reg3 = reg2 / reg1;
-            break;
-          case 0xC4: // Reg3 = Reg2 % Reg1 (with DIV0 handling)
-            if (reg1 == 0)
-              reg3 = reg2;
-            else
-              reg3 = reg2 % reg1;
-            break;
-          case 0xC5: // Reg3 = Reg2 & Reg1
-            reg3 = reg2 & reg1;
-            break;
-          case 0xC6: // Reg3 = Reg2 | Reg1
-            reg3 = reg2 | reg1;
-            break;
-          case 0xC7: // Reg3 = Reg2 ^ Reg1
-            reg3 = reg2 ^ reg1;
-            break;
-          case 0xC8: // Reg3 = ~Reg1
-            reg3 = ~reg1;
-            break;
-          case 0xC9: // Reg3 = Reg1 << X, zero if X >= 32
-            reg3 = (reg2_index < 32) ? (reg1 << reg2_index) : 0;
-            break;
-          case 0xCA: // Reg3 = Reg1 >> X, zero if X >= 32
-            reg3 = (reg2_index < 32) ? (reg1 >> reg2_index) : 0;
-            break;
-          case 0xD0: // Reg1 = Reg2 & poke_value
-            reg1 = reg2 & poke_value;
-            break;
-          case 0xD1: // Reg1 = Reg2 | poke_value
-            reg1 = reg2 | poke_value;
-            break;
-          case 0xD2: // Reg1 = Reg2 ^ poke_value
-            reg1 = reg2 ^ poke_value;
-            break;
-            // Lots of options exist for expanding into this space
-          default:
-            break;
-        }
-        index++;
-      }
-      break;
-
-      case InstructionCode::SkipIfNotEqual16:      // C0
-      case InstructionCode::ExtSkipIfNotEqual32:   // A4
-      case InstructionCode::SkipIfButtonsNotEqual: // D5
-      case InstructionCode::SkipIfButtonsEqual:    // D6
-      case InstructionCode::ExtSkipIfNotLess8:     // C3
-      case InstructionCode::ExtSkipIfNotGreater8:  // C4
-      case InstructionCode::ExtSkipIfNotLess16:    // C5
-      case InstructionCode::ExtSkipIfNotGreater16: // C6
-      case InstructionCode::ExtMultiConditionals:  // F6
-      {
-        index++;
-
-        bool activate_codes;
-        switch (inst.code)
-        {
-          case InstructionCode::SkipIfNotEqual16: // C0
-            activate_codes = (DoMemoryRead<u16>(inst.address) == inst.value16);
-            break;
-          case InstructionCode::ExtSkipIfNotEqual32: // A4
-            activate_codes = (DoMemoryRead<u32>(inst.address) == inst.value32);
-            break;
-          case InstructionCode::SkipIfButtonsNotEqual: // D5
-            activate_codes = (GetControllerButtonBits() == inst.value16);
-            break;
-          case InstructionCode::SkipIfButtonsEqual: // D6
-            activate_codes = (GetControllerButtonBits() != inst.value16);
-            break;
-          case InstructionCode::ExtSkipIfNotLess8: // C3
-            activate_codes = (DoMemoryRead<u8>(inst.address) < inst.value8);
-            break;
-          case InstructionCode::ExtSkipIfNotGreater8: // C4
-            activate_codes = (DoMemoryRead<u8>(inst.address) > inst.value8);
-            break;
-          case InstructionCode::ExtSkipIfNotLess16: // C5
-            activate_codes = (DoMemoryRead<u16>(inst.address) < inst.value16);
-            break;
-          case InstructionCode::ExtSkipIfNotGreater16: // C6
-            activate_codes = (DoMemoryRead<u16>(inst.address) > inst.value16);
-            break;
-          case InstructionCode::ExtMultiConditionals: // F6
-          {
-            // Ensure any else if or else that are hit outside the if context are skipped
-            if ((inst.value32 & 0xFFFFFF00u) != 0x1F000000)
-            {
-              activate_codes = false;
-              break;
-            }
-            for (;;)
-            {
-              const u8 totalConds = Truncate8(instructions[index - 1].value32 & 0x000000FFu);
-              const u8 conditionType = Truncate8(instructions[index - 1].address & 0x000000FFu);
-
-              bool conditions_check;
-
-              if (conditionType == 0x00 && totalConds > 0) // AND
-              {
-                conditions_check = true;
-
-                for (int i = 1; totalConds >= i && index < count; index++, i++)
-                {
-                  const Instruction& nexti = instructions[index];
-                  switch (nexti.code)
-                  {
-                    case InstructionCode::CompareEqual16: // D0
-                      conditions_check &= (DoMemoryRead<u16>(nexti.address) == nexti.value16);
-                      break;
-                    case InstructionCode::CompareNotEqual16: // D1
-                      conditions_check &= (DoMemoryRead<u16>(nexti.address) != nexti.value16);
-                      break;
-                    case InstructionCode::CompareLess16: // D2
-                      conditions_check &= (DoMemoryRead<u16>(nexti.address) < nexti.value16);
-                      break;
-                    case InstructionCode::CompareGreater16: // D3
-                      conditions_check &= (DoMemoryRead<u16>(nexti.address) > nexti.value16);
-                      break;
-                    case InstructionCode::CompareEqual8: // E0
-                      conditions_check &= (DoMemoryRead<u8>(nexti.address) == nexti.value8);
-                      break;
-                    case InstructionCode::CompareNotEqual8: // E1
-                      conditions_check &= (DoMemoryRead<u8>(nexti.address) != nexti.value8);
-                      break;
-                    case InstructionCode::CompareLess8: // E2
-                      conditions_check &= (DoMemoryRead<u8>(nexti.address) < nexti.value8);
-                      break;
-                    case InstructionCode::CompareGreater8: // E3
-                      conditions_check &= (DoMemoryRead<u8>(nexti.address) > nexti.value8);
-                      break;
-                    case InstructionCode::ExtCompareEqual32: // A0
-                      conditions_check &= (DoMemoryRead<u32>(nexti.address) == nexti.value32);
-                      break;
-                    case InstructionCode::ExtCompareNotEqual32: // A1
-                      conditions_check &= (DoMemoryRead<u32>(nexti.address) != nexti.value32);
-                      break;
-                    case InstructionCode::ExtCompareLess32: // A2
-                      conditions_check &= (DoMemoryRead<u32>(nexti.address) < nexti.value32);
-                      break;
-                    case InstructionCode::ExtCompareGreater32: // A3
-                      conditions_check &= (DoMemoryRead<u32>(nexti.address) > nexti.value32);
-                      break;
-                    case InstructionCode::ExtCompareBitsSet8: // E4 Internal to F6
-                      conditions_check &= (nexti.value8 == (DoMemoryRead<u8>(nexti.address) & nexti.value8));
-                      break;
-                    case InstructionCode::ExtCompareBitsClear8: // E5 Internal to F6
-                      conditions_check &= ((DoMemoryRead<u8>(nexti.address) & nexti.value8) == 0);
-                      break;
-                    case InstructionCode::ExtBitCompareButtons: // D7
-                    {
-                      const u32 frame_compare_value = nexti.address & 0xFFFFu;
-                      u32& frame_count = s_locals.registers[Truncate8(nexti.value32.GetValue() >> 24)];
-                      const bool bit_comparison_type = ((nexti.address & 0x100000u) >> 20);
-                      const u8 frame_comparison = Truncate8((nexti.address & 0xF0000u) >> 16);
-                      const u32 check_value = (nexti.value32 & 0xFFFFFFu);
-                      const u32 value = GetControllerButtonBits() | GetControllerAnalogBits();
-
-                      if ((!bit_comparison_type && check_value == (value & check_value)) || // Check Bits are set
-                          (bit_comparison_type && check_value != (value & check_value)))    // Check Bits are clear
-                      {
-                        if (frame_comparison != 0x0) // Only count frames when comparing them
-                          frame_count++;
-
-                        switch (frame_comparison)
-                        {
-                          case 0x0: // No comparison on frame count, just do it
-                            break;
-                          case 0x1: // Check if frame_compare_value == current count
-                            conditions_check &= (frame_count == frame_compare_value);
-                            break;
-                          case 0x2: // Check if current count < frame_compare_value
-                            conditions_check &= (frame_count < frame_compare_value);
-                            break;
-                          case 0x3: // Check if current count > frame_compare_value
-                            conditions_check &= (frame_count > frame_compare_value);
-                            break;
-                          case 0x4: // Check if frame_compare_value != current count
-                            conditions_check &= (frame_count != frame_compare_value);
-                            break;
-                          default:
-                            conditions_check = false;
-                            break;
-                        }
-                      }
-                      else
-                      {
-                        if (frame_comparison != 0x0)
-                          frame_count = 0;
-
-                        conditions_check = false;
-                      }
-                      break;
-                    }
-                    default:
-                      ERROR_LOG("Incorrect conditional instruction (see chtdb.txt for supported instructions)");
-                      return;
-                  }
-                }
-              }
-              else if (conditionType == 0x01 && totalConds > 0) // OR
-              {
-                conditions_check = false;
-
-                for (int i = 1; totalConds >= i && index < count; index++, i++)
-                {
-                  const Instruction& nexti = instructions[index];
-                  switch (nexti.code)
-                  {
-                    case InstructionCode::CompareEqual16: // D0
-                      conditions_check |= (DoMemoryRead<u16>(nexti.address) == nexti.value16);
-                      break;
-                    case InstructionCode::CompareNotEqual16: // D1
-                      conditions_check |= (DoMemoryRead<u16>(nexti.address) != nexti.value16);
-                      break;
-                    case InstructionCode::CompareLess16: // D2
-                      conditions_check |= (DoMemoryRead<u16>(nexti.address) < nexti.value16);
-                      break;
-                    case InstructionCode::CompareGreater16: // D3
-                      conditions_check |= (DoMemoryRead<u16>(nexti.address) > nexti.value16);
-                      break;
-                    case InstructionCode::CompareEqual8: // E0
-                      conditions_check |= (DoMemoryRead<u8>(nexti.address) == nexti.value8);
-                      break;
-                    case InstructionCode::CompareNotEqual8: // E1
-                      conditions_check |= (DoMemoryRead<u8>(nexti.address) != nexti.value8);
-                      break;
-                    case InstructionCode::CompareLess8: // E2
-                      conditions_check |= (DoMemoryRead<u8>(nexti.address) < nexti.value8);
-                      break;
-                    case InstructionCode::CompareGreater8: // E3
-                      conditions_check |= (DoMemoryRead<u8>(nexti.address) > nexti.value8);
-                      break;
-                    case InstructionCode::ExtCompareEqual32: // A0
-                      conditions_check |= (DoMemoryRead<u32>(nexti.address) == nexti.value32);
-                      break;
-                    case InstructionCode::ExtCompareNotEqual32: // A1
-                      conditions_check |= (DoMemoryRead<u32>(nexti.address) != nexti.value32);
-                      break;
-                    case InstructionCode::ExtCompareLess32: // A2
-                      conditions_check |= (DoMemoryRead<u32>(nexti.address) < nexti.value32);
-                      break;
-                    case InstructionCode::ExtCompareGreater32: // A3
-                      conditions_check |= (DoMemoryRead<u32>(nexti.address) > nexti.value32);
-                      break;
-                    case InstructionCode::ExtCompareBitsSet8: // E4 Internal to F6
-                      conditions_check |= (nexti.value8 == (DoMemoryRead<u8>(nexti.address) & nexti.value8));
-                      break;
-                    case InstructionCode::ExtCompareBitsClear8: // E5 Internal to F6
-                      conditions_check |= ((DoMemoryRead<u8>(nexti.address) & nexti.value8) == 0);
-                      break;
-                    case InstructionCode::ExtBitCompareButtons: // D7
-                    {
-                      const u32 frame_compare_value = nexti.address & 0xFFFFu;
-                      u32& frame_count = s_locals.registers[Truncate8(nexti.value32.GetValue() >> 24)];
-                      const bool bit_comparison_type = ((nexti.address & 0x100000u) >> 20);
-                      const u8 frame_comparison = Truncate8((nexti.address & 0xF0000u) >> 16);
-                      const u32 check_value = (nexti.value32 & 0xFFFFFFu);
-                      const u32 value = GetControllerButtonBits() | GetControllerAnalogBits();
-
-                      if ((!bit_comparison_type && check_value == (value & check_value)) || // Check Bits are set
-                          (bit_comparison_type && check_value != (value & check_value)))    // Check Bits are clear
-                      {
-                        if (frame_comparison != 0x0) // Only count frames when comparing them
-                          frame_count++;
-
-                        switch (frame_comparison)
-                        {
-                          case 0x0: // No comparison on frame count, just do it
-                            conditions_check = true;
-                            break;
-                          case 0x1: // Check if frame_compare_value == current count
-                            conditions_check |= (frame_count == frame_compare_value);
-                            break;
-                          case 0x2: // Check if current count < frame_compare_value
-                            conditions_check |= (frame_count < frame_compare_value);
-                            break;
-                          case 0x3: // Check if current count > frame_compare_value
-                            conditions_check |= (frame_count > frame_compare_value);
-                            break;
-                          case 0x4: // Check if frame_compare_value != current count
-                            conditions_check |= (frame_count != frame_compare_value);
-                            break;
-                          default:
-                            break;
-                        }
-                      }
-                      else
-                      {
-                        if (frame_comparison != 0x0)
-                          frame_count = 0;
-                      }
-                      break;
-                    }
-                    default:
-                      ERROR_LOG("Incorrect conditional instruction (see chtdb.txt for supported instructions)");
-                      return;
-                  }
-                }
-              }
-              else
-              {
-                ERROR_LOG("Incomplete multi conditional instruction");
-                return;
-              }
-
-              if (conditions_check)
-              {
-                activate_codes = true;
-                break;
-              }
-              else
-              {
-                // parse through to 00000000 FFFF and peek if next line is a F6 type associated with a ELSE
-                activate_codes = false;
-
-                // skip to the next separator (00000000 FFFF), or end
-                constexpr u64 separator_value = UINT64_C(0x000000000000FFFF);
-                constexpr u64 else_value = UINT64_C(0x00000000E15E0000);
-                constexpr u64 elseif_value = UINT64_C(0x00000000E15E1F00);
-                while (index < count)
-                {
-                  const Instruction& skipped = instructions[index++];
-                  const u64 bits = skipped.bits;
-                  index += GetPayloadLength(skipped);
-                  if (bits == separator_value)
-                  {
-                    // Continue after the separator, unless an else-if or else follows, which is consumed.
-                    activate_codes = true;
-                    if (index < count && instructions[index].code == InstructionCode::ExtMultiConditionals)
-                    {
-                      const u64 bits_ahead = instructions[index].bits;
-                      if ((bits_ahead & 0xFFFFFF00u) == elseif_value)
-                      {
-                        index++;
-                        activate_codes = false;
-                      }
-                      else if ((bits_ahead & 0xFFFF0000u) == else_value)
-                      {
-                        index++;
-                      }
-                    }
-
-                    break;
-                  }
-
-                  // Only F6 lines are else-if/else, a write could have the same value.
-                  if (skipped.code == InstructionCode::ExtMultiConditionals && (bits & 0xFFFFFF00u) == elseif_value)
-                  {
-                    // index--;
-                    break;
-                  }
-
-                  if (skipped.code == InstructionCode::ExtMultiConditionals && (bits & 0xFFFFFFFFu) == else_value)
-                  {
-                    // index++;
-                    activate_codes = true;
-                    break;
-                  }
-                }
-
-                // Nothing left to evaluate.
-                if (activate_codes || index >= count)
-                  break;
-              }
-            }
-            break;
-          }
-          default:
-            activate_codes = false;
-            break;
-        }
-
-        if (activate_codes)
-        {
-          // execute following instructions
-          continue;
-        }
-
-        // skip to the next separator (00000000 FFFF), or end
-        constexpr u64 separator_value = UINT64_C(0x000000000000FFFF);
-        while (index < count)
-        {
-          // we don't want to execute the separator instruction
-          const Instruction& skipped = instructions[index++];
-          if (skipped.bits == separator_value)
-            break;
-
-          // don't treat multi-line instruction data as instructions
-          index += GetPayloadLength(skipped);
-        }
-      }
-      break;
-
-      case InstructionCode::ExtBitCompareButtons: // D7
-      {
-        index++;
-        bool activate_codes = false;
-        const u32 frame_compare_value = inst.address & 0xFFFFu;
-        u32& frame_count = s_locals.registers[Truncate8(inst.value32.GetValue() >> 24)];
-        const bool bit_comparison_type = ((inst.address & 0x100000u) >> 20);
-        const u8 frame_comparison = Truncate8((inst.address & 0xF0000u) >> 16);
-        const u32 check_value = (inst.value32 & 0xFFFFFFu);
-        const u32 value = GetControllerButtonBits() | GetControllerAnalogBits();
-
-        if ((!bit_comparison_type && check_value == (value & check_value)) || // Check Bits are set
-            (bit_comparison_type && check_value != (value & check_value)))    // Check Bits are clear
-        {
-          if (frame_comparison != 0x0) // Only count frames when comparing them
-            frame_count++;
-
-          switch (frame_comparison)
-          {
-            case 0x0: // No comparison on frame count, just do it
-              activate_codes = true;
-              break;
-            case 0x1: // Check if frame_compare_value == current count
-              activate_codes = (frame_count == frame_compare_value);
-              break;
-            case 0x2: // Check if current count < frame_compare_value
-              activate_codes = (frame_count < frame_compare_value);
-              break;
-            case 0x3: // Check if current count > frame_compare_value
-              activate_codes = (frame_count > frame_compare_value);
-              break;
-            case 0x4: // Check if frame_compare_value != current count
-              activate_codes = (frame_count != frame_compare_value);
-              break;
-          }
-        }
-        else if (frame_comparison != 0x0)
-        {
-          frame_count = 0;
-        }
-
-        if (activate_codes)
-        {
-          // execute following instructions
-          continue;
-        }
-
-        // skip to the next separator (00000000 FFFF), or end
-        constexpr u64 separator_value = UINT64_C(0x000000000000FFFF);
-        while (index < count)
-        {
-          // we don't want to execute the separator instruction
-          const Instruction& skipped = instructions[index++];
-          if (skipped.bits == separator_value)
-            break;
-
-          // don't treat multi-line instruction data as instructions
-          index += GetPayloadLength(skipped);
-        }
-      }
-      break;
-
-      case InstructionCode::ExtCheatRegistersCompare: // 52
-      {
-        index++;
-        bool activate_codes = false;
-        const u32 lhs = s_locals.registers[Truncate8(inst.address.GetValue() >> 8)];
-        const u32 rhs = s_locals.registers[Truncate8(inst.address.GetValue())];
-        const u8 sub_type = Truncate8(inst.first >> 16);
-
-        switch (sub_type)
-        {
-          case 0x00:
-            activate_codes = (Truncate8(lhs) == Truncate8(rhs));
-            break;
-          case 0x01:
-            activate_codes = (Truncate8(lhs) != Truncate8(rhs));
-            break;
-          case 0x02:
-            activate_codes = (Truncate8(lhs) > Truncate8(rhs));
-            break;
-          case 0x03:
-            activate_codes = (Truncate8(lhs) >= Truncate8(rhs));
-            break;
-          case 0x04:
-            activate_codes = (Truncate8(lhs) < Truncate8(rhs));
-            break;
-          case 0x05:
-            activate_codes = (Truncate8(lhs) <= Truncate8(rhs));
-            break;
-          case 0x06:
-            activate_codes = ((Truncate8(lhs) & Truncate8(rhs)) == Truncate8(rhs));
-            break;
-          case 0x07:
-            activate_codes = ((Truncate8(lhs) & Truncate8(rhs)) != Truncate8(rhs));
-            break;
-          case 0x0A:
-            activate_codes = ((Truncate8(lhs) & Truncate8(rhs)) == Truncate8(lhs));
-            break;
-          case 0x0B:
-            activate_codes = ((Truncate8(lhs) & Truncate8(rhs)) != Truncate8(lhs));
-            break;
-          case 0x10:
-            activate_codes = (Truncate8(rhs) == inst.value8);
-            break;
-          case 0x11:
-            activate_codes = (Truncate8(rhs) != inst.value8);
-            break;
-          case 0x12:
-            activate_codes = (Truncate8(rhs) > inst.value8);
-            break;
-          case 0x13:
-            activate_codes = (Truncate8(rhs) >= inst.value8);
-            break;
-          case 0x14:
-            activate_codes = (Truncate8(rhs) < inst.value8);
-            break;
-          case 0x15:
-            activate_codes = (Truncate8(rhs) <= inst.value8);
-            break;
-          case 0x16:
-            activate_codes = ((Truncate8(rhs) & inst.value8) == inst.value8);
-            break;
-          case 0x17:
-            activate_codes = ((Truncate8(rhs) & inst.value8) != inst.value8);
-            break;
-          case 0x18:
-            activate_codes = ((Truncate8(rhs) > inst.value8) && (Truncate8(rhs) < Truncate8(inst.value32 >> 16)));
-            break;
-          case 0x19:
-            activate_codes = ((Truncate8(rhs) >= inst.value8) && (Truncate8(rhs) <= Truncate8(inst.value32 >> 16)));
-            break;
-          case 0x1A:
-            activate_codes = ((Truncate8(rhs) & inst.value8) == Truncate8(rhs));
-            break;
-          case 0x1B:
-            activate_codes = ((Truncate8(rhs) & inst.value8) != Truncate8(rhs));
-            break;
-          case 0x20:
-            activate_codes = (DoMemoryRead<u8>(lhs) == DoMemoryRead<u8>(rhs));
-            break;
-          case 0x21:
-            activate_codes = (DoMemoryRead<u8>(lhs) != DoMemoryRead<u8>(rhs));
-            break;
-          case 0x22:
-            activate_codes = (DoMemoryRead<u8>(lhs) > DoMemoryRead<u8>(rhs));
-            break;
-          case 0x23:
-            activate_codes = (DoMemoryRead<u8>(lhs) >= DoMemoryRead<u8>(rhs));
-            break;
-          case 0x24:
-            activate_codes = (DoMemoryRead<u8>(lhs) < DoMemoryRead<u8>(rhs));
-            break;
-          case 0x25:
-            activate_codes = (DoMemoryRead<u8>(lhs) <= DoMemoryRead<u8>(rhs));
-            break;
-          case 0x26:
-            activate_codes = ((DoMemoryRead<u8>(rhs) & inst.value8) == inst.value8);
-            break;
-          case 0x27:
-            activate_codes = ((DoMemoryRead<u8>(rhs) & inst.value8) != inst.value8);
-            break;
-          case 0x28:
-            activate_codes =
-              ((DoMemoryRead<u8>(rhs) > inst.value8) && (DoMemoryRead<u8>(rhs) < Truncate8(inst.value32 >> 16)));
-            break;
-          case 0x29:
-            activate_codes =
-              ((DoMemoryRead<u8>(rhs) >= inst.value8) && (DoMemoryRead<u8>(rhs) <= Truncate8(inst.value32 >> 16)));
-            break;
-          case 0x2A:
-            activate_codes = ((DoMemoryRead<u8>(rhs) & inst.value8) == DoMemoryRead<u8>(rhs));
-            break;
-          case 0x2B:
-            activate_codes = ((DoMemoryRead<u8>(rhs) & inst.value8) != DoMemoryRead<u8>(rhs));
-            break;
-          case 0x30:
-            activate_codes = (Truncate8(rhs) == DoMemoryRead<u8>(inst.value32));
-            break;
-          case 0x31:
-            activate_codes = (Truncate8(rhs) != DoMemoryRead<u8>(inst.value32));
-            break;
-          case 0x32:
-            activate_codes = (Truncate8(rhs) > DoMemoryRead<u8>(inst.value32));
-            break;
-          case 0x33:
-            activate_codes = (Truncate8(rhs) >= DoMemoryRead<u8>(inst.value32));
-            break;
-          case 0x34:
-            activate_codes = (Truncate8(rhs) < DoMemoryRead<u8>(inst.value32));
-            break;
-          case 0x35:
-            activate_codes = (Truncate8(rhs) <= DoMemoryRead<u8>(inst.value32));
-            break;
-          case 0x36:
-            activate_codes = ((Truncate8(rhs) & DoMemoryRead<u8>(inst.value32)) == DoMemoryRead<u8>(inst.value32));
-            break;
-          case 0x37:
-            activate_codes = ((Truncate8(rhs) & DoMemoryRead<u8>(inst.value32)) != DoMemoryRead<u8>(inst.value32));
-            break;
-          case 0x3A:
-            activate_codes = ((Truncate8(rhs) & DoMemoryRead<u8>(inst.value32)) == Truncate8(rhs));
-            break;
-          case 0x3B:
-            activate_codes = ((Truncate8(rhs) & DoMemoryRead<u8>(inst.value32)) != Truncate8(rhs));
-            break;
-          case 0x40:
-            activate_codes = (Truncate16(lhs) == Truncate16(rhs));
-            break;
-          case 0x41:
-            activate_codes = (Truncate16(lhs) != Truncate16(rhs));
-            break;
-          case 0x42:
-            activate_codes = (Truncate16(lhs) > Truncate16(rhs));
-            break;
-          case 0x43:
-            activate_codes = (Truncate16(lhs) >= Truncate16(rhs));
-            break;
-          case 0x44:
-            activate_codes = (Truncate16(lhs) < Truncate16(rhs));
-            break;
-          case 0x45:
-            activate_codes = (Truncate16(lhs) <= Truncate16(rhs));
-            break;
-          case 0x46:
-            activate_codes = ((Truncate16(lhs) & Truncate16(rhs)) == Truncate16(rhs));
-            break;
-          case 0x47:
-            activate_codes = ((Truncate16(lhs) & Truncate16(rhs)) != Truncate16(rhs));
-            break;
-          case 0x4A:
-            activate_codes = ((Truncate16(lhs) & Truncate16(rhs)) == Truncate16(lhs));
-            break;
-          case 0x4B:
-            activate_codes = ((Truncate16(lhs) & Truncate16(rhs)) != Truncate16(lhs));
-            break;
-          case 0x50:
-            activate_codes = (Truncate16(rhs) == inst.value16);
-            break;
-          case 0x51:
-            activate_codes = (Truncate16(rhs) != inst.value16);
-            break;
-          case 0x52:
-            activate_codes = (Truncate16(rhs) > inst.value16);
-            break;
-          case 0x53:
-            activate_codes = (Truncate16(rhs) >= inst.value16);
-            break;
-          case 0x54:
-            activate_codes = (Truncate16(rhs) < inst.value16);
-            break;
-          case 0x55:
-            activate_codes = (Truncate16(rhs) <= inst.value16);
-            break;
-          case 0x56:
-            activate_codes = ((Truncate16(rhs) & inst.value16) == inst.value16);
-            break;
-          case 0x57:
-            activate_codes = ((Truncate16(rhs) & inst.value16) != inst.value16);
-            break;
-          case 0x58:
-            activate_codes = ((Truncate16(rhs) > inst.value16) && (Truncate16(rhs) < Truncate16(inst.value32 >> 16)));
-            break;
-          case 0x59:
-            activate_codes = ((Truncate16(rhs) >= inst.value16) && (Truncate16(rhs) <= Truncate16(inst.value32 >> 16)));
-            break;
-          case 0x5A:
-            activate_codes = ((Truncate16(rhs) & inst.value16) == Truncate16(rhs));
-            break;
-          case 0x5B:
-            activate_codes = ((Truncate16(rhs) & inst.value16) != Truncate16(rhs));
-            break;
-          case 0x60:
-            activate_codes = (DoMemoryRead<u16>(lhs) == DoMemoryRead<u16>(rhs));
-            break;
-          case 0x61:
-            activate_codes = (DoMemoryRead<u16>(lhs) != DoMemoryRead<u16>(rhs));
-            break;
-          case 0x62:
-            activate_codes = (DoMemoryRead<u16>(lhs) > DoMemoryRead<u16>(rhs));
-            break;
-          case 0x63:
-            activate_codes = (DoMemoryRead<u16>(lhs) >= DoMemoryRead<u16>(rhs));
-            break;
-          case 0x64:
-            activate_codes = (DoMemoryRead<u16>(lhs) < DoMemoryRead<u16>(rhs));
-            break;
-          case 0x65:
-            activate_codes = (DoMemoryRead<u16>(lhs) <= DoMemoryRead<u16>(rhs));
-            break;
-          case 0x66:
-            activate_codes = ((DoMemoryRead<u16>(rhs) & inst.value16) == inst.value16);
-            break;
-          case 0x67:
-            activate_codes = ((DoMemoryRead<u16>(rhs) & inst.value16) != inst.value16);
-            break;
-          case 0x68:
-            activate_codes =
-              ((DoMemoryRead<u16>(rhs) > inst.value16) && (DoMemoryRead<u16>(rhs) < Truncate16(inst.value32 >> 16)));
-            break;
-          case 0x69:
-            activate_codes =
-              ((DoMemoryRead<u16>(rhs) >= inst.value16) && (DoMemoryRead<u16>(rhs) <= Truncate16(inst.value32 >> 16)));
-            break;
-          case 0x6A:
-            activate_codes = ((DoMemoryRead<u16>(rhs) & inst.value16) == DoMemoryRead<u16>(rhs));
-            break;
-          case 0x6B:
-            activate_codes = ((DoMemoryRead<u16>(rhs) & inst.value16) != DoMemoryRead<u16>(rhs));
-            break;
-          case 0x70:
-            activate_codes = (Truncate16(rhs) == DoMemoryRead<u16>(inst.value32));
-            break;
-          case 0x71:
-            activate_codes = (Truncate16(rhs) != DoMemoryRead<u16>(inst.value32));
-            break;
-          case 0x72:
-            activate_codes = (Truncate16(rhs) > DoMemoryRead<u16>(inst.value32));
-            break;
-          case 0x73:
-            activate_codes = (Truncate16(rhs) >= DoMemoryRead<u16>(inst.value32));
-            break;
-          case 0x74:
-            activate_codes = (Truncate16(rhs) < DoMemoryRead<u16>(inst.value32));
-            break;
-          case 0x75:
-            activate_codes = (Truncate16(rhs) <= DoMemoryRead<u16>(inst.value32));
-            break;
-          case 0x76:
-            activate_codes = ((Truncate16(rhs) & DoMemoryRead<u16>(inst.value32)) == DoMemoryRead<u16>(inst.value32));
-            break;
-          case 0x77:
-            activate_codes = ((Truncate16(rhs) & DoMemoryRead<u16>(inst.value32)) != DoMemoryRead<u16>(inst.value32));
-            break;
-          case 0x7A:
-            activate_codes = ((Truncate16(rhs) & DoMemoryRead<u16>(inst.value32)) == Truncate16(rhs));
-            break;
-          case 0x7B:
-            activate_codes = ((Truncate16(rhs) & DoMemoryRead<u16>(inst.value32)) != Truncate16(rhs));
-            break;
-          case 0x80:
-            activate_codes = (lhs == rhs);
-            break;
-          case 0x81:
-            activate_codes = (lhs != rhs);
-            break;
-          case 0x82:
-            activate_codes = (lhs > rhs);
-            break;
-          case 0x83:
-            activate_codes = (lhs >= rhs);
-            break;
-          case 0x84:
-            activate_codes = (lhs < rhs);
-            break;
-          case 0x85:
-            activate_codes = (lhs <= rhs);
-            break;
-          case 0x86:
-            activate_codes = ((lhs & rhs) == rhs);
-            break;
-          case 0x87:
-            activate_codes = ((lhs & rhs) != rhs);
-            break;
-          case 0x8A:
-            activate_codes = ((lhs & rhs) == lhs);
-            break;
-          case 0x8B:
-            activate_codes = ((lhs & rhs) != lhs);
-            break;
-          case 0x90:
-            activate_codes = (rhs == inst.value32);
-            break;
-          case 0x91:
-            activate_codes = (rhs != inst.value32);
-            break;
-          case 0x92:
-            activate_codes = (rhs > inst.value32);
-            break;
-          case 0x93:
-            activate_codes = (rhs >= inst.value32);
-            break;
-          case 0x94:
-            activate_codes = (rhs < inst.value32);
-            break;
-          case 0x95:
-            activate_codes = (rhs <= inst.value32);
-            break;
-          case 0x96:
-            activate_codes = ((rhs & inst.value32) == inst.value32);
-            break;
-          case 0x97:
-            activate_codes = ((rhs & inst.value32) != inst.value32);
-            break;
-          case 0x9A:
-            activate_codes = ((rhs & inst.value32) == rhs);
-            break;
-          case 0x9B:
-            activate_codes = ((rhs & inst.value32) != rhs);
-            break;
-          case 0xA0:
-            activate_codes = (DoMemoryRead<u32>(lhs) == DoMemoryRead<u32>(rhs));
-            break;
-          case 0xA1:
-            activate_codes = (DoMemoryRead<u32>(lhs) != DoMemoryRead<u32>(rhs));
-            break;
-          case 0xA2:
-            activate_codes = (DoMemoryRead<u32>(lhs) > DoMemoryRead<u32>(rhs));
-            break;
-          case 0xA3:
-            activate_codes = (DoMemoryRead<u32>(lhs) >= DoMemoryRead<u32>(rhs));
-            break;
-          case 0xA4:
-            activate_codes = (DoMemoryRead<u32>(lhs) < DoMemoryRead<u32>(rhs));
-            break;
-          case 0xA5:
-            activate_codes = (DoMemoryRead<u32>(lhs) <= DoMemoryRead<u32>(rhs));
-            break;
-          case 0xA6:
-            activate_codes = ((DoMemoryRead<u32>(rhs) & inst.value32) == inst.value32);
-            break;
-          case 0xA7:
-            activate_codes = ((DoMemoryRead<u32>(rhs) & inst.value32) != inst.value32);
-            break;
-          case 0xAA:
-            activate_codes = ((DoMemoryRead<u32>(rhs) & inst.value32) == DoMemoryRead<u32>(rhs));
-            break;
-          case 0xAB:
-            activate_codes = ((DoMemoryRead<u32>(rhs) & inst.value32) != DoMemoryRead<u32>(rhs));
-            break;
-          case 0xB0:
-            activate_codes = (rhs == DoMemoryRead<u32>(inst.value32));
-            break;
-          case 0xB1:
-            activate_codes = (rhs != DoMemoryRead<u32>(inst.value32));
-            break;
-          case 0xB2:
-            activate_codes = (rhs > DoMemoryRead<u32>(inst.value32));
-            break;
-          case 0xB3:
-            activate_codes = (rhs >= DoMemoryRead<u32>(inst.value32));
-            break;
-          case 0xB4:
-            activate_codes = (rhs < DoMemoryRead<u32>(inst.value32));
-            break;
-          case 0xB5:
-            activate_codes = (rhs <= DoMemoryRead<u32>(inst.value32));
-            break;
-          case 0xB6:
-            activate_codes = ((rhs & DoMemoryRead<u32>(inst.value32)) == DoMemoryRead<u32>(inst.value32));
-            break;
-          case 0xB7:
-            activate_codes = ((rhs & DoMemoryRead<u32>(inst.value32)) != DoMemoryRead<u32>(inst.value32));
-            break;
-          case 0xBA:
-            activate_codes = ((rhs & DoMemoryRead<u32>(inst.value32)) == rhs);
-            break;
-          case 0xBB:
-            activate_codes = ((rhs & DoMemoryRead<u32>(inst.value32)) != rhs);
-            break;
-        }
-        if (activate_codes)
-        {
-          // execute following instructions
-          continue;
-        }
-
-        // skip to the next separator (00000000 FFFF), or end
-        constexpr u64 separator_value = UINT64_C(0x000000000000FFFF);
-        while (index < count)
-        {
-          // we don't want to execute the separator instruction
-          const Instruction& skipped = instructions[index++];
-          if (skipped.bits == separator_value)
-            break;
-
-          // don't treat multi-line instruction data as instructions
-          index += GetPayloadLength(skipped);
-        }
-      }
-      break;
-
-      case InstructionCode::DelayActivation: // C1
-      {
-        // A value of around 4000 or 5000 will usually give you a good 20-30 second delay before codes are activated.
-        // Frame number * 0.3 -> (20 * 60) * 10 / 3 => 4000
-        const u32 comp_value = (System::GetFrameNumber() * 10) / 3;
-        if (comp_value < inst.value16)
-          index = count;
-        else
-          index++;
-      }
-      break;
-
-      case InstructionCode::Slide:
-      {
-        if ((index + 1) >= count) [[unlikely]]
-        {
-          ERROR_LOG("Incomplete Slide instruction");
-          return;
-        }
-
-        const u32 slide_count = (inst.first >> 8) & 0xFFu;
-        const u32 address_increment = inst.first & 0xFFu;
-        const u16 value_increment = Truncate16(inst.second);
-        const Instruction& inst2 = instructions[index + 1];
-        const InstructionCode write_type = inst2.code;
-        u32 address = inst2.address;
-        u16 value = inst2.value16;
-
-        if (write_type == InstructionCode::ConstantWrite8)
-        {
-          for (u32 i = 0; i < slide_count; i++)
-          {
-            DoMemoryWrite<u8>(address, Truncate8(value));
-            address += address_increment;
-            value += value_increment;
-          }
-        }
-        else if (write_type == InstructionCode::ConstantWrite16)
-        {
-          for (u32 i = 0; i < slide_count; i++)
-          {
-            DoMemoryWrite<u16>(address, value);
-            address += address_increment;
-            value += value_increment;
-          }
-        }
-        else if (write_type == InstructionCode::ExtConstantWrite32)
-        {
-          u32 value32 = inst2.value32;
-          for (u32 i = 0; i < slide_count; i++)
-          {
-            DoMemoryWrite<u32>(address, value32);
-            address += address_increment;
-            value32 += value_increment;
-          }
-        }
-        else
-        {
-          ERROR_LOG("Invalid command in second slide parameter 0x{:02X}", static_cast<unsigned>(write_type));
-        }
-
-        index += 2;
-      }
-      break;
-
-      case InstructionCode::ExtImprovedSlide:
-      {
-        if ((index + 1) >= count) [[unlikely]]
-        {
-          ERROR_LOG("Incomplete ExtImprovedSlide instruction");
-          return;
-        }
-
-        const u32 slide_count = inst.first & 0xFFFFu;
-        const u32 address_change = (inst.second >> 16) & 0xFFFFu;
-        const u16 value_change = Truncate16(inst.second);
-        const Instruction& inst2 = instructions[index + 1];
-        const InstructionCode write_type = inst2.code;
-        const bool address_change_negative = (inst.first >> 20) & 0x1u;
-        const bool value_change_negative = (inst.first >> 16) & 0x1u;
-        u32 address = inst2.address;
-        u32 value = inst2.value32;
-
-        if (write_type == InstructionCode::ConstantWrite8)
-        {
-          for (u32 i = 0; i < slide_count; i++)
-          {
-            DoMemoryWrite<u8>(address, Truncate8(value));
-            if (address_change_negative)
-              address -= address_change;
-            else
-              address += address_change;
-            if (value_change_negative)
-              value -= value_change;
-            else
-              value += value_change;
-          }
-        }
-        else if (write_type == InstructionCode::ConstantWrite16)
-        {
-          for (u32 i = 0; i < slide_count; i++)
-          {
-            DoMemoryWrite<u16>(address, Truncate16(value));
-            if (address_change_negative)
-              address -= address_change;
-            else
-              address += address_change;
-            if (value_change_negative)
-              value -= value_change;
-            else
-              value += value_change;
-          }
-        }
-        else if (write_type == InstructionCode::ExtConstantWrite32)
-        {
-          for (u32 i = 0; i < slide_count; i++)
-          {
-            DoMemoryWrite<u32>(address, value);
-            if (address_change_negative)
-              address -= address_change;
-            else
-              address += address_change;
-            if (value_change_negative)
-              value -= value_change;
-            else
-              value += value_change;
-          }
-        }
-        else if (write_type == InstructionCode::ExtConstantBitClear8)
-        {
-          for (u32 i = 0; i < slide_count; i++)
-          {
-            const u8 new_value = DoMemoryRead<u8>(address) & ~Truncate8(value);
-            DoMemoryWrite<u8>(address, new_value);
-            if (address_change_negative)
-              address -= address_change;
-            else
-              address += address_change;
-            if (value_change_negative)
-              value -= value_change;
-            else
-              value += value_change;
-          }
-        }
-        else if (write_type == InstructionCode::ExtConstantBitSet8)
-        {
-          for (u32 i = 0; i < slide_count; i++)
-          {
-            const u8 new_value = DoMemoryRead<u8>(address) | Truncate8(value);
-            DoMemoryWrite<u8>(address, new_value);
-            if (address_change_negative)
-              address -= address_change;
-            else
-              address += address_change;
-            if (value_change_negative)
-              value -= value_change;
-            else
-              value += value_change;
-          }
-        }
-        else if (write_type == InstructionCode::ExtConstantBitClear16)
-        {
-          for (u32 i = 0; i < slide_count; i++)
-          {
-            const u16 new_value = DoMemoryRead<u16>(address) & ~Truncate16(value);
-            DoMemoryWrite<u16>(address, new_value);
-            if (address_change_negative)
-              address -= address_change;
-            else
-              address += address_change;
-            if (value_change_negative)
-              value -= value_change;
-            else
-              value += value_change;
-          }
-        }
-        else if (write_type == InstructionCode::ExtConstantBitSet16)
-        {
-          for (u32 i = 0; i < slide_count; i++)
-          {
-            const u16 new_value = DoMemoryRead<u16>(address) | Truncate16(value);
-            DoMemoryWrite<u16>(address, new_value);
-            if (address_change_negative)
-              address -= address_change;
-            else
-              address += address_change;
-            if (value_change_negative)
-              value -= value_change;
-            else
-              value += value_change;
-          }
-        }
-        else if (write_type == InstructionCode::ExtConstantBitClear32)
-        {
-          for (u32 i = 0; i < slide_count; i++)
-          {
-            const u32 newValue = DoMemoryRead<u32>(address) & ~value;
-            DoMemoryWrite<u32>(address, newValue);
-            if (address_change_negative)
-              address -= address_change;
-            else
-              address += address_change;
-            if (value_change_negative)
-              value -= value_change;
-            else
-              value += value_change;
-          }
-        }
-        else if (write_type == InstructionCode::ExtConstantBitSet32)
-        {
-          for (u32 i = 0; i < slide_count; i++)
-          {
-            const u32 newValue = DoMemoryRead<u32>(address) | value;
-            DoMemoryWrite<u32>(address, newValue);
-            if (address_change_negative)
-              address -= address_change;
-            else
-              address += address_change;
-            if (value_change_negative)
-              value -= value_change;
-            else
-              value += value_change;
-          }
-        }
-        else
-        {
-          ERROR_LOG("Invalid command in second slide parameter 0x{:02X}", static_cast<unsigned>(write_type));
-        }
-
-        index += 2;
-      }
-      break;
-
-      case InstructionCode::MemoryCopy:
-      {
-        if ((index + 1) >= count)
-        {
-          ERROR_LOG("Incomplete MemoryCopy instruction");
-          return;
-        }
-
-        const Instruction& inst2 = instructions[index + 1];
-        const u32 byte_count = inst.value16;
-        u32 src_address = inst.address;
-        u32 dst_address = inst2.address;
-
-        for (u32 i = 0; i < byte_count; i++)
-        {
-          u8 value = DoMemoryRead<u8>(src_address);
-          DoMemoryWrite<u8>(dst_address, value);
-          src_address++;
-          dst_address++;
-        }
-
-        index += 2;
-      }
-      break;
-
-      default:
-      {
-        ERROR_LOG("Unhandled instruction code 0x{:02X} ({:08X} {:08X})", static_cast<u8>(inst.code.GetValue()),
-                  inst.first, inst.second);
-        index++;
-      }
-      break;
-    }
+    index = GamesharkHandlers::s_apply_handlers[static_cast<u8>(inst.code.GetValue())](instructions, index, inst);
   }
 }
 
 void Cheats::GamesharkCheatCode::ApplyOnDisable(RollbackLog* rollback_list) const
 {
-  const u32 count = static_cast<u32>(instructions.size());
-  u32 index = 0;
-  for (; index < count;)
+  // Only codes with restore effects do anything, conditionals are ignored in case they changed at some point.
+  const size_t count = instructions.size();
+  for (size_t index = 0; index < count;)
   {
     const Instruction& inst = instructions[index];
     switch (inst.code)
     {
-      case InstructionCode::Nop:
-      case InstructionCode::ConstantWrite8:
-      case InstructionCode::ConstantWrite16:
-      case InstructionCode::ExtConstantWrite32:
-      case InstructionCode::ExtConstantBitSet8:
-      case InstructionCode::ExtConstantBitSet16:
-      case InstructionCode::ExtConstantBitSet32:
-      case InstructionCode::ExtConstantBitClear8:
-      case InstructionCode::ExtConstantBitClear16:
-      case InstructionCode::ExtConstantBitClear32:
-      case InstructionCode::ScratchpadWrite16:
-      case InstructionCode::ExtScratchpadWrite32:
-      case InstructionCode::ExtIncrement32:
-      case InstructionCode::ExtDecrement32:
-      case InstructionCode::Increment16:
-      case InstructionCode::Decrement16:
-      case InstructionCode::Increment8:
-      case InstructionCode::Decrement8:
-      case InstructionCode::ExtConstantForceRange8:
-      case InstructionCode::ExtConstantForceRangeLimits16:
-      case InstructionCode::ExtConstantForceRangeRollRound16:
-      case InstructionCode::ExtConstantSwap16:
-      case InstructionCode::DelayActivation: // C1
-      case InstructionCode::ExtConstantWriteIfMatch16:
-      case InstructionCode::ExtCheatRegisters:
-        index++;
-        break;
-
-      case InstructionCode::ExtConstantForceRange16:
-      case InstructionCode::Slide:
-      case InstructionCode::ExtImprovedSlide:
-      case InstructionCode::MemoryCopy:
-        index += 2;
-        break;
-      case InstructionCode::ExtFindAndReplace:
-        index += 5;
-        break;
-      case InstructionCode::ExtBlockWrite:
-      case InstructionCode::ExtBlockWriteIfMatch:
-      case InstructionCode::InternalMaskedWrite:
-      case InstructionCode::InternalMatchWrite16:
-        index += 1 + GetBlockPayloadLength(inst);
-        break;
-        // for conditionals, we don't want to skip over in case it changed at some point
-      case InstructionCode::ExtCompareEqual32:
-      case InstructionCode::ExtCompareNotEqual32:
-      case InstructionCode::ExtCompareLess32:
-      case InstructionCode::ExtCompareGreater32:
-      case InstructionCode::CompareEqual16:
-      case InstructionCode::CompareNotEqual16:
-      case InstructionCode::CompareLess16:
-      case InstructionCode::CompareGreater16:
-      case InstructionCode::CompareEqual8:
-      case InstructionCode::CompareNotEqual8:
-      case InstructionCode::CompareLess8:
-      case InstructionCode::CompareGreater8:
-      case InstructionCode::CompareButtons:       // D4
-      case InstructionCode::ExtCompareBitsSet8:   // E4, inside F6
-      case InstructionCode::ExtCompareBitsClear8: // E5, inside F6
-        index++;
-        break;
-
-        // same deal for block conditionals
-      case InstructionCode::SkipIfNotEqual16:         // C0
-      case InstructionCode::ExtSkipIfNotEqual32:      // A4
-      case InstructionCode::SkipIfButtonsNotEqual:    // D5
-      case InstructionCode::SkipIfButtonsEqual:       // D6
-      case InstructionCode::ExtBitCompareButtons:     // D7
-      case InstructionCode::ExtSkipIfNotLess8:        // C3
-      case InstructionCode::ExtSkipIfNotGreater8:     // C4
-      case InstructionCode::ExtSkipIfNotLess16:       // C5
-      case InstructionCode::ExtSkipIfNotGreater16:    // C6
-      case InstructionCode::ExtMultiConditionals:     // F6
-      case InstructionCode::ExtCheatRegistersCompare: // 52
-        index++;
-        break;
-
       case InstructionCode::ExtConstantWriteIfMatchWithRestore16:
-      {
-        const u16 value = DoMemoryRead<u16>(inst.address);
-        const u16 comparevalue = Truncate16(inst.value32 >> 16);
-        const u16 newvalue = Truncate16(inst.value32 & 0xFFFFu);
-        if (value == newvalue)
-        {
-          if (rollback_list)
-            rollback_list->emplace_back(MemoryAccessSize::HalfWord, inst.address, newvalue);
-
-          DoMemoryWrite<u16>(inst.address, comparevalue);
-          CPU::InvalidateICacheForRAM(inst.address, sizeof(u16));
-        }
-
-        index++;
-      }
-      break;
+        GamesharkHandlers::RestoreWriteIfMatch<u16>(inst, rollback_list);
+        break;
 
       case InstructionCode::ExtConstantWriteIfMatchWithRestore8:
-      {
-        const u8 value = DoMemoryRead<u8>(inst.address);
-        const u8 comparevalue = Truncate8(inst.value16 >> 8);
-        const u8 newvalue = Truncate8(inst.value16 & 0xFFu);
-        if (value == newvalue)
-        {
-          if (rollback_list)
-            rollback_list->emplace_back(MemoryAccessSize::Byte, inst.address, newvalue);
-
-          DoMemoryWrite<u8>(inst.address, comparevalue);
-          CPU::InvalidateICacheForRAM(inst.address, sizeof(u8));
-        }
-
-        index++;
-      }
-      break;
+        GamesharkHandlers::RestoreWriteIfMatch<u8>(inst, rollback_list);
+        break;
 
       case InstructionCode::ExtBlockWriteIfMatchWithRestore:
       {
@@ -5078,8 +4128,6 @@ void Cheats::GamesharkCheatCode::ApplyOnDisable(RollbackLog* rollback_list) cons
           std::memcpy(ram, compare_data, size);
           InvalidateCodeRange(inst.address, size);
         }
-
-        index += 1 + GetBlockPayloadLength(inst);
       }
       break;
 
@@ -5091,7 +4139,6 @@ void Cheats::GamesharkCheatCode::ApplyOnDisable(RollbackLog* rollback_list) cons
         (IsICacheInUse() ? DoMatchWrite<sizeof(u16), true> :
                            DoMatchWrite<sizeof(u16), false>)(inst.address, size, compare_data + size, compare_data,
                                                              compare_data + size * 2, rollback_list);
-        index += 1 + GetBlockPayloadLength(inst);
       }
       break;
 
@@ -5102,18 +4149,14 @@ void Cheats::GamesharkCheatCode::ApplyOnDisable(RollbackLog* rollback_list) cons
         (IsICacheInUse() ? DoMatchWrite<sizeof(u8), true> :
                            DoMatchWrite<sizeof(u8), false>)(inst.address, size, compare_data + size, compare_data,
                                                             compare_data + size * 2, rollback_list);
-        index += 1 + GetBlockPayloadLength(inst);
       }
       break;
 
-      [[unlikely]] default:
-      {
-        ERROR_LOG("Unhandled instruction code 0x{:02X} ({:08X} {:08X})", static_cast<u8>(inst.code.GetValue()),
-                  inst.first, inst.second);
-        index++;
-      }
-      break;
+      default:
+        break;
     }
+
+    index += 1 + GamesharkHandlers::GetPayloadLength(inst);
   }
 }
 
@@ -5135,8 +4178,8 @@ void Cheats::GamesharkCheatCode::SetOptionValue(u32 value)
 
 bool Cheats::GamesharkCheatCode::HasRestorableOnDisableEffects() const
 {
-  const u32 count = static_cast<u32>(instructions.size());
-  for (u32 index = 0; index < count;)
+  const size_t count = instructions.size();
+  for (size_t index = 0; index < count;)
   {
     const Instruction& inst = instructions[index];
     if (inst.code == InstructionCode::ExtConstantWriteIfMatchWithRestore16 ||
@@ -5148,7 +4191,7 @@ bool Cheats::GamesharkCheatCode::HasRestorableOnDisableEffects() const
       return true;
     }
 
-    index += 1 + GetPayloadLength(inst);
+    index += 1 + GamesharkHandlers::GetPayloadLength(inst);
   }
 
   return false;

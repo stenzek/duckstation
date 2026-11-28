@@ -133,7 +133,9 @@ public:
     BitField<u64, InstructionCode, 32 + 24, 8> code;
     BitField<u64, u32, 32, 24> address;
     BitField<u64, u32, 0, 32> value32;
+    BitField<u64, u16, 16, 16> value32h;
     BitField<u64, u16, 0, 16> value16;
+    BitField<u64, u8, 8, 8> value16h;
     BitField<u64, u8, 0, 8> value8;
   };
 
@@ -157,12 +159,6 @@ private:
 
   bool DeinterleaveBlockInstructions(Error* error);
   void MergeInstructions();
-  u32 GetNextNonConditionalInstruction(u32 index) const;
-
-  static bool IsConditionalInstruction(InstructionCode code);
-  static u32 GetBlockPayloadLength(const Instruction& inst);
-  static u32 GetPayloadLength(const Instruction& inst);
-  static std::tuple<InstructionCode, u32> GetMergeCode(InstructionCode code);
 };
 
 class AssemblyCheatCode final : public CheatCode
