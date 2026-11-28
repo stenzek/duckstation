@@ -3691,7 +3691,7 @@ void Cheats::GamesharkCheatCode::Apply() const
             break;
           case 0x03: // Write the u8 from cht_register[cht_reg_no2] to cht_register[cht_reg_no1]
             // and add the u8 from the address field to it
-            cht_register[cht_reg_no1] = Truncate8(cht_register[cht_reg_no2] & 0xFFu) + Truncate8(poke_value & 0xFFu);
+            cht_register[cht_reg_no1] = Truncate8(cht_register[cht_reg_no2] + poke_value);
             break;
           case 0x04: // Write the u8 from the value stored in cht_register[cht_reg_no2] + poke_value to the address
             // stored in cht_register[cht_reg_no1]
@@ -3734,8 +3734,7 @@ void Cheats::GamesharkCheatCode::Apply() const
             break;
           case 0x43: // Write the u16 from cht_register[cht_reg_no2] to cht_register[cht_reg_no1]
             // and add the u16 from the address field to it
-            cht_register[cht_reg_no1] =
-              Truncate16(cht_register[cht_reg_no2] & 0xFFFFu) + Truncate16(poke_value & 0xFFFFu);
+            cht_register[cht_reg_no1] = Truncate16(cht_register[cht_reg_no2] + poke_value);
             break;
           case 0x44: // Write the u16 from the value stored in cht_register[cht_reg_no2] + poke_value to the address
             // stored in cht_register[cht_reg_no1]

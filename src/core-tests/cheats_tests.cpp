@@ -2386,6 +2386,8 @@ TEST_F(CheatsApply, CheatRegisters)
   setup({{0x11, 0x123401F0}});
   Run("51031110 00000005\n");
   EXPECT_EQ(GetCheatRegister(0x10), 0xF5u);
+  Run("51031110 00000020\n");
+  EXPECT_EQ(GetCheatRegister(0x10), 0x10u);
 
   setup({{0x10, 0x5008}, {0x11, 0x12345610}});
   Run("51041110 00000005\n");
@@ -2442,6 +2444,8 @@ TEST_F(CheatsApply, CheatRegisters)
   setup({{0x11, 0x1234F000}});
   Run("51431110 00000005\n");
   EXPECT_EQ(GetCheatRegister(0x10), 0xF005u);
+  Run("51431110 00001020\n");
+  EXPECT_EQ(GetCheatRegister(0x10), 0x0020u);
 
   setup({{0x10, 0x5008}, {0x11, 0x12345610}});
   Run("51441110 00000005\n");
