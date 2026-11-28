@@ -3398,7 +3398,7 @@ void Cheats::GamesharkCheatCode::Apply() const
 
         const u32 offset = Truncate16(inst.value32 & 0x0000FFFFu) << 1;
         const u8 wildcard = Truncate8((inst.value32 & 0x00FF0000u) >> 16);
-        const u32 minaddress = inst.address - offset;
+        const u32 minaddress = inst.address - std::min<u32>(inst.address, offset); // clamped to 0
         const u32 maxaddress = inst.address + offset;
         const u8 f1 = Truncate8((inst2.first & 0xFF000000u) >> 24);
         const u8 f2 = Truncate8((inst2.first & 0x00FF0000u) >> 16);

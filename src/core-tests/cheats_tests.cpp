@@ -2208,6 +2208,15 @@ TEST_F(CheatsApply, FindAndReplace)
   EXPECT_EQ(ReadByte(0x4002), 0xA2u);
   EXPECT_EQ(ReadByte(0x400E), 0xAEu);
   EXPECT_EQ(ReadByte(0x400F), 0x1Fu);
+
+  // A window reaching below address 0 (0x20 - 0x22) starts at 0.
+  std::memcpy(&g_bus.unprotected_ram[0x10], pattern.data(), pattern.size());
+  Run("F4000020 00EE0011\n"
+      "10111213 14151617\n"
+      "18191A1B 1C1D1E1F\n"
+      "A0A1A2A3 A4A5A6A7\n"
+      "A8A9AAAB ACADAEAF\n");
+  EXPECT_TRUE(matches(0x10, replacement));
 }
 
 TEST_F(CheatsApply, Slide)
