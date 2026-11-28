@@ -59,6 +59,8 @@ public:
 
   void updateListDescription(u32 global_slot, ControllerBindingWidget* widget);
 
+  std::array<bool, 2> getEnabledMultitaps() const;
+
   void switchProfile(const std::string_view name);
 
   // Helper functions for updating setting values globally or in the profile.
@@ -83,8 +85,6 @@ protected:
 private:
   int getHotkeyCategoryIndex() const;
   void refreshProfileList();
-
-  std::array<bool, 2> getEnabledMultitaps() const;
 
   void createWidgets();
 

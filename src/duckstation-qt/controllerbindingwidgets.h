@@ -47,6 +47,7 @@ private:
   void populateWidgets();
   void createBindingWidgets(QWidget* parent);
   void bindBindingWidgets(QWidget* parent);
+  void createNotConnectedWidget(QWidget* parent);
   void updateHeaderToolButtons();
   void updateBindingDeviceStatus();
   void updateImageHighlight();

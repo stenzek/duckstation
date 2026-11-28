@@ -264,6 +264,9 @@ void ControllerBindingWidget::populateWidgets()
     break;
 
     case ControllerType::None:
+    {
+      createNotConnectedWidget(m_bindings_widget);
+    }
     break;
 
     default:
@@ -771,6 +774,26 @@ void ControllerBindingWidget::bindBindingWidgets(QWidget* parent)
                            .arg(QtUtils::StringViewToQString(m_controller_info->GetBindingDisplayName(bi))));
     }
   }
+}
+
+void ControllerBindingWidget::createNotConnectedWidget(QWidget* parent)
+{
+  const auto [port, slot] = Controller::ConvertPadToPortAndSlot(m_port_number);
+  QLabel* const icon = new QLabel(parent);
+  icon->setPixmap(m_icon.pixmap(64));
+  icon->setAlignment(Qt::AlignCenter);
+  icon->setEnabled(false);
+  QLabel* const label =
+    new QLabel(tr("No controller is connected to Controller Port %1.\nSelect a controller type above to connect one.")
+                 .arg(Controller::GetPortDisplayName(port, slot, m_dialog->getEnabledMultitaps()[port])),
+               parent);
+  label->setAlignment(Qt::AlignCenter);
+  label->setEnabled(false);
+  QVBoxLayout* const layout = new QVBoxLayout(parent);
+  layout->addStretch(1);
+  layout->addWidget(icon);
+  layout->addWidget(label);
+  layout->addStretch(1);
 }
 
 //////////////////////////////////////////////////////////////////////////
