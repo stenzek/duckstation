@@ -2518,6 +2518,13 @@ TEST_F(CheatsApply, CheatRegisters)
   Run("51C90410 00000013\n51CA0410 00000014\n");
   EXPECT_EQ(GetCheatRegister(0x13), 0x00000010u);
   EXPECT_EQ(GetCheatRegister(0x14), 0x08000000u);
+  for (const u32 amount : {31u, 32u, 33u, 255u})
+  {
+    SCOPED_TRACE(amount);
+    Run(fmt::format("51C9{0:02X}10 00000013\n51CA{0:02X}10 00000014\n", amount));
+    EXPECT_EQ(GetCheatRegister(0x13), (amount == 31) ? 0x80000000u : 0u);
+    EXPECT_EQ(GetCheatRegister(0x14), (amount == 31) ? 1u : 0u);
+  }
 
   // Unknown sub-types do nothing.
   setup({{0x10, 0x5000}, {0x11, 0x5000}});

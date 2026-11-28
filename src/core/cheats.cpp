@@ -3825,11 +3825,11 @@ void Cheats::GamesharkCheatCode::Apply() const
           case 0xC8: // Reg3 = ~Reg1
             cht_register[cht_reg_no3] = ~cht_register[cht_reg_no1];
             break;
-          case 0xC9: // Reg3 = Reg1 << X
-            cht_register[cht_reg_no3] = cht_register[cht_reg_no1] << cht_reg_no2;
+          case 0xC9: // Reg3 = Reg1 << X, zero if X >= 32
+            cht_register[cht_reg_no3] = (cht_reg_no2 < 32) ? (cht_register[cht_reg_no1] << cht_reg_no2) : 0;
             break;
-          case 0xCA: // Reg3 = Reg1 >> X
-            cht_register[cht_reg_no3] = cht_register[cht_reg_no1] >> cht_reg_no2;
+          case 0xCA: // Reg3 = Reg1 >> X, zero if X >= 32
+            cht_register[cht_reg_no3] = (cht_reg_no2 < 32) ? (cht_register[cht_reg_no1] >> cht_reg_no2) : 0;
             break;
             // Lots of options exist for expanding into this space
           default:
