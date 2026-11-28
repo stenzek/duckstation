@@ -110,8 +110,8 @@ MemoryScannerWindow::MemoryScannerWindow() : QWidget()
   setupAdditionalUi();
   connectUi();
 
-  m_ui.cheatEngineAddress->setText(tr("Host RAM Address: 0x%1")
-                                     .arg(reinterpret_cast<qulonglong>(g_bus.unprotected_ram), 16, 16, QChar('0')));
+  m_ui.cheatEngineAddress->setText(
+    tr("Host RAM Address: 0x%1").arg(reinterpret_cast<qulonglong>(g_bus.unprotected_ram), 16, 16, QChar('0')));
 }
 
 MemoryScannerWindow::~MemoryScannerWindow() = default;
@@ -253,13 +253,13 @@ void MemoryScannerWindow::connectUi()
     m_scanner.SetSize(static_cast<MemoryAccessSize>(index));
     m_scanner.ResetSearch();
     m_has_searched = false;
-    updateResults();
+    updateResultList();
   });
   connect(m_ui.valueSigned, &QComboBox::currentIndexChanged, [this](int index) {
     m_scanner.SetValueSigned(index == 0);
     m_scanner.ResetSearch();
     m_has_searched = false;
-    updateResults();
+    updateResultList();
   });
   connect(m_ui.scanOperator, &QComboBox::currentIndexChanged,
           [this](int index) { m_scanner.SetOperator(static_cast<MemoryScan::Operator>(index)); });
@@ -416,7 +416,7 @@ void MemoryScannerWindow::newSearchClicked()
 
   m_scanner.Search();
   m_has_searched = true;
-  updateResults();
+  updateResultList();
 
   // swap to changed value if we're set to any value
   if (m_ui.scanOperator->currentIndex() == static_cast<int>(MemoryScan::Operator::Any))
@@ -427,14 +427,14 @@ void MemoryScannerWindow::searchAgainClicked()
 {
   m_scanner.SearchAgain();
   m_has_searched = true;
-  updateResults();
+  updateResultList();
 }
 
 void MemoryScannerWindow::resetSearchClicked()
 {
   m_scanner.ResetSearch();
   m_has_searched = false;
-  updateResults();
+  updateResultList();
 
   // swap back to any value if we're set to changed value
   if (m_ui.scanOperator->currentIndex() == static_cast<int>(MemoryScan::Operator::NotEqualLast))
@@ -446,17 +446,17 @@ void MemoryScannerWindow::addToWatchClicked()
   if (!QtHost::IsSystemValid())
     return;
 
-  const int indexFirst = getSelectedResultIndexFirst();
-  const int indexLast = getSelectedResultIndexLast();
-  if (indexFirst < 0)
+  const int start = getSelectedResultIndexFirst();
+  if (start < 0)
     return;
 
-  for (int index = indexFirst; index <= indexLast; index++)
+  const int end = getSelectedResultIndexLast();
+  for (int index = start; index <= end; index++)
   {
     const MemoryScan::Result& res = m_scanner.GetResults()[static_cast<u32>(index)];
     m_watch.AddEntry(formatWatchDescription(res.address, res.value, m_scanner.GetSize()), res.address,
                      m_scanner.GetSize(), m_scanner.GetValueSigned(), false);
-    updateWatch();
+    updateWatchList();
   }
 }
 
@@ -489,7 +489,7 @@ void MemoryScannerWindow::addManualWatchAddressClicked()
     m_watch.SetEntryDescription(entry_index,
                                 formatWatchDescription(address.value(), m_watch.GetEntry(entry_index).value, size));
   }
-  updateWatch();
+  updateWatchList();
 }
 
 void MemoryScannerWindow::toggleWatchFreezeClicked()
@@ -502,7 +502,7 @@ void MemoryScannerWindow::toggleWatchFreezeClicked()
   for (int index = start; index <= end; index++)
   {
     m_watch.ToggleEntryFrozen(static_cast<u32>(index));
-    updateWatch();
+    updateWatchList();
   }
 }
 
@@ -516,7 +516,7 @@ void MemoryScannerWindow::removeWatchClicked()
   for (int index = end; index >= start; index--)
   {
     m_watch.RemoveEntry(static_cast<u32>(index));
-    updateWatch();
+    updateWatchList();
   }
 }
 
@@ -670,7 +670,7 @@ QTableWidgetItem* MemoryScannerWindow::createValueItem(MemoryAccessSize size, u3
   return item;
 }
 
-void MemoryScannerWindow::updateResults()
+void MemoryScannerWindow::updateResultList()
 {
   QSignalBlocker sb(m_ui.scanTable);
   m_ui.scanTable->setRowCount(0);
@@ -711,7 +711,7 @@ void MemoryScannerWindow::updateResults()
   m_ui.addWatch->setEnabled(false);
 }
 
-void MemoryScannerWindow::updateResultsValues()
+void MemoryScannerWindow::updateResultValues()
 {
   QSignalBlocker sb(m_ui.scanTable);
 
@@ -736,7 +736,7 @@ void MemoryScannerWindow::updateResultsValues()
   }
 }
 
-void MemoryScannerWindow::updateWatch()
+void MemoryScannerWindow::updateWatchList()
 {
   m_watch.UpdateValues();
 
@@ -813,7 +813,7 @@ void MemoryScannerWindow::updateScanUi()
   m_scanner.UpdateResultsValues();
   m_watch.UpdateValues();
 
-  updateResultsValues();
+  updateResultValues();
   updateWatchValues();
 }
 
@@ -877,7 +877,7 @@ void MemoryScannerWindow::reloadWatches()
     }
   }
 
-  updateWatch();
+  updateWatchList();
 }
 
 void MemoryScannerWindow::clearWatches()
@@ -885,5 +885,5 @@ void MemoryScannerWindow::clearWatches()
   saveWatches();
 
   m_watch.ClearEntries();
-  updateWatch();
+  updateWatchList();
 }

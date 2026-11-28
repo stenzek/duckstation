@@ -58,9 +58,9 @@ private:
   void setupAdditionalUi();
   void connectUi();
   void enableUi(bool enabled);
-  void updateResults();
-  void updateResultsValues();
-  void updateWatch();
+  void updateResultList();
+  void updateResultValues();
+  void updateWatchList();
   void updateWatchValues();
 
   void tryOpenAddressInMemoryEditor(VirtualMemoryAddress address);

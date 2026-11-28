@@ -65,9 +65,9 @@
        </widget>
       </item>
       <item row="2" column="1">
-       <widget class="QCheckBox" name="disableBackgroundInput">
+       <widget class="QCheckBox" name="muteOnFocusLoss">
         <property name="text">
-         <string>Disable Background Input</string>
+         <string>Mute On Focus Loss</string>
         </property>
        </widget>
       </item>
@@ -89,6 +89,13 @@
        <widget class="QCheckBox" name="enableDiscordPresence">
         <property name="text">
          <string>Enable Discord Presence</string>
+        </property>
+       </widget>
+      </item>
+      <item row="4" column="1">
+       <widget class="QCheckBox" name="disableBackgroundInput">
+        <property name="text">
+         <string>Disable Background Input</string>
         </property>
        </widget>
       </item>

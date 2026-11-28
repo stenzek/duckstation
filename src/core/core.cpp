@@ -814,6 +814,9 @@ void Core::OnApplicationBackgroundStateChanged(bool in_background)
   if (!System::IsValid())
     return;
 
+  if (g_settings.mute_on_focus_loss)
+    System::UpdateVolume();
+
   if (in_background)
   {
     if (g_settings.pause_on_focus_loss && !s_locals.was_paused_by_focus_loss && !System::IsPaused())

@@ -3357,6 +3357,10 @@ void FullscreenUI::DrawInterfaceSettingsPage()
                     FSUI_VSTR("Pauses the emulator when you minimize the window or switch to another "
                               "application, and unpauses when you switch back."),
                     Settings::INTERFACE_SECTION_NAME, "PauseOnFocusLoss", false);
+  DrawToggleSetting(bsi, FSUI_ICONVSTR(ICON_FA_VOLUME_XMARK, "Mute On Focus Loss"),
+                    FSUI_VSTR("Mutes the audio when you minimize the window or switch to another application, and "
+                              "unmutes when you switch back."),
+                    Settings::INTERFACE_SECTION_NAME, "MuteOnFocusLoss", false);
   DrawToggleSetting(bsi, FSUI_ICONVSTR(ICON_FA_GAMEPAD, "Pause On Controller Disconnection"),
                     FSUI_VSTR("Pauses the emulator when a controller with bindings is disconnected."),
                     Settings::INTERFACE_SECTION_NAME, "PauseOnControllerDisconnection", false);

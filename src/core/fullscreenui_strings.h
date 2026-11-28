@@ -554,6 +554,8 @@ TRANSLATE_NOOP("FullscreenUI", "Multitap");
 TRANSLATE_NOOP("FullscreenUI", "Multitap Mode");
 TRANSLATE_NOOP("FullscreenUI", "Mute CD Audio");
 TRANSLATE_NOOP("FullscreenUI", "Mute Game Audio");
+TRANSLATE_NOOP("FullscreenUI", "Mute On Focus Loss");
+TRANSLATE_NOOP("FullscreenUI", "Mutes the audio when you minimize the window or switch to another application, and unmutes when you switch back.");
 TRANSLATE_NOOP("FullscreenUI", "N/A");
 TRANSLATE_NOOP("FullscreenUI", "Navigate");
 TRANSLATE_NOOP("FullscreenUI", "No");

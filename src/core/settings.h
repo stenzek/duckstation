@@ -340,6 +340,7 @@ struct Settings : public GPUSettings
   bool sync_to_host_refresh_rate : 1 = false;
   bool inhibit_screensaver : 1 = true;
   bool pause_on_focus_loss : 1 = false;
+  bool mute_on_focus_loss : 1 = false;
   bool reduce_idle_frame_rate : 1 = true;
   bool pause_on_controller_disconnection : 1 = false;
   bool disable_background_input : 1 = false;

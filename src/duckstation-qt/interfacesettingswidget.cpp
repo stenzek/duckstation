@@ -50,6 +50,8 @@ InterfaceSettingsWidget::InterfaceSettingsWidget(SettingsWindow* dialog, QWidget
                                                "InhibitScreensaver", true);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.pauseOnFocusLoss, Settings::INTERFACE_SECTION_NAME,
                                                "PauseOnFocusLoss", false);
+  SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.muteOnFocusLoss, Settings::INTERFACE_SECTION_NAME,
+                                               "MuteOnFocusLoss", false);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.reduceIdleFrameRate, Settings::INTERFACE_SECTION_NAME,
                                                "ReduceIdleFrameRate", true);
   SettingWidgetBinder::BindWidgetToBoolSetting(sif, m_ui.pauseOnControllerDisconnection,
@@ -152,10 +154,8 @@ InterfaceSettingsWidget::InterfaceSettingsWidget(SettingsWindow* dialog, QWidget
   {
     // I hate you so much qtwidgets
     QtUtils::SafeDeleteWidget(m_ui.startFullscreenUI);
-    m_ui.behaviorLayout->removeWidget(m_ui.reduceIdleFrameRate);
-    m_ui.behaviorLayout->removeWidget(m_ui.enableDiscordPresence);
-    m_ui.behaviorLayout->addWidget(m_ui.reduceIdleFrameRate, m_ui.behaviorLayout->rowCount() - 1, 0);
-    m_ui.behaviorLayout->addWidget(m_ui.enableDiscordPresence, m_ui.behaviorLayout->rowCount() - 1, 1);
+    m_ui.behaviorLayout->removeWidget(m_ui.disableBackgroundInput);
+    m_ui.behaviorLayout->addWidget(m_ui.disableBackgroundInput, m_ui.behaviorLayout->rowCount() - 2, 0);
 
     QtUtils::SafeDeleteWidget(m_ui.languageLabel);
     QtUtils::SafeDeleteWidget(m_ui.language);
@@ -189,6 +189,9 @@ InterfaceSettingsWidget::InterfaceSettingsWidget(SettingsWindow* dialog, QWidget
   dialog->registerWidgetHelp(m_ui.pauseOnFocusLoss, tr("Pause On Focus Loss"), tr("Unchecked"),
                              tr("Pauses the emulator when you minimize the window or switch to another application, "
                                 "and unpauses when you switch back."));
+  dialog->registerWidgetHelp(m_ui.muteOnFocusLoss, tr("Mute On Focus Loss"), tr("Unchecked"),
+                             tr("Mutes the audio when you minimize the window or switch to another application, and "
+                                "unmutes when you switch back."));
   dialog->registerWidgetHelp(m_ui.reduceIdleFrameRate, tr("Reduce Big Picture Idle Frame Rate"), tr("Checked"),
                              tr("Reduces the frame rate of the Big Picture UI and pause menus when you switch to "
                                 "another application, to save power."));
