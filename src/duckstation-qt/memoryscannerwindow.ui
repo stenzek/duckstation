@@ -19,484 +19,539 @@
   </property>
   <layout class="QGridLayout" name="gridLayout_3">
    <item row="0" column="0">
-    <widget class="QTableWidget" name="scanTable">
-     <property name="alternatingRowColors">
-      <bool>true</bool>
+    <widget class="QSplitter" name="splitter">
+     <property name="orientation">
+      <enum>Qt::Orientation::Vertical</enum>
      </property>
-     <property name="selectionMode">
-      <enum>QAbstractItemView::SelectionMode::ContiguousSelection</enum>
-     </property>
-     <property name="selectionBehavior">
-      <enum>QAbstractItemView::SelectionBehavior::SelectRows</enum>
-     </property>
-     <property name="showGrid">
+     <property name="childrenCollapsible">
       <bool>false</bool>
      </property>
-     <property name="sortingEnabled">
-      <bool>true</bool>
-     </property>
-     <attribute name="horizontalHeaderHighlightSections">
-      <bool>false</bool>
-     </attribute>
-     <attribute name="verticalHeaderVisible">
-      <bool>false</bool>
-     </attribute>
-     <column>
-      <property name="text">
-       <string>Address</string>
-      </property>
-     </column>
-     <column>
-      <property name="text">
-       <string>Value</string>
-      </property>
-     </column>
-     <column>
-      <property name="text">
-       <string>Previous Value</string>
-      </property>
-     </column>
-     <column>
-      <property name="text">
-       <string>First Value</string>
-      </property>
-     </column>
-    </widget>
-   </item>
-   <item row="0" column="1">
-    <widget class="QGroupBox" name="groupBox_2">
-     <property name="title">
-      <string>Search Parameters</string>
-     </property>
-     <layout class="QGridLayout" name="gridLayout" columnstretch="0,1">
-      <item row="0" column="0">
-       <widget class="QLabel" name="label">
-        <property name="text">
-         <string>Value:</string>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="1">
-       <layout class="QHBoxLayout" name="horizontalLayout_2">
-        <item>
-         <widget class="QLineEdit" name="scanValue"/>
-        </item>
-        <item>
-         <widget class="QComboBox" name="valueSigned">
-          <property name="currentIndex">
-           <number>1</number>
-          </property>
-          <item>
-           <property name="text">
-            <string>Signed</string>
-           </property>
-          </item>
-          <item>
-           <property name="text">
-            <string>Unsigned</string>
-           </property>
-          </item>
-         </widget>
-        </item>
-        <item>
-         <widget class="QComboBox" name="valueBase">
-          <property name="currentIndex">
-           <number>1</number>
-          </property>
-          <item>
-           <property name="text">
-            <string>Decimal</string>
-           </property>
-          </item>
-          <item>
-           <property name="text">
-            <string>Hex</string>
-           </property>
-          </item>
-         </widget>
-        </item>
-       </layout>
-      </item>
-      <item row="1" column="0">
-       <widget class="QLabel" name="label_3">
-        <property name="text">
-         <string>Data Size:</string>
-        </property>
-       </widget>
-      </item>
-      <item row="1" column="1">
-       <widget class="QComboBox" name="scanSize">
-        <property name="currentIndex">
-         <number>1</number>
-        </property>
-        <item>
-         <property name="text">
-          <string>Byte (1 byte)</string>
+     <widget class="QWidget" name="searchContainer">
+      <layout class="QHBoxLayout" name="searchLayout">
+       <property name="leftMargin">
+        <number>0</number>
+       </property>
+       <property name="topMargin">
+        <number>0</number>
+       </property>
+       <property name="rightMargin">
+        <number>0</number>
+       </property>
+       <property name="bottomMargin">
+        <number>0</number>
+       </property>
+       <item>
+        <widget class="QTableWidget" name="scanTable">
+         <property name="alternatingRowColors">
+          <bool>true</bool>
          </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>Halfword (2 bytes)</string>
+         <property name="selectionMode">
+          <enum>QAbstractItemView::SelectionMode::ContiguousSelection</enum>
          </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>Word (4 bytes)</string>
+         <property name="selectionBehavior">
+          <enum>QAbstractItemView::SelectionBehavior::SelectRows</enum>
          </property>
-        </item>
-       </widget>
-      </item>
-      <item row="2" column="0">
-       <widget class="QLabel" name="label_2">
-        <property name="text">
-         <string>Operator:</string>
-        </property>
-       </widget>
-      </item>
-      <item row="2" column="1">
-       <widget class="QComboBox" name="scanOperator">
-        <item>
-         <property name="text">
-          <string>Any Value ('New Search' or 'Reset Result Value')</string>
+         <property name="showGrid">
+          <bool>false</bool>
          </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>Less Than Previous Result</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>Less or Equal to Previous Result</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>Greater Than Previous Result</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>Greater or Equal to Previous Result</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>Not Equal to Previous Result (Changed Value)</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>Equal to Previous Result (Unchanged Value)</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>Decreased By Value</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>Increased By Value</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>Changed By Value</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>Equal to Value</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>Not Equal to Value</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>Less Than Value</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>Less or Equal to Value</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>Greater Than Value</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>Greater or Equal to Value</string>
-         </property>
-        </item>
-       </widget>
-      </item>
-      <item row="3" column="0">
-       <widget class="QLabel" name="label_4">
-        <property name="text">
-         <string>Start Address:</string>
-        </property>
-       </widget>
-      </item>
-      <item row="3" column="1">
-       <widget class="QLineEdit" name="startAddress"/>
-      </item>
-      <item row="4" column="0">
-       <widget class="QLabel" name="label_5">
-        <property name="text">
-         <string>End Address:</string>
-        </property>
-       </widget>
-      </item>
-      <item row="4" column="1">
-       <widget class="QLineEdit" name="endAddress"/>
-      </item>
-      <item row="5" column="0">
-       <widget class="QLabel" name="label_6">
-        <property name="text">
-         <string>Preset Range:</string>
-        </property>
-       </widget>
-      </item>
-      <item row="5" column="1">
-       <widget class="QComboBox" name="presetRange">
-        <item>
-         <property name="text">
-          <string>RAM</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>Scratchpad</string>
-         </property>
-        </item>
-        <item>
-         <property name="text">
-          <string>BIOS</string>
-         </property>
-        </item>
-       </widget>
-      </item>
-      <item row="6" column="0">
-       <widget class="QLabel" name="label_7">
-        <property name="text">
-         <string>Result Count:</string>
-        </property>
-       </widget>
-      </item>
-      <item row="6" column="1">
-       <widget class="QLabel" name="resultCount">
-        <property name="text">
-         <string>0</string>
-        </property>
-       </widget>
-      </item>
-      <item row="7" column="0" colspan="2">
-       <layout class="QHBoxLayout" name="horizontalLayout_3">
-        <item>
-         <widget class="QPushButton" name="newSearch">
+         <attribute name="horizontalHeaderHighlightSections">
+          <bool>false</bool>
+         </attribute>
+         <attribute name="verticalHeaderVisible">
+          <bool>false</bool>
+         </attribute>
+         <column>
           <property name="text">
-           <string>New Search</string>
+           <string>Address</string>
           </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QPushButton" name="searchAgain">
-          <property name="enabled">
-           <bool>false</bool>
-          </property>
+         </column>
+         <column>
           <property name="text">
-           <string>Search Again</string>
+           <string>Value</string>
           </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QPushButton" name="resetSearch">
-          <property name="enabled">
-           <bool>false</bool>
-          </property>
+         </column>
+         <column>
           <property name="text">
-           <string>Clear Results</string>
+           <string>Previous Value</string>
           </property>
-         </widget>
-        </item>
-       </layout>
-      </item>
-      <item row="8" column="0" colspan="2">
-       <widget class="QPushButton" name="addWatch">
-        <property name="enabled">
-         <bool>false</bool>
-        </property>
-        <property name="text">
-         <string>Add Selected Results To Watch List</string>
-        </property>
-       </widget>
-      </item>
-      <item row="9" column="0">
-       <spacer name="verticalSpacer">
-        <property name="orientation">
-         <enum>Qt::Orientation::Vertical</enum>
-        </property>
-        <property name="sizeHint" stdset="0">
-         <size>
-          <width>0</width>
-          <height>0</height>
-         </size>
-        </property>
-       </spacer>
-      </item>
-     </layout>
-    </widget>
-   </item>
-   <item row="1" column="0" colspan="2">
-    <layout class="QGridLayout" name="gridLayout_4">
-     <item row="0" column="0">
-      <widget class="QTableWidget" name="watchTable">
-       <property name="alternatingRowColors">
-        <bool>true</bool>
-       </property>
-       <property name="selectionMode">
-        <enum>QAbstractItemView::SelectionMode::ContiguousSelection</enum>
-       </property>
-       <property name="selectionBehavior">
-        <enum>QAbstractItemView::SelectionBehavior::SelectRows</enum>
-       </property>
-       <property name="showGrid">
-        <bool>false</bool>
-       </property>
-       <property name="sortingEnabled">
-        <bool>true</bool>
-       </property>
-       <attribute name="horizontalHeaderHighlightSections">
-        <bool>false</bool>
-       </attribute>
-       <attribute name="verticalHeaderVisible">
-        <bool>false</bool>
-       </attribute>
-       <column>
-        <property name="text">
-         <string>Simple Cheat Code or Description</string>
-        </property>
-       </column>
-       <column>
-        <property name="text">
-         <string>Address</string>
-        </property>
-       </column>
-       <column>
-        <property name="text">
-         <string>Type</string>
-        </property>
-       </column>
-       <column>
-        <property name="text">
-         <string>Value</string>
-        </property>
-       </column>
-       <column>
-        <property name="text">
-         <string>Freeze</string>
-        </property>
-       </column>
-      </widget>
-     </item>
-     <item row="1" column="0">
-      <layout class="QHBoxLayout" name="horizontalLayout_4">
-       <item>
-        <widget class="QPushButton" name="scanLoadWatch">
-         <property name="enabled">
-          <bool>false</bool>
-         </property>
-         <property name="visible">
-          <bool>false</bool>
-         </property>
-         <property name="text">
-          <string>Load Watch</string>
-         </property>
+         </column>
+         <column>
+          <property name="text">
+           <string>First Value</string>
+          </property>
+         </column>
         </widget>
        </item>
        <item>
-        <widget class="QPushButton" name="saveWatch">
-         <property name="enabled">
-          <bool>false</bool>
+        <widget class="QGroupBox" name="scanGroup">
+         <property name="title">
+          <string>Search Parameters</string>
          </property>
-         <property name="visible">
-          <bool>false</bool>
-         </property>
-         <property name="text">
-          <string>Save Watch</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QPushButton" name="scanAddManualAddress">
-         <property name="text">
-          <string>Add Manual Address</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QPushButton" name="toggleWatchFreeze">
-         <property name="enabled">
-          <bool>false</bool>
-         </property>
-         <property name="text">
-          <string>Freeze Selected Entries</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QPushButton" name="removeWatch">
-         <property name="enabled">
-          <bool>false</bool>
-         </property>
-         <property name="text">
-          <string>Remove Selected Entries</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <spacer name="horizontalSpacer_2">
-         <property name="orientation">
-          <enum>Qt::Orientation::Horizontal</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>40</width>
-           <height>20</height>
-          </size>
-         </property>
-        </spacer>
-       </item>
-       <item>
-        <widget class="QLabel" name="cheatEngineAddress">
-         <property name="frameShape">
-          <enum>QFrame::Shape::Panel</enum>
-         </property>
-         <property name="frameShadow">
-          <enum>QFrame::Shadow::Sunken</enum>
-         </property>
-         <property name="text">
-          <string/>
-         </property>
-         <property name="textFormat">
-          <enum>Qt::TextFormat::PlainText</enum>
-         </property>
-         <property name="alignment">
-          <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
-         </property>
-         <property name="textInteractionFlags">
-          <set>Qt::TextInteractionFlag::LinksAccessibleByMouse|Qt::TextInteractionFlag::TextEditable|Qt::TextInteractionFlag::TextEditorInteraction|Qt::TextInteractionFlag::TextSelectableByKeyboard|Qt::TextInteractionFlag::TextSelectableByMouse</set>
-         </property>
+         <layout class="QGridLayout" name="gridLayout" columnstretch="0,1">
+          <item row="0" column="0">
+           <widget class="QLabel" name="label">
+            <property name="text">
+             <string>Value:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="1">
+           <layout class="QHBoxLayout" name="horizontalLayout_2">
+            <item>
+             <widget class="QLineEdit" name="scanValue"/>
+            </item>
+            <item>
+             <widget class="QComboBox" name="valueSigned">
+              <property name="currentIndex">
+               <number>1</number>
+              </property>
+              <item>
+               <property name="text">
+                <string>Signed</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Unsigned</string>
+               </property>
+              </item>
+             </widget>
+            </item>
+            <item>
+             <widget class="QComboBox" name="valueBase">
+              <property name="toolTip">
+               <string>Also controls how values are displayed in the results table.</string>
+              </property>
+              <property name="currentIndex">
+               <number>1</number>
+              </property>
+              <item>
+               <property name="text">
+                <string>Decimal</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Hex</string>
+               </property>
+              </item>
+             </widget>
+            </item>
+           </layout>
+          </item>
+          <item row="1" column="0">
+           <widget class="QLabel" name="label_3">
+            <property name="text">
+             <string>Data Size:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="1">
+           <widget class="QComboBox" name="scanSize">
+            <property name="currentIndex">
+             <number>1</number>
+            </property>
+            <item>
+             <property name="text">
+              <string>Byte (1 byte)</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Halfword (2 bytes)</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Word (4 bytes)</string>
+             </property>
+            </item>
+           </widget>
+          </item>
+          <item row="2" column="0">
+           <widget class="QLabel" name="label_2">
+            <property name="text">
+             <string>Operator:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="1">
+           <widget class="QComboBox" name="scanOperator">
+            <item>
+             <property name="text">
+              <string>Any Value (New Search)</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Less Than Previous Result</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Less or Equal to Previous Result</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Greater Than Previous Result</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Greater or Equal to Previous Result</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Not Equal to Previous Result (Changed Value)</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Equal to Previous Result (Unchanged Value)</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Decreased By Value</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Increased By Value</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Changed By Value</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Equal to Value</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Not Equal to Value</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Less Than Value</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Less or Equal to Value</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Greater Than Value</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Greater or Equal to Value</string>
+             </property>
+            </item>
+           </widget>
+          </item>
+          <item row="3" column="0">
+           <widget class="QLabel" name="label_4">
+            <property name="text">
+             <string>Start Address:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="1">
+           <widget class="QLineEdit" name="startAddress"/>
+          </item>
+          <item row="4" column="0">
+           <widget class="QLabel" name="label_5">
+            <property name="text">
+             <string>End Address:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="1">
+           <widget class="QLineEdit" name="endAddress"/>
+          </item>
+          <item row="5" column="0">
+           <widget class="QLabel" name="label_6">
+            <property name="text">
+             <string>Preset Range:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="5" column="1">
+           <widget class="QComboBox" name="presetRange">
+            <item>
+             <property name="text">
+              <string>RAM</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Scratchpad</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>BIOS</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Custom</string>
+             </property>
+            </item>
+           </widget>
+          </item>
+          <item row="6" column="0">
+           <widget class="QLabel" name="label_7">
+            <property name="text">
+             <string>Result Count:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="6" column="1">
+           <widget class="QLabel" name="resultCount">
+            <property name="text">
+             <string>0</string>
+            </property>
+           </widget>
+          </item>
+          <item row="7" column="0" colspan="2">
+           <layout class="QHBoxLayout" name="horizontalLayout_3">
+            <item>
+             <widget class="QPushButton" name="newSearch">
+              <property name="text">
+               <string>New Search</string>
+              </property>
+              <property name="icon">
+               <iconset resource="resources/duckstation-qt.qrc">
+                <normaloff>:/icons/monochrome/svg/search-line.svg</normaloff>:/icons/monochrome/svg/search-line.svg</iconset>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="searchAgain">
+              <property name="enabled">
+               <bool>false</bool>
+              </property>
+              <property name="text">
+               <string>Search Again</string>
+              </property>
+              <property name="icon">
+               <iconset resource="resources/duckstation-qt.qrc">
+                <normaloff>:/icons/monochrome/svg/filter-line.svg</normaloff>:/icons/monochrome/svg/filter-line.svg</iconset>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="resetSearch">
+              <property name="enabled">
+               <bool>false</bool>
+              </property>
+              <property name="text">
+               <string>Clear Results</string>
+              </property>
+              <property name="icon">
+               <iconset resource="resources/duckstation-qt.qrc">
+                <normaloff>:/icons/monochrome/svg/eraser-line.svg</normaloff>:/icons/monochrome/svg/eraser-line.svg</iconset>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+          <item row="8" column="0" colspan="2">
+           <widget class="QPushButton" name="addWatch">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
+            <property name="text">
+             <string>Watch Selected</string>
+            </property>
+            <property name="icon">
+             <iconset resource="resources/duckstation-qt.qrc">
+              <normaloff>:/icons/monochrome/svg/eye-line.svg</normaloff>:/icons/monochrome/svg/eye-line.svg</iconset>
+            </property>
+           </widget>
+          </item>
+          <item row="9" column="0">
+           <spacer name="verticalSpacer">
+            <property name="orientation">
+             <enum>Qt::Orientation::Vertical</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>0</width>
+              <height>0</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+         </layout>
         </widget>
        </item>
       </layout>
+     </widget>
+     <widget class="QTableWidget" name="watchTable">
+      <property name="alternatingRowColors">
+       <bool>true</bool>
+      </property>
+      <property name="selectionMode">
+       <enum>QAbstractItemView::SelectionMode::ContiguousSelection</enum>
+      </property>
+      <property name="selectionBehavior">
+       <enum>QAbstractItemView::SelectionBehavior::SelectRows</enum>
+      </property>
+      <property name="showGrid">
+       <bool>false</bool>
+      </property>
+      <attribute name="horizontalHeaderHighlightSections">
+       <bool>false</bool>
+      </attribute>
+      <attribute name="verticalHeaderVisible">
+       <bool>false</bool>
+      </attribute>
+      <column>
+       <property name="text">
+        <string>Description</string>
+       </property>
+      </column>
+      <column>
+       <property name="text">
+        <string>Address</string>
+       </property>
+      </column>
+      <column>
+       <property name="text">
+        <string>Type</string>
+       </property>
+      </column>
+      <column>
+       <property name="text">
+        <string>Value</string>
+       </property>
+      </column>
+      <column>
+       <property name="text">
+        <string>Freeze</string>
+       </property>
+      </column>
+     </widget>
+    </widget>
+   </item>
+   <item row="1" column="0">
+    <layout class="QHBoxLayout" name="horizontalLayout_4">
+     <item>
+      <widget class="QPushButton" name="scanLoadWatch">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
+       <property name="visible">
+        <bool>false</bool>
+       </property>
+       <property name="text">
+        <string>Load Watch</string>
+       </property>
+       <property name="icon">
+        <iconset resource="resources/duckstation-qt.qrc">
+         <normaloff>:/icons/monochrome/svg/folder-open-line.svg</normaloff>:/icons/monochrome/svg/folder-open-line.svg</iconset>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="saveWatch">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
+       <property name="visible">
+        <bool>false</bool>
+       </property>
+       <property name="text">
+        <string>Save Watch</string>
+       </property>
+       <property name="icon">
+        <iconset resource="resources/duckstation-qt.qrc">
+         <normaloff>:/icons/monochrome/svg/save-3-line.svg</normaloff>:/icons/monochrome/svg/save-3-line.svg</iconset>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="scanAddManualAddress">
+       <property name="text">
+        <string>Add Address</string>
+       </property>
+       <property name="icon">
+        <iconset resource="resources/duckstation-qt.qrc">
+         <normaloff>:/icons/monochrome/svg/add-line.svg</normaloff>:/icons/monochrome/svg/add-line.svg</iconset>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="toggleWatchFreeze">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
+       <property name="text">
+        <string>Toggle Freeze</string>
+       </property>
+       <property name="icon">
+        <iconset resource="resources/duckstation-qt.qrc">
+         <normaloff>:/icons/monochrome/svg/snowflake-line.svg</normaloff>:/icons/monochrome/svg/snowflake-line.svg</iconset>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="removeWatch">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
+       <property name="text">
+        <string>Remove Selected</string>
+       </property>
+       <property name="icon">
+        <iconset resource="resources/duckstation-qt.qrc">
+         <normaloff>:/icons/monochrome/svg/trash-fill.svg</normaloff>:/icons/monochrome/svg/trash-fill.svg</iconset>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <spacer name="horizontalSpacer_2">
+       <property name="orientation">
+        <enum>Qt::Orientation::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item>
+      <widget class="QLabel" name="cheatEngineAddress">
+       <property name="class" stdset="0">
+        <string notr="true">pill-label</string>
+       </property>
+       <property name="text">
+        <string/>
+       </property>
+       <property name="textFormat">
+        <enum>Qt::TextFormat::PlainText</enum>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignmentFlag::AlignRight|Qt::AlignmentFlag::AlignTrailing|Qt::AlignmentFlag::AlignVCenter</set>
+       </property>
+       <property name="textInteractionFlags">
+        <set>Qt::TextInteractionFlag::LinksAccessibleByMouse|Qt::TextInteractionFlag::TextEditable|Qt::TextInteractionFlag::TextEditorInteraction|Qt::TextInteractionFlag::TextSelectableByKeyboard|Qt::TextInteractionFlag::TextSelectableByMouse</set>
+       </property>
+      </widget>
      </item>
     </layout>
    </item>

@@ -26,6 +26,7 @@ Q_SIGNALS:
 
 protected:
   void closeEvent(QCloseEvent* event) override;
+  bool eventFilter(QObject* object, QEvent* event) override;
 
 private:
   enum : int
@@ -83,4 +84,5 @@ private:
 
   QTimer* m_update_timer = nullptr;
   std::string m_watch_save_filename;
+  bool m_has_searched = false;
 };

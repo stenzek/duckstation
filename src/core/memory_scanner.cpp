@@ -319,7 +319,7 @@ const MemoryWatchList::Entry* MemoryWatchList::GetEntryByAddress(u32 address) co
 {
   for (const Entry& entry : m_entries)
   {
-    if (entry.address == address)
+    if (CPU::VirtualAddressToPhysical(entry.address) == CPU::VirtualAddressToPhysical(address))
       return &entry;
   }
 
