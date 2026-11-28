@@ -2583,7 +2583,8 @@ TEST_F(CheatsApply, CheatRegisterCompare)
     Case{0x19, 4, 0, 4, 6, true},
     Case{0x19, 7, 0, 4, 6, false},
     Case{0x19, 3, 0, 4, 6, false},
-    // 1A is in DISABLED_CheatRegisterCompareMaskEqualImmediate.
+    Case{0x1A, 0x05, 0, 0x0F, 0, true},
+    Case{0x1A, 0x0F, 0, 0x05, 0, false},
     Case{0x1B, 0x0F, 0, 0x05, 0, true},
     Case{0x1B, 0x05, 0, 0x0F, 0, false},
 
@@ -2926,23 +2927,6 @@ TEST_F(CheatsApply, FindAndReplaceAdjacentMatch)
       "A8A9AAAB ACADAEAF\n");
   EXPECT_EQ(ReadByte(0x4000), 0xA0u);
   EXPECT_EQ(ReadByte(0x4010), 0xA0u);
-}
-
-TEST_F(CheatsApply, DISABLED_CheatRegisterCompareMaskEqualImmediate)
-{
-  // 1A/5A/9A compare (R2 & V) == R1, but the matching B sub-types and the other A sub-types use (R1 & V) == R1.
-  for (const u8 sub_type : {0x1A, 0x5A, 0x9A})
-  {
-    SCOPED_TRACE(static_cast<u32>(sub_type));
-    for (const auto& [r1, r2, expected] : {std::tuple{0x05u, 0x00u, true}, std::tuple{0x1Fu, 0x1Fu, false}})
-    {
-      SetCheatRegister(0x20, r1);
-      SetCheatRegister(0x21, r2);
-      WriteWord(0x7000, 0);
-      Run(fmt::format("52{:02X}2120 0000000F\n90007000 00000001\n00000000 0000FFFF\n", sub_type));
-      EXPECT_EQ(ReadWord(0x7000), expected ? 1u : 0u) << r1;
-    }
-  }
 }
 
 TEST_F(CheatsApply, DISABLED_CheatRegisterCompareLessEqualMemory)

@@ -4345,7 +4345,7 @@ void Cheats::GamesharkCheatCode::Apply() const
                (Truncate8(cht_register[cht_reg_no1] & 0xFFu) <= Truncate8((inst.value32 & 0xFF0000u) >> 16)));
             break;
           case 0x1A:
-            activate_codes = ((Truncate8(cht_register[cht_reg_no2] & 0xFFu) & inst.value8) ==
+            activate_codes = ((Truncate8(cht_register[cht_reg_no1] & 0xFFu) & inst.value8) ==
                               Truncate8(cht_register[cht_reg_no1] & 0xFFu));
             break;
           case 0x1B:
@@ -4510,7 +4510,7 @@ void Cheats::GamesharkCheatCode::Apply() const
                (Truncate16(cht_register[cht_reg_no1] & 0xFFFFu) <= Truncate16((inst.value32 & 0xFFFF0000u) >> 16)));
             break;
           case 0x5A:
-            activate_codes = ((Truncate16(cht_register[cht_reg_no2] & 0xFFFFu) & inst.value16) ==
+            activate_codes = ((Truncate16(cht_register[cht_reg_no1] & 0xFFFFu) & inst.value16) ==
                               Truncate16(cht_register[cht_reg_no1] & 0xFFFFu));
             break;
           case 0x5B:
@@ -4651,7 +4651,7 @@ void Cheats::GamesharkCheatCode::Apply() const
             activate_codes = ((cht_register[cht_reg_no1] & inst.value32) != inst.value32);
             break;
           case 0x9A:
-            activate_codes = ((cht_register[cht_reg_no2] & inst.value32) == cht_register[cht_reg_no1]);
+            activate_codes = ((cht_register[cht_reg_no1] & inst.value32) == cht_register[cht_reg_no1]);
             break;
           case 0x9B:
             activate_codes = ((cht_register[cht_reg_no1] & inst.value32) != cht_register[cht_reg_no1]);
