@@ -70,7 +70,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-exceptions -fno-rtti")
 # The build directory is mapped last, so it takes precedence when it is inside the source directory.
 if("${CMAKE_BUILD_TYPE}" STREQUAL "Release" AND NOT CMAKE_GENERATOR MATCHES "Xcode" AND
    (COMPILER_CLANG OR COMPILER_CLANG_CL OR COMPILER_GCC))
-  set(dir_remap_str "-ffile-prefix-map=\"${CMAKE_SOURCE_DIR}\"=. -ffile-prefix-map=\"${CMAKE_BINARY_DIR}\"=build")
+  set(dir_remap_str "-ffile-prefix-map=\"${CMAKE_SOURCE_DIR}\"=/duckstation -ffile-prefix-map=\"${CMAKE_BINARY_DIR}\"=/duckstation/build")
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${dir_remap_str}")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${dir_remap_str}")
 endif()
