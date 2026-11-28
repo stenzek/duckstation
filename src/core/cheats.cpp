@@ -3946,48 +3946,45 @@ void Cheats::GamesharkCheatCode::Apply() const
                     case InstructionCode::ExtBitCompareButtons: // D7
                     {
                       const u32 frame_compare_value = nexti.address & 0xFFFFu;
-                      const u8 cht_reg_no = Truncate8((nexti.value32 & 0xFF000000u) >> 24);
+                      u32& frame_count = s_locals.registers[Truncate8(nexti.value32.GetValue() >> 24)];
                       const bool bit_comparison_type = ((nexti.address & 0x100000u) >> 20);
                       const u8 frame_comparison = Truncate8((nexti.address & 0xF0000u) >> 16);
                       const u32 check_value = (nexti.value32 & 0xFFFFFFu);
-                      const u32 value1 = GetControllerButtonBits();
-                      const u32 value2 = GetControllerAnalogBits();
-                      u32 value = value1 | value2;
+                      const u32 value = GetControllerButtonBits() | GetControllerAnalogBits();
 
                       if ((!bit_comparison_type && check_value == (value & check_value)) || // Check Bits are set
                           (bit_comparison_type && check_value != (value & check_value)))    // Check Bits are clear
                       {
                         if (frame_comparison != 0x0) // Only count frames when comparing them
-                          s_locals.registers[cht_reg_no] += 1;
+                          frame_count++;
 
-                        const u32 cht_register_value = s_locals.registers[cht_reg_no];
                         switch (frame_comparison)
                         {
                           case 0x0: // No comparison on frame count, just do it
-                            conditions_check &= true;
                             break;
                           case 0x1: // Check if frame_compare_value == current count
-                            conditions_check &= (cht_register_value == frame_compare_value);
+                            conditions_check &= (frame_count == frame_compare_value);
                             break;
                           case 0x2: // Check if current count < frame_compare_value
-                            conditions_check &= (cht_register_value < frame_compare_value);
+                            conditions_check &= (frame_count < frame_compare_value);
                             break;
                           case 0x3: // Check if current count > frame_compare_value
-                            conditions_check &= (cht_register_value > frame_compare_value);
+                            conditions_check &= (frame_count > frame_compare_value);
                             break;
                           case 0x4: // Check if frame_compare_value != current count
-                            conditions_check &= (cht_register_value != frame_compare_value);
+                            conditions_check &= (frame_count != frame_compare_value);
                             break;
                           default:
-                            conditions_check &= false;
+                            conditions_check = false;
                             break;
                         }
                       }
                       else
                       {
                         if (frame_comparison != 0x0)
-                          s_locals.registers[cht_reg_no] = 0;
-                        conditions_check &= false;
+                          frame_count = 0;
+
+                        conditions_check = false;
                       }
                       break;
                     }
@@ -4051,49 +4048,43 @@ void Cheats::GamesharkCheatCode::Apply() const
                     case InstructionCode::ExtBitCompareButtons: // D7
                     {
                       const u32 frame_compare_value = nexti.address & 0xFFFFu;
-                      const u8 cht_reg_no = Truncate8((nexti.value32 & 0xFF000000u) >> 24);
+                      u32& frame_count = s_locals.registers[Truncate8(nexti.value32.GetValue() >> 24)];
                       const bool bit_comparison_type = ((nexti.address & 0x100000u) >> 20);
                       const u8 frame_comparison = Truncate8((nexti.address & 0xF0000u) >> 16);
                       const u32 check_value = (nexti.value32 & 0xFFFFFFu);
-                      const u32 value1 = GetControllerButtonBits();
-                      const u32 value2 = GetControllerAnalogBits();
-                      u32 value = value1 | value2;
+                      const u32 value = GetControllerButtonBits() | GetControllerAnalogBits();
 
                       if ((!bit_comparison_type && check_value == (value & check_value)) || // Check Bits are set
                           (bit_comparison_type && check_value != (value & check_value)))    // Check Bits are clear
                       {
                         if (frame_comparison != 0x0) // Only count frames when comparing them
-                          s_locals.registers[cht_reg_no] += 1;
+                          frame_count++;
 
-                        const u32 cht_register_value = s_locals.registers[cht_reg_no];
                         switch (frame_comparison)
                         {
                           case 0x0: // No comparison on frame count, just do it
-                            conditions_check |= true;
+                            conditions_check = true;
                             break;
                           case 0x1: // Check if frame_compare_value == current count
-                            conditions_check |= (cht_register_value == frame_compare_value);
+                            conditions_check |= (frame_count == frame_compare_value);
                             break;
                           case 0x2: // Check if current count < frame_compare_value
-                            conditions_check |= (cht_register_value < frame_compare_value);
+                            conditions_check |= (frame_count < frame_compare_value);
                             break;
                           case 0x3: // Check if current count > frame_compare_value
-                            conditions_check |= (cht_register_value > frame_compare_value);
+                            conditions_check |= (frame_count > frame_compare_value);
                             break;
                           case 0x4: // Check if frame_compare_value != current count
-                            conditions_check |= (cht_register_value != frame_compare_value);
+                            conditions_check |= (frame_count != frame_compare_value);
                             break;
                           default:
-                            conditions_check |= false;
                             break;
                         }
                       }
                       else
                       {
                         if (frame_comparison != 0x0)
-                          s_locals.registers[cht_reg_no] = 0;
-
-                        conditions_check |= false;
+                          frame_count = 0;
                       }
                       break;
                     }
@@ -4200,21 +4191,19 @@ void Cheats::GamesharkCheatCode::Apply() const
       case InstructionCode::ExtBitCompareButtons: // D7
       {
         index++;
-        bool activate_codes;
+        bool activate_codes = false;
         const u32 frame_compare_value = inst.address & 0xFFFFu;
-        const u8 cht_reg_no = Truncate8((inst.value32 & 0xFF000000u) >> 24);
+        u32& frame_count = s_locals.registers[Truncate8(inst.value32.GetValue() >> 24)];
         const bool bit_comparison_type = ((inst.address & 0x100000u) >> 20);
         const u8 frame_comparison = Truncate8((inst.address & 0xF0000u) >> 16);
         const u32 check_value = (inst.value32 & 0xFFFFFFu);
-        const u32 value1 = GetControllerButtonBits();
-        const u32 value2 = GetControllerAnalogBits();
-        u32 value = value1 | value2;
+        const u32 value = GetControllerButtonBits() | GetControllerAnalogBits();
 
         if ((!bit_comparison_type && check_value == (value & check_value)) || // Check Bits are set
             (bit_comparison_type && check_value != (value & check_value)))    // Check Bits are clear
         {
           if (frame_comparison != 0x0) // Only count frames when comparing them
-            s_locals.registers[cht_reg_no] += 1;
+            frame_count++;
 
           switch (frame_comparison)
           {
@@ -4222,28 +4211,22 @@ void Cheats::GamesharkCheatCode::Apply() const
               activate_codes = true;
               break;
             case 0x1: // Check if frame_compare_value == current count
-              activate_codes = (s_locals.registers[cht_reg_no] == frame_compare_value);
+              activate_codes = (frame_count == frame_compare_value);
               break;
             case 0x2: // Check if current count < frame_compare_value
-              activate_codes = (s_locals.registers[cht_reg_no] < frame_compare_value);
+              activate_codes = (frame_count < frame_compare_value);
               break;
             case 0x3: // Check if current count > frame_compare_value
-              activate_codes = (s_locals.registers[cht_reg_no] > frame_compare_value);
+              activate_codes = (frame_count > frame_compare_value);
               break;
             case 0x4: // Check if frame_compare_value != current count
-              activate_codes = (s_locals.registers[cht_reg_no] != frame_compare_value);
-              break;
-            default:
-              activate_codes = false;
+              activate_codes = (frame_count != frame_compare_value);
               break;
           }
         }
-        else
+        else if (frame_comparison != 0x0)
         {
-          if (frame_comparison != 0x0)
-            s_locals.registers[cht_reg_no] = 0;
-
-          activate_codes = false;
+          frame_count = 0;
         }
 
         if (activate_codes)
