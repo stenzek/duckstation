@@ -6,6 +6,7 @@
 #include "core/controller.h"
 #include "core/core_private.h"
 #include "core/cpu_core.h"
+#include "core/cpu_disasm.h"
 #include "core/fullscreenui.h"
 #include "core/fullscreenui_widgets.h"
 #include "core/game_list.h"
@@ -49,6 +50,7 @@
 #include <algorithm>
 #include <csignal>
 #include <cstdio>
+#include <cstring>
 #include <ctime>
 
 LOG_CHANNEL(Host);
@@ -67,6 +69,11 @@ static std::string GetFrameDumpPath(u32 frame);
 static void ProcessCoreThreadEvents();
 static bool ResolveScheduledInputs();
 static void ApplyScheduledInputs(u32 frame);
+static bool ParseTracePoint(std::string_view spec);
+static bool StartDataTracing();
+static void StopDataTracing();
+static CPU::BreakpointCallbackAction OnTracePointHit(CPU::BreakpointType type, VirtualMemoryAddress pc,
+                                                     VirtualMemoryAddress memaddr);
 
 struct ScheduledInput
 {
@@ -88,6 +95,29 @@ static RegTestHostState s_state;
 
 static std::vector<ScheduledInput> s_scheduled_inputs;
 static size_t s_next_input = 0;
+
+// A CPU register or a range of guest memory, dumped each time the trace point is hit.
+struct TracePointItem
+{
+  std::string key; // register name or <ADDRESS>+<SIZE>
+  u32 value;       // register index or memory address
+  u32 size;
+  bool is_register;
+};
+
+// Items dumped every time the CPU is about to execute the instruction at pc.
+struct TracePoint
+{
+  VirtualMemoryAddress pc;
+  std::vector<TracePointItem> items;
+};
+
+static std::vector<TracePoint> s_trace_points;
+static std::string s_trace_path;
+static std::FILE* s_trace_file = nullptr;
+static std::string s_trace_line;
+static std::vector<u8> s_trace_buffer;
+static u32 s_trace_line_count = 0;
 
 } // namespace RegTestHost
 
@@ -391,6 +421,196 @@ void RegTestHost::ApplyScheduledInputs(u32 frame)
     INFO_LOG("Frame {}: controller {} {} = {}", frame, input.pad + 1, input.binding, input.value);
     Pad::GetController(input.pad)->SetBindState(input.bind_index, input.value);
   }
+}
+
+static std::optional<u32> ParseHexU32(std::string_view str)
+{
+  if (str.starts_with("0x") || str.starts_with("0X"))
+    str.remove_prefix(2);
+  std::string_view rest;
+  const std::optional<u32> value = StringUtil::FromChars<u32>(str, 16, &rest);
+  return rest.empty() ? value : std::nullopt;
+}
+
+// Breakpoints match addresses regardless of the segment (KUSEG/KSEG0/KSEG1), see CPU::HasBreakpointAtAddress().
+static constexpr u32 TRACE_POINT_ADDRESS_MASK = 0x0FFFFFFFu;
+
+bool RegTestHost::ParseTracePoint(std::string_view spec)
+{
+  // <pc>:<item>[,<item>...], item = register name or <address>+<size> (hex)
+  const std::string_view::size_type colon = spec.find(':');
+  const std::optional<u32> pc = (colon != std::string_view::npos) ? ParseHexU32(spec.substr(0, colon)) : std::nullopt;
+  if (!pc.has_value())
+  {
+    ERROR_LOG("Malformed trace point '{}': expected <pc>:<item>[,<item>...].", spec);
+    return false;
+  }
+
+  for (const TracePoint& tp : s_trace_points)
+  {
+    if ((tp.pc & TRACE_POINT_ADDRESS_MASK) == (pc.value() & TRACE_POINT_ADDRESS_MASK))
+    {
+      ERROR_LOG("Duplicate trace point at 0x{:08X}.", pc.value());
+      return false;
+    }
+  }
+
+  TracePoint tp{pc.value()};
+  for (const std::string_view item : StringUtil::SplitString(spec.substr(colon + 1), ','))
+  {
+    const std::string_view::size_type plus = item.find('+');
+    if (plus != std::string_view::npos)
+    {
+      const std::optional<u32> address = ParseHexU32(item.substr(0, plus));
+      const std::optional<u32> size = ParseHexU32(item.substr(plus + 1));
+      if (!address.has_value() || !size.has_value() || size.value() == 0 || size.value() > Bus::RAM_MAX_SIZE)
+      {
+        ERROR_LOG("Malformed trace point '{}': invalid memory range '{}', expected <address>+<size>.", spec, item);
+        return false;
+      }
+
+      tp.items.push_back(
+        {fmt::format("{:08X}+{:X}", address.value(), size.value()), address.value(), size.value(), false});
+      continue;
+    }
+
+    u32 reg;
+    if (!CPU::ParseGPR(item, &reg))
+    {
+      ERROR_LOG("Malformed trace point '{}': unknown register '{}'.", spec, item);
+      return false;
+    }
+
+    // use the canonical register name as key
+    tp.items.push_back({CPU::GetRegName(static_cast<CPU::Reg>(reg)), reg, sizeof(u32), true});
+  }
+
+  if (tp.items.empty())
+  {
+    ERROR_LOG("Malformed trace point '{}': no items.", spec);
+    return false;
+  }
+
+  s_trace_points.push_back(std::move(tp));
+  return true;
+}
+
+bool RegTestHost::StartDataTracing()
+{
+  if (s_trace_points.empty())
+    return true;
+
+  if (s_trace_path.empty())
+  {
+    ERROR_LOG("-trace requires -traceout.");
+    return false;
+  }
+
+  Error error;
+  s_trace_file = FileSystem::OpenCFile(s_trace_path.c_str(), "wb", &error);
+  if (!s_trace_file)
+  {
+    ERROR_LOG("Failed to open trace file '{}': {}", s_trace_path, error.GetDescription());
+    return false;
+  }
+
+  u32 max_item_size = 0;
+  for (const TracePoint& tp : s_trace_points)
+  {
+    if (!CPU::AddBreakpointWithCallback(CPU::BreakpointType::Execute, tp.pc, &OnTracePointHit))
+    {
+      ERROR_LOG("Failed to add trace breakpoint at 0x{:08X}.", tp.pc);
+      StopDataTracing();
+      return false;
+    }
+
+    for (const TracePointItem& item : tp.items)
+      max_item_size = std::max(max_item_size, item.size);
+
+    INFO_LOG("Tracing {} item(s) at 0x{:08X} to '{}'.", tp.items.size(), tp.pc, s_trace_path);
+  }
+
+  s_trace_buffer.resize(max_item_size);
+  return true;
+}
+
+void RegTestHost::StopDataTracing()
+{
+  if (!s_trace_file)
+    return;
+
+  std::fclose(s_trace_file);
+  s_trace_file = nullptr;
+  INFO_LOG("Wrote {} trace records to '{}'.", s_trace_line_count, s_trace_path);
+}
+
+// Called before the instruction at a trace point executes.
+// Writes one JSON object per line:
+//   {"frame":<frame>,"pc":"<PC>","<key>":"<value>",...}
+// <frame> is the number of frames executed so far.
+// <PC> is the trace point address in hex.
+// <key> is the register name, or <ADDRESS>+<SIZE> in hex.
+// <value> is a little-endian number in hex for registers and 1/2/4-byte memory items, or a hex dump in memory order
+// for everything else.
+CPU::BreakpointCallbackAction RegTestHost::OnTracePointHit(CPU::BreakpointType /*type*/, VirtualMemoryAddress /*pc*/,
+                                                           VirtualMemoryAddress memaddr)
+{
+  DebugAssert(s_trace_file);
+
+  const auto it = std::find_if(s_trace_points.begin(), s_trace_points.end(), [memaddr](const TracePoint& tp) {
+    return (tp.pc & TRACE_POINT_ADDRESS_MASK) == (memaddr & TRACE_POINT_ADDRESS_MASK);
+  });
+  DebugAssert(it != s_trace_points.end());
+
+  static constexpr char hex_digits[] = "0123456789ABCDEF";
+  s_trace_line.clear();
+  fmt::format_to(std::back_inserter(s_trace_line), "{{\"frame\":{},\"pc\":\"{:08X}\"",
+                 s_frames_to_run - s_frames_remaining, it->pc);
+  for (auto item = it->items.begin(); item != it->items.end();)
+  {
+    u8* const data = s_trace_buffer.data();
+    if (item->is_register)
+    {
+      std::memcpy(data, &CPU::g_state.regs.r[item->value], sizeof(u32));
+    }
+    else if (!CPU::SafeReadMemoryBytes(item->value, data, item->size))
+    {
+      WARNING_LOG("Failed to read memory range {}, removing it from trace point at 0x{:08X}.", item->key, it->pc);
+      item = it->items.erase(item);
+      continue;
+    }
+
+    fmt::format_to(std::back_inserter(s_trace_line), ",\"{}\":\"", item->key);
+    if (item->size == 1 || item->size == 2 || item->size == 4)
+    {
+      // little-endian value
+      for (u32 i = item->size; i > 0; i--)
+      {
+        s_trace_line.push_back(hex_digits[data[i - 1] >> 4]);
+        s_trace_line.push_back(hex_digits[data[i - 1] & 0xF]);
+      }
+    }
+    else
+    {
+      for (u32 i = 0; i < item->size; i++)
+      {
+        s_trace_line.push_back(hex_digits[data[i] >> 4]);
+        s_trace_line.push_back(hex_digits[data[i] & 0xF]);
+      }
+    }
+    s_trace_line.push_back('"');
+    ++item;
+  }
+  s_trace_line.append("}\n");
+
+  if (std::fwrite(s_trace_line.data(), s_trace_line.size(), 1, s_trace_file) != 1)
+  {
+    ERROR_LOG("Failed to write to trace file '{}', removing trace point at 0x{:08X}.", s_trace_path, it->pc);
+    return CPU::BreakpointCallbackAction::Remove;
+  }
+
+  s_trace_line_count++;
+  return CPU::BreakpointCallbackAction::Continue;
 }
 
 void Host::RunOnCoreThread(MoveOnlyFunction<void()> function)
@@ -784,6 +1004,14 @@ void RegTestHost::PrintCommandLineHelp(const char* progname)
   std::fprintf(stderr, "  -input <frame>:<pad>:<binding>:<value>: Sets binding (e.g. Cross) on pad (1-8) to value\n"
                        "    (0-1, scaled by stick sensitivity for axes) after frame completes. Frame 0 is before\n"
                        "    execution, after any save state is loaded. Can be repeated.\n");
+  std::fprintf(stderr, "  -trace <pc>:<item>[,<item>...]: Each time the CPU is about to execute the instruction at\n"
+                       "    <pc>, writes the items to the -traceout file. An item is a CPU register name (e.g. v0)\n"
+                       "    or <address>+<size> (guest memory). Numbers are hex. Can be repeated with different\n"
+                       "    <pc> values.\n");
+  std::fprintf(stderr, "  -traceout <path>: File the -trace records are written to, one JSON object per line:\n"
+                       "    {\"frame\":N,\"pc\":\"<PC>\",\"<item>\":\"<hex>\",...}.\n"
+                       "    N is the frame number, as used by -input. Registers and 1/2/4-byte memory items are hex\n"
+                       "    numbers, everything else is a hex dump in memory order.\n");
   std::fprintf(stderr, "  -state <path>: Loads the specified save state after booting.\n");
   std::fprintf(stderr, "  -log <level>: Sets the log level. Defaults to verbose.\n");
   std::fprintf(stderr, "  -console: Enables console logging output.\n");
@@ -883,6 +1111,18 @@ bool RegTestHost::ParseCommandLineParameters(int argc, char* argv[], std::option
         }
 
         s_scheduled_inputs.push_back({frame.value(), pad.value() - 1, std::string(fields[2]), 0, value.value()});
+        continue;
+      }
+      else if (CHECK_ARG_PARAM("-trace"))
+      {
+        if (!ParseTracePoint(argv[++i]))
+          return false;
+
+        continue;
+      }
+      else if (CHECK_ARG_PARAM("-traceout"))
+      {
+        s_trace_path = argv[++i];
         continue;
       }
       else if (CHECK_ARG_PARAM("-log"))
@@ -1116,7 +1356,7 @@ int main(int argc, char* argv[])
     goto cleanup;
   }
 
-  if (!RegTestHost::ResolveScheduledInputs())
+  if (!RegTestHost::ResolveScheduledInputs() || !RegTestHost::StartDataTracing())
   {
     System::ShutdownSystem(false);
     goto cleanup;
@@ -1142,6 +1382,7 @@ int main(int argc, char* argv[])
   result = 0;
 
 cleanup:
+  RegTestHost::StopDataTracing();
   RegTestHost::ProcessCoreThreadEvents();
   Core::CoreThreadShutdown();
   RegTestHost::s_state.core_thread_handle = {};
