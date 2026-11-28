@@ -27,9 +27,6 @@ const std::string& GetMediaPath();
 u32 GetCurrentSubImage();
 const CDImage* GetMedia();
 DiscRegion GetDiscRegion();
-bool IsMediaPS1Disc();
-bool IsMediaAudioCD();
-bool DoesMediaRegionMatchConsole();
 
 bool InsertMedia(std::unique_ptr<CDImage>& media, DiscRegion region, std::string_view serial, std::string_view title,
                  std::string_view save_title, Error* error);

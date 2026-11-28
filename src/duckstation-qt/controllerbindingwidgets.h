@@ -98,7 +98,7 @@ private:
   void createWidgets(ControllerBindingWidget* bwidget);
   void updateListHeight();
 
-  QListWidget* m_macroList;
+  QListWidget* m_macro_list;
   QStackedWidget* m_container;
   std::array<ControllerMacroEditWidget*, InputManager::NUM_MACRO_BUTTONS_PER_CONTROLLER> m_macros;
 };

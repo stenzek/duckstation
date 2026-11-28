@@ -384,6 +384,8 @@ static void ManualTransferWrite(u16 value);
 static void UpdateTransferEvent();
 static void UpdateDMARequest();
 
+static const char* GetReverbModeName(const ReverbRegisters& reverb_registers);
+
 namespace {
 struct SPUState
 {
@@ -2951,27 +2953,20 @@ void SPU::UpdateEventInterval()
   s_state.tick_event.Schedule(new_downcount);
 }
 
-static constexpr const char* GetReverbModeName(const SPU::ReverbRegisters& reverb_registers)
+const char* SPU::GetReverbModeName(const ReverbRegisters& reverb_registers)
 {
-  const u32 signature =
-    (static_cast<u32>(reverb_registers.FB_SRC_A) << 16) | (static_cast<u16>(reverb_registers.IIR_COEF));
+  using TableEntry = std::pair<u32, const char*>;
+  static constexpr const TableEntry reverb_modes[] = {
+    {0x00000000u, "Off"},           {0x00010000u, "Delay"},        {0x00018100u, "Chaos Echo"},
+    {0x00178500u, "Half Echo"},     {0x00339C00u, "Studio Small"}, {0x007DBA80u, "Room"},
+    {0x00B1B4C0u, "Studio Medium"}, {0x00E3A680u, "Studio Large"}, {0x01A5C000u, "Hall"},
+    {0x033DB000u, "Space Echo"},
+  };
+  static_assert(std::ranges::is_sorted(reverb_modes, std::ranges::less(), &TableEntry::first));
 
-  switch (signature)
-  {
-      // clang-format off
-    case 0x0000'0000: return "Off";
-    case 0x007D'BA80: return "Room";
-    case 0x0033'9C00: return "Studio Small";
-    case 0x00B1'B4C0: return "Studio Medium";
-    case 0x00E3'A680: return "Studio Large";
-    case 0x01A5'C000: return "Hall";
-    case 0x033D'B000: return "Space Echo";
-    case 0x0001'8100: return "Chaos Echo";
-    case 0x0001'0000: return "Delay";
-    case 0x0017'8500: return "Half Echo";
-    default: return "Unknown";
-      // clang-format on
-  }
+  const u32 bits = (static_cast<u32>(reverb_registers.FB_SRC_A) << 16) | (static_cast<u16>(reverb_registers.IIR_COEF));
+  const auto iter = std::ranges::lower_bound(reverb_modes, bits, std::ranges::less(), &TableEntry::first);
+  return (iter != std::end(reverb_modes) && iter->first == bits) ? iter->second : "Unknown";
 }
 
 void SPU::DrawDebugStateWindow(float scale)

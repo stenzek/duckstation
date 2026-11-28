@@ -3967,9 +3967,8 @@ void Cheats::GamesharkCheatCode::Apply() const
                       const u32 value2 = GetControllerAnalogBits();
                       u32 value = value1 | value2;
 
-                      if ((bit_comparison_type == false && check_value == (value & check_value)) // Check Bits are set
-                          ||
-                          (bit_comparison_type == true && check_value != (value & check_value))) // Check Bits are clear
+                      if ((!bit_comparison_type && check_value == (value & check_value)) || // Check Bits are set
+                          (bit_comparison_type && check_value != (value & check_value)))    // Check Bits are clear
                       {
                         if (frame_comparison != 0x0) // Only count frames when comparing them
                           s_locals.registers[cht_reg_no] += 1;
@@ -4073,9 +4072,8 @@ void Cheats::GamesharkCheatCode::Apply() const
                       const u32 value2 = GetControllerAnalogBits();
                       u32 value = value1 | value2;
 
-                      if ((bit_comparison_type == false && check_value == (value & check_value)) // Check Bits are set
-                          ||
-                          (bit_comparison_type == true && check_value != (value & check_value))) // Check Bits are clear
+                      if ((!bit_comparison_type && check_value == (value & check_value)) || // Check Bits are set
+                          (bit_comparison_type && check_value != (value & check_value)))    // Check Bits are clear
                       {
                         if (frame_comparison != 0x0) // Only count frames when comparing them
                           s_locals.registers[cht_reg_no] += 1;
@@ -4107,6 +4105,7 @@ void Cheats::GamesharkCheatCode::Apply() const
                       {
                         if (frame_comparison != 0x0)
                           s_locals.registers[cht_reg_no] = 0;
+
                         conditions_check |= false;
                       }
                       break;
@@ -4122,14 +4121,17 @@ void Cheats::GamesharkCheatCode::Apply() const
                 ERROR_LOG("Incomplete multi conditional instruction");
                 return;
               }
-              if (conditions_check == true)
+
+              if (conditions_check)
               {
                 activate_codes = true;
                 break;
               }
               else
-              { // parse through to 00000000 FFFF and peek if next line is a F6 type associated with a ELSE
+              {
+                // parse through to 00000000 FFFF and peek if next line is a F6 type associated with a ELSE
                 activate_codes = false;
+
                 // skip to the next separator (00000000 FFFF), or end
                 constexpr u64 separator_value = UINT64_C(0x000000000000FFFF);
                 constexpr u64 else_value = UINT64_C(0x00000000E15E0000);
@@ -4156,14 +4158,17 @@ void Cheats::GamesharkCheatCode::Apply() const
                         index++;
                       }
                     }
+
                     break;
                   }
+
                   // Only F6 lines are else-if/else, a write could have the same value.
                   if (skipped.code == InstructionCode::ExtMultiConditionals && (bits & 0xFFFFFF00u) == elseif_value)
                   {
                     // index--;
                     break;
                   }
+
                   if (skipped.code == InstructionCode::ExtMultiConditionals && (bits & 0xFFFFFFFFu) == else_value)
                   {
                     // index++;
@@ -4173,7 +4178,7 @@ void Cheats::GamesharkCheatCode::Apply() const
                 }
 
                 // Nothing left to evaluate.
-                if (activate_codes == true || index >= count)
+                if (activate_codes || index >= count)
                   break;
               }
             }
@@ -4218,11 +4223,12 @@ void Cheats::GamesharkCheatCode::Apply() const
         const u32 value2 = GetControllerAnalogBits();
         u32 value = value1 | value2;
 
-        if ((bit_comparison_type == false && check_value == (value & check_value))    // Check Bits are set
-            || (bit_comparison_type == true && check_value != (value & check_value))) // Check Bits are clear
+        if ((!bit_comparison_type && check_value == (value & check_value)) || // Check Bits are set
+            (bit_comparison_type && check_value != (value & check_value)))    // Check Bits are clear
         {
           if (frame_comparison != 0x0) // Only count frames when comparing them
             s_locals.registers[cht_reg_no] += 1;
+
           switch (frame_comparison)
           {
             case 0x0: // No comparison on frame count, just do it
@@ -4249,6 +4255,7 @@ void Cheats::GamesharkCheatCode::Apply() const
         {
           if (frame_comparison != 0x0)
             s_locals.registers[cht_reg_no] = 0;
+
           activate_codes = false;
         }
 

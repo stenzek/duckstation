@@ -311,6 +311,9 @@ static TickCount SoftReset();
 
 static const CDImage::SubChannelQ& GetSectorSubQ(u32 lba, const CDImage::SubChannelQ& real_subq);
 static bool CanReadMedia();
+static bool IsMediaPS1Disc();
+static bool IsMediaLikelyAudioCD();
+static bool IsMediaRegionMatchingConsole();
 
 static bool IsDriveIdle();
 static bool IsMotorOn();
@@ -957,24 +960,20 @@ bool CDROM::IsMediaPS1Disc()
   return (s_state.disc_region != DiscRegion::NonPS1);
 }
 
-bool CDROM::IsMediaAudioCD()
+bool CDROM::IsMediaLikelyAudioCD()
 {
-  if (!CDROMAsyncReader::HasMedia())
-    return false;
-
-  // Check for an audio track as the first track.
-  return (CDROMAsyncReader::GetMedia()->GetTrackMode(1) == CDImage::TrackMode::Audio);
+  // I'm not aware of any CDs that have a data track after the audio track, at least in PSX-land.
+  return (CDROMAsyncReader::HasMedia() && CDROMAsyncReader::GetMedia()->GetTrackMode(1) == CDImage::TrackMode::Audio);
 }
 
-bool CDROM::DoesMediaRegionMatchConsole()
+bool CDROM::IsMediaRegionMatchingConsole()
 {
   if (!g_settings.cdrom_region_check)
     return true;
-
-  if (s_state.disc_region == DiscRegion::Other)
+  else if (s_state.disc_region == DiscRegion::Other)
     return false;
-
-  return System::GetRegion() == System::GetConsoleRegionForDiscRegion(s_state.disc_region);
+  else
+    return (System::GetRegion() == System::GetConsoleRegionForDiscRegion(s_state.disc_region));
 }
 
 bool CDROM::IsDriveIdle()
@@ -2256,7 +2255,7 @@ void CDROM::ExecuteCommand(void*, TickCount ticks)
       {
         SendErrorResponse(STAT_ERROR, ERROR_REASON_NOT_READY);
       }
-      else if ((IsMediaAudioCD() || !DoesMediaRegionMatchConsole()) && !s_state.mode.cdda)
+      else if ((IsMediaLikelyAudioCD() || !IsMediaRegionMatchingConsole()) && !s_state.mode.cdda)
       {
         SendErrorResponse(STAT_ERROR, ERROR_REASON_INVALID_COMMAND);
       }
@@ -3504,12 +3503,12 @@ void CDROM::DoIDRead()
   }
   else
   {
-    if (IsMediaAudioCD())
+    if (IsMediaLikelyAudioCD())
     {
       stat_byte |= STAT_ID_ERROR;
       flags_byte |= (1 << 7) | (1 << 4); // Unlicensed + Audio CD
     }
-    else if (!IsMediaPS1Disc() || !DoesMediaRegionMatchConsole())
+    else if (!IsMediaPS1Disc() || !IsMediaRegionMatchingConsole())
     {
       stat_byte |= STAT_ID_ERROR;
       flags_byte |= (1 << 7); // Unlicensed

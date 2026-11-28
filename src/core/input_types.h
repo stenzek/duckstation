@@ -73,7 +73,7 @@ enum class GenericInputBinding : u8
   LargeMotor, // Low frequency vibration.
   SmallMotor, // High frequency vibration.
 
-  ModeLED, // Indicates Digital/Analog mode.
+  ModeLED, // Standard/alternate mode.
 
   Count,
 };

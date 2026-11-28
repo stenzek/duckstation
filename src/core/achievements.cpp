@@ -2448,9 +2448,8 @@ static TinyString GetLoginEncryptionMachineKey()
     ret = std::string_view(machine_id.value());
 #elifdef __APPLE__
   // use gethostuuid(2) on macOS
-  const struct timespec ts{};
-  uuid_t uuid{};
-  if (gethostuuid(uuid, &ts) == 0)
+  const struct timespec ts = {};
+  if (uuid_t uuid = {}; gethostuuid(uuid, &ts) == 0)
     ret.append_hex(uuid, sizeof(uuid), false);
 #endif
 

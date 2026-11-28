@@ -1949,7 +1949,7 @@ void GameList::ClearPlayedTimeForEntry(const GameList::Entry* entry)
     {
       if (!member->serial.empty())
       {
-        if (std::find(serials.begin(), serials.end(), member->serial) == serials.end())
+        if (std::ranges::find(serials, member->serial) == serials.end())
           serials.emplace_back(member->serial);
       }
     }
@@ -1967,7 +1967,7 @@ void GameList::ClearPlayedTimeForEntry(const GameList::Entry* entry)
 
   for (GameList::Entry& list_entry : s_state.entries)
   {
-    if (std::find(serials.begin(), serials.end(), list_entry.serial) == serials.end())
+    if (std::ranges::find(serials, list_entry.serial) == serials.end())
       continue;
 
     list_entry.last_played_time = 0;

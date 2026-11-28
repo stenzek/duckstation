@@ -810,7 +810,7 @@ void ControllerMacroWidget::updateListItem(u32 index)
 {
   QString tooltip;
   const QString summary = m_macros[index]->getSummary(&tooltip);
-  QListWidgetItem* item = m_macroList->item(static_cast<int>(index));
+  QListWidgetItem* item = m_macro_list->item(static_cast<int>(index));
   item->setText(tr("Macro %1\n%2").arg(index + 1).arg(summary));
   item->setToolTip(tooltip);
   item->setForeground(tooltip.isEmpty() ? palette().color(QPalette::Disabled, QPalette::Text) : QBrush());
@@ -827,8 +827,8 @@ void ControllerMacroWidget::showEvent(QShowEvent* event)
 void ControllerMacroWidget::updateListHeight()
 {
   // Fit a single row, plus the horizontal scroll bar for when the window is too narrow.
-  m_macroList->setFixedHeight(m_macroList->sizeHintForRow(0) + m_macroList->horizontalScrollBar()->sizeHint().height() +
-                              2 * m_macroList->frameWidth() + 4);
+  m_macro_list->setFixedHeight(m_macro_list->sizeHintForRow(0) + m_macro_list->horizontalScrollBar()->sizeHint().height() +
+                              2 * m_macro_list->frameWidth() + 4);
 }
 
 void ControllerMacroWidget::createWidgets(ControllerBindingWidget* bwidget)
@@ -837,14 +837,14 @@ void ControllerMacroWidget::createWidgets(ControllerBindingWidget* bwidget)
   layout->setContentsMargins(0, 0, 0, 0);
 
   // Horizontal strip of macros above the editor.
-  m_macroList = new QListWidget(this);
-  m_macroList->setIconSize(QSize(32, 32));
-  m_macroList->setFlow(QListView::LeftToRight);
-  m_macroList->setWrapping(false);
-  m_macroList->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-  m_macroList->setUniformItemSizes(true);
-  m_macroList->setHorizontalScrollMode(QAbstractItemView::ScrollPerPixel);
-  layout->addWidget(m_macroList);
+  m_macro_list = new QListWidget(this);
+  m_macro_list->setIconSize(QSize(32, 32));
+  m_macro_list->setFlow(QListView::LeftToRight);
+  m_macro_list->setWrapping(false);
+  m_macro_list->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+  m_macro_list->setUniformItemSizes(true);
+  m_macro_list->setHorizontalScrollMode(QAbstractItemView::ScrollPerPixel);
+  layout->addWidget(m_macro_list);
 
   m_container = new QStackedWidget(this);
   layout->addWidget(m_container, 1);
@@ -856,15 +856,15 @@ void ControllerMacroWidget::createWidgets(ControllerBindingWidget* bwidget)
 
     QListWidgetItem* item = new QListWidgetItem();
     item->setIcon(QIcon(u":/icons/monochrome/svg/flashlight-line.svg"_s));
-    m_macroList->addItem(item);
+    m_macro_list->addItem(item);
     updateListItem(i);
   }
 
   updateListHeight();
-  m_macroList->setCurrentRow(0);
+  m_macro_list->setCurrentRow(0);
   m_container->setCurrentIndex(0);
 
-  connect(m_macroList, &QListWidget::currentRowChanged, m_container, &QStackedWidget::setCurrentIndex);
+  connect(m_macro_list, &QListWidget::currentRowChanged, m_container, &QStackedWidget::setCurrentIndex);
 }
 
 //////////////////////////////////////////////////////////////////////////

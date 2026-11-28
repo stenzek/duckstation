@@ -135,13 +135,13 @@ private:
 
       bool m_joystick_xbox_hidapi : 1;
 
-#if defined(_WIN32)
+#ifdef _WIN32
       bool m_joystick_rawinput : 1;
       bool m_joystick_directinput : 1;
       bool m_joystick_xinput : 1;
       bool m_joystick_wgi : 1;
       bool m_joystick_gameinput : 1;
-#elif defined(__APPLE__)
+#elifdef __APPLE__
       bool m_enable_iokit_driver : 1;
       bool m_enable_mfi_driver : 1;
 #else

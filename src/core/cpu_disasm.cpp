@@ -474,22 +474,25 @@ void CPU::FormatComment(SmallStringBase* dest, const Instruction inst, u32 pc, c
 
       if (inst.op == InstructionOp::lb || inst.op == InstructionOp::lbu)
       {
-        u8 data = 0;
-        CPU::SafeReadMemoryByte(address, &data);
-        dest->append_format("addr=0x{:08x}[0x{:02x}]", address, data);
+        if (u8 data; CPU::SafeReadMemoryByte(address, &data))
+          dest->append_format("addr=0x{:08x}[0x{:02x}]", address, data);
+        else
+          dest->append_format("addr=0x{:08x}[INVALID]", address);
       }
       else if (inst.op == InstructionOp::lh || inst.op == InstructionOp::lhu)
       {
-        u16 data = 0;
-        CPU::SafeReadMemoryHalfWord(address, &data);
-        dest->append_format("addr=0x{:08x}[0x{:04x}]", address, data);
+        if (u16 data; CPU::SafeReadMemoryHalfWord(address, &data))
+          dest->append_format("addr=0x{:08x}[0x{:04x}]", address, data);
+        else
+          dest->append_format("addr=0x{:08x}[INVALID]", address);
       }
       else if (inst.op == InstructionOp::lw || (inst.op >= InstructionOp::lwc0 && inst.op <= InstructionOp::lwc3) ||
                inst.op == InstructionOp::lwl || inst.op == InstructionOp::lwr)
       {
-        u32 data = 0;
-        CPU::SafeReadMemoryWord(address, &data);
-        dest->append_format("addr=0x{:08x}[0x{:08x}]", address, data);
+        if (u32 data; CPU::SafeReadMemoryWord(address, &data))
+          dest->append_format("addr=0x{:08x}[0x{:08x}]", address, data);
+        else
+          dest->append_format("addr=0x{:08x}[INVALID]", address);
       }
       else
       {
