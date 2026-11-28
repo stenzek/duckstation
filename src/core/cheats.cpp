@@ -238,6 +238,8 @@ struct Locals
   bool cheats_enabled = false;
   bool has_widescreen_patch = false;
   bool database_cheat_codes_enabled = false;
+
+  std::array<u32, 256> registers; // Used for D7, 51 and 52 cheat types
 };
 
 struct ArchiveLocals
@@ -1091,6 +1093,7 @@ void Cheats::UnloadAll()
   s_locals.cheats_enabled = false;
   s_locals.has_widescreen_patch = false;
   s_locals.database_cheat_codes_enabled = false;
+  s_locals.registers.fill(0);
 }
 
 bool Cheats::HasAnySettingOverrides()
@@ -2665,8 +2668,6 @@ void Cheats::GamesharkCheatCode::MergeInstructions()
   instructions = std::move(merged);
 }
 
-static std::array<u32, 256> cht_register; // Used for D7 ,51 & 52 cheat types
-
 template<typename T>
 NEVER_INLINE static T DoMemoryRead(VirtualMemoryAddress address)
 {
@@ -3681,29 +3682,29 @@ void Cheats::GamesharkCheatCode::Apply() const
         switch (sub_type)
         {
           case 0x00: // Write the u8 from cht_register[cht_reg_no1] to address
-            DoMemoryWrite<u8>(inst.value32, Truncate8(cht_register[cht_reg_no1]) & 0xFFu);
+            DoMemoryWrite<u8>(inst.value32, Truncate8(s_locals.registers[cht_reg_no1]) & 0xFFu);
             break;
           case 0x01: // Read the u8 from address to cht_register[cht_reg_no1]
-            cht_register[cht_reg_no1] = DoMemoryRead<u8>(inst.value32);
+            s_locals.registers[cht_reg_no1] = DoMemoryRead<u8>(inst.value32);
             break;
           case 0x02: // Write the u8 from address field to the address stored in cht_register[cht_reg_no1]
-            DoMemoryWrite<u8>(cht_register[cht_reg_no1], Truncate8(poke_value & 0xFFu));
+            DoMemoryWrite<u8>(s_locals.registers[cht_reg_no1], Truncate8(poke_value & 0xFFu));
             break;
           case 0x03: // Write the u8 from cht_register[cht_reg_no2] to cht_register[cht_reg_no1]
             // and add the u8 from the address field to it
-            cht_register[cht_reg_no1] = Truncate8(cht_register[cht_reg_no2] + poke_value);
+            s_locals.registers[cht_reg_no1] = Truncate8(s_locals.registers[cht_reg_no2] + poke_value);
             break;
           case 0x04: // Write the u8 from the value stored in cht_register[cht_reg_no2] + poke_value to the address
             // stored in cht_register[cht_reg_no1]
-            DoMemoryWrite<u8>(cht_register[cht_reg_no1],
-                              Truncate8(cht_register[cht_reg_no2] & 0xFFu) + Truncate8(poke_value & 0xFFu));
+            DoMemoryWrite<u8>(s_locals.registers[cht_reg_no1],
+                              Truncate8(s_locals.registers[cht_reg_no2] & 0xFFu) + Truncate8(poke_value & 0xFFu));
             break;
           case 0x05: // Write the u8 poke value to cht_register[cht_reg_no1]
-            cht_register[cht_reg_no1] = Truncate8(poke_value & 0xFFu);
+            s_locals.registers[cht_reg_no1] = Truncate8(poke_value & 0xFFu);
             break;
           case 0x06: // Read the u8 value from the address (cht_register[cht_reg_no2] + poke_value) to
             // cht_register[cht_reg_no1]
-            cht_register[cht_reg_no1] = DoMemoryRead<u8>(cht_register[cht_reg_no2] + poke_value);
+            s_locals.registers[cht_reg_no1] = DoMemoryRead<u8>(s_locals.registers[cht_reg_no2] + poke_value);
             break;
           case 0x07: // Write the u8 poke_value to a specific index of a single array in a series of consecutive arrays
             // This cheat type requires a separate cheat to set up 4 consecutive cht_arrays before this will work
@@ -3714,39 +3715,40 @@ void Cheats::GamesharkCheatCode::Apply() const
             // set
             //                                     (safety valve)
             // cht_offset = the index of the individual array to change (so must be 0 to cht_register[cht_reg_no1+1])
-            if ((cht_reg_no1 <= (std::size(cht_register) - 4)) && cht_register[cht_reg_no1 + 3] == 0xD0D0 &&
-                cht_register[cht_reg_no1 + 2] > 0 && cht_register[cht_reg_no1 + 1] >= cht_offset)
+            if ((cht_reg_no1 <= (std::size(s_locals.registers) - 4)) && s_locals.registers[cht_reg_no1 + 3] == 0xD0D0 &&
+                s_locals.registers[cht_reg_no1 + 2] > 0 && s_locals.registers[cht_reg_no1 + 1] >= cht_offset)
             {
-              DoMemoryWrite<u8>((cht_register[cht_reg_no1] - cht_register[cht_reg_no1 + 1]) +
-                                  (cht_register[cht_reg_no1 + 1] * cht_register[cht_reg_no1 + 2]) + cht_offset,
+              DoMemoryWrite<u8>((s_locals.registers[cht_reg_no1] - s_locals.registers[cht_reg_no1 + 1]) +
+                                  (s_locals.registers[cht_reg_no1 + 1] * s_locals.registers[cht_reg_no1 + 2]) +
+                                  cht_offset,
                                 Truncate8(poke_value & 0xFFu));
             }
             break;
 
           case 0x40: // Write the u16 from cht_register[cht_reg_no1] to address
-            DoMemoryWrite<u16>(inst.value32, Truncate16(cht_register[cht_reg_no1] & 0xFFFFu));
+            DoMemoryWrite<u16>(inst.value32, Truncate16(s_locals.registers[cht_reg_no1] & 0xFFFFu));
             break;
           case 0x41: // Read the u16 from address to cht_register[cht_reg_no1]
-            cht_register[cht_reg_no1] = DoMemoryRead<u16>(inst.value32);
+            s_locals.registers[cht_reg_no1] = DoMemoryRead<u16>(inst.value32);
             break;
           case 0x42: // Write the u16 from address field to the address stored in cht_register[cht_reg_no1]
-            DoMemoryWrite<u16>(cht_register[cht_reg_no1], Truncate16(poke_value & 0xFFFFu));
+            DoMemoryWrite<u16>(s_locals.registers[cht_reg_no1], Truncate16(poke_value & 0xFFFFu));
             break;
           case 0x43: // Write the u16 from cht_register[cht_reg_no2] to cht_register[cht_reg_no1]
             // and add the u16 from the address field to it
-            cht_register[cht_reg_no1] = Truncate16(cht_register[cht_reg_no2] + poke_value);
+            s_locals.registers[cht_reg_no1] = Truncate16(s_locals.registers[cht_reg_no2] + poke_value);
             break;
           case 0x44: // Write the u16 from the value stored in cht_register[cht_reg_no2] + poke_value to the address
             // stored in cht_register[cht_reg_no1]
-            DoMemoryWrite<u16>(cht_register[cht_reg_no1],
-                               Truncate16(cht_register[cht_reg_no2] & 0xFFFFu) + Truncate16(poke_value & 0xFFFFu));
+            DoMemoryWrite<u16>(s_locals.registers[cht_reg_no1], Truncate16(s_locals.registers[cht_reg_no2] & 0xFFFFu) +
+                                                                  Truncate16(poke_value & 0xFFFFu));
             break;
           case 0x45: // Write the u16 poke value to cht_register[cht_reg_no1]
-            cht_register[cht_reg_no1] = Truncate16(poke_value & 0xFFFFu);
+            s_locals.registers[cht_reg_no1] = Truncate16(poke_value & 0xFFFFu);
             break;
           case 0x46: // Read the u16 value from the address (cht_register[cht_reg_no2] + poke_value) to
             // cht_register[cht_reg_no1]
-            cht_register[cht_reg_no1] = DoMemoryRead<u16>(cht_register[cht_reg_no2] + poke_value);
+            s_locals.registers[cht_reg_no1] = DoMemoryRead<u16>(s_locals.registers[cht_reg_no2] + poke_value);
             break;
           case 0x47: // Write the u16 poke_value to a specific index of a single array in a series of consecutive arrays
             // This cheat type requires a separate cheat to set up 4 consecutive cht_arrays before this will work
@@ -3757,88 +3759,89 @@ void Cheats::GamesharkCheatCode::Apply() const
             // set
             //                                     (safety valve)
             // cht_offset = the index of the individual array to change (so must be 0 to cht_register[cht_reg_no1+1])
-            if ((cht_reg_no1 <= (std::size(cht_register) - 4)) && cht_register[cht_reg_no1 + 3] == 0xD0D0 &&
-                cht_register[cht_reg_no1 + 2] > 0 && cht_register[cht_reg_no1 + 1] >= cht_offset)
+            if ((cht_reg_no1 <= (std::size(s_locals.registers) - 4)) && s_locals.registers[cht_reg_no1 + 3] == 0xD0D0 &&
+                s_locals.registers[cht_reg_no1 + 2] > 0 && s_locals.registers[cht_reg_no1 + 1] >= cht_offset)
             {
-              DoMemoryWrite<u16>((cht_register[cht_reg_no1] - cht_register[cht_reg_no1 + 1]) +
-                                   (cht_register[cht_reg_no1 + 1] * cht_register[cht_reg_no1 + 2]) + cht_offset,
+              DoMemoryWrite<u16>((s_locals.registers[cht_reg_no1] - s_locals.registers[cht_reg_no1 + 1]) +
+                                   (s_locals.registers[cht_reg_no1 + 1] * s_locals.registers[cht_reg_no1 + 2]) +
+                                   cht_offset,
                                  Truncate16(poke_value & 0xFFFFu));
             }
             break;
 
           case 0x80: // Write the u32 from cht_register[cht_reg_no1] to address
-            DoMemoryWrite<u32>(inst.value32, cht_register[cht_reg_no1]);
+            DoMemoryWrite<u32>(inst.value32, s_locals.registers[cht_reg_no1]);
             break;
           case 0x81: // Read the u32 from address to cht_register[cht_reg_no1]
-            cht_register[cht_reg_no1] = DoMemoryRead<u32>(inst.value32);
+            s_locals.registers[cht_reg_no1] = DoMemoryRead<u32>(inst.value32);
             break;
           case 0x82: // Write the u32 from address field to the address stored in cht_register[cht_reg_no]
-            DoMemoryWrite<u32>(cht_register[cht_reg_no1], poke_value);
+            DoMemoryWrite<u32>(s_locals.registers[cht_reg_no1], poke_value);
             break;
           case 0x83: // Write the u32 from cht_register[cht_reg_no2] to cht_register[cht_reg_no1]
             // and add the u32 from the address field to it
-            cht_register[cht_reg_no1] = cht_register[cht_reg_no2] + poke_value;
+            s_locals.registers[cht_reg_no1] = s_locals.registers[cht_reg_no2] + poke_value;
             break;
           case 0x84: // Write the u32 from the value stored in cht_register[cht_reg_no2] + poke_value to the address
             // stored in cht_register[cht_reg_no1]
-            DoMemoryWrite<u32>(cht_register[cht_reg_no1], cht_register[cht_reg_no2] + poke_value);
+            DoMemoryWrite<u32>(s_locals.registers[cht_reg_no1], s_locals.registers[cht_reg_no2] + poke_value);
             break;
           case 0x85: // Write the u32 poke value to cht_register[cht_reg_no1]
-            cht_register[cht_reg_no1] = poke_value;
+            s_locals.registers[cht_reg_no1] = poke_value;
             break;
           case 0x86: // Read the u32 value from the address (cht_register[cht_reg_no2] + poke_value) to
             // cht_register[cht_reg_no1]
-            cht_register[cht_reg_no1] = DoMemoryRead<u32>(cht_register[cht_reg_no2] + poke_value);
+            s_locals.registers[cht_reg_no1] = DoMemoryRead<u32>(s_locals.registers[cht_reg_no2] + poke_value);
             break;
             // Do not use 0x87 as it's not possible to duplicate 0x07, 0x47 for a 32 bit write as not enough characters
 
           case 0xC0: // Reg3 = Reg2 + Reg1
-            cht_register[cht_reg_no3] = cht_register[cht_reg_no2] + cht_register[cht_reg_no1];
+            s_locals.registers[cht_reg_no3] = s_locals.registers[cht_reg_no2] + s_locals.registers[cht_reg_no1];
             break;
           case 0xC1: // Reg3 = Reg2 - Reg1
-            cht_register[cht_reg_no3] = cht_register[cht_reg_no2] - cht_register[cht_reg_no1];
+            s_locals.registers[cht_reg_no3] = s_locals.registers[cht_reg_no2] - s_locals.registers[cht_reg_no1];
             break;
           case 0xC2: // Reg3 = Reg2 * Reg1
-            cht_register[cht_reg_no3] = cht_register[cht_reg_no2] * cht_register[cht_reg_no1];
+            s_locals.registers[cht_reg_no3] = s_locals.registers[cht_reg_no2] * s_locals.registers[cht_reg_no1];
             break;
           case 0xC3: // Reg3 = Reg2 / Reg1 with DIV0 handling
-            if (cht_register[cht_reg_no1] == 0)
-              cht_register[cht_reg_no3] = 0;
+            if (s_locals.registers[cht_reg_no1] == 0)
+              s_locals.registers[cht_reg_no3] = 0;
             else
-              cht_register[cht_reg_no3] = cht_register[cht_reg_no2] / cht_register[cht_reg_no1];
+              s_locals.registers[cht_reg_no3] = s_locals.registers[cht_reg_no2] / s_locals.registers[cht_reg_no1];
             break;
           case 0xC4: // Reg3 = Reg2 % Reg1 (with DIV0 handling)
-            if (cht_register[cht_reg_no1] == 0)
-              cht_register[cht_reg_no3] = cht_register[cht_reg_no2];
+            if (s_locals.registers[cht_reg_no1] == 0)
+              s_locals.registers[cht_reg_no3] = s_locals.registers[cht_reg_no2];
             else
-              cht_register[cht_reg_no3] = cht_register[cht_reg_no2] % cht_register[cht_reg_no1];
+              s_locals.registers[cht_reg_no3] = s_locals.registers[cht_reg_no2] % s_locals.registers[cht_reg_no1];
             break;
           case 0xC5: // Reg3 = Reg2 & Reg1
-            cht_register[cht_reg_no3] = cht_register[cht_reg_no2] & cht_register[cht_reg_no1];
+            s_locals.registers[cht_reg_no3] = s_locals.registers[cht_reg_no2] & s_locals.registers[cht_reg_no1];
             break;
           case 0xC6: // Reg3 = Reg2 | Reg1
-            cht_register[cht_reg_no3] = cht_register[cht_reg_no2] | cht_register[cht_reg_no1];
+            s_locals.registers[cht_reg_no3] = s_locals.registers[cht_reg_no2] | s_locals.registers[cht_reg_no1];
             break;
           case 0xC7: // Reg3 = Reg2 ^ Reg1
-            cht_register[cht_reg_no3] = cht_register[cht_reg_no2] ^ cht_register[cht_reg_no1];
+            s_locals.registers[cht_reg_no3] = s_locals.registers[cht_reg_no2] ^ s_locals.registers[cht_reg_no1];
             break;
           case 0xC8: // Reg3 = ~Reg1
-            cht_register[cht_reg_no3] = ~cht_register[cht_reg_no1];
+            s_locals.registers[cht_reg_no3] = ~s_locals.registers[cht_reg_no1];
             break;
           case 0xC9: // Reg3 = Reg1 << X, zero if X >= 32
-            cht_register[cht_reg_no3] = (cht_reg_no2 < 32) ? (cht_register[cht_reg_no1] << cht_reg_no2) : 0;
+            s_locals.registers[cht_reg_no3] = (cht_reg_no2 < 32) ? (s_locals.registers[cht_reg_no1] << cht_reg_no2) : 0;
             break;
           case 0xCA: // Reg3 = Reg1 >> X, zero if X >= 32
-            cht_register[cht_reg_no3] = (cht_reg_no2 < 32) ? (cht_register[cht_reg_no1] >> cht_reg_no2) : 0;
+            s_locals.registers[cht_reg_no3] = (cht_reg_no2 < 32) ? (s_locals.registers[cht_reg_no1] >> cht_reg_no2) : 0;
             break;
           case 0xD0: // Reg1 = Reg2 & poke_value
-            cht_register[cht_reg_no1] = cht_register[cht_reg_no2] & poke_value;
+            s_locals.registers[cht_reg_no1] = s_locals.registers[cht_reg_no2] & poke_value;
             break;
           case 0xD1: // Reg1 = Reg2 | poke_value
-            cht_register[cht_reg_no1] = cht_register[cht_reg_no2] | poke_value;
+            s_locals.registers[cht_reg_no1] = s_locals.registers[cht_reg_no2] | poke_value;
             break;
           case 0xD2: // Reg1 = Reg2 ^ poke_value
-            cht_register[cht_reg_no1] = cht_register[cht_reg_no2] ^ poke_value;
+            s_locals.registers[cht_reg_no1] = s_locals.registers[cht_reg_no2] ^ poke_value;
             break;
             // Lots of options exist for expanding into this space
           default:
@@ -3969,9 +3972,9 @@ void Cheats::GamesharkCheatCode::Apply() const
                           (bit_comparison_type == true && check_value != (value & check_value))) // Check Bits are clear
                       {
                         if (frame_comparison != 0x0) // Only count frames when comparing them
-                          cht_register[cht_reg_no] += 1;
+                          s_locals.registers[cht_reg_no] += 1;
 
-                        const u32 cht_register_value = cht_register[cht_reg_no];
+                        const u32 cht_register_value = s_locals.registers[cht_reg_no];
                         switch (frame_comparison)
                         {
                           case 0x0: // No comparison on frame count, just do it
@@ -3997,7 +4000,7 @@ void Cheats::GamesharkCheatCode::Apply() const
                       else
                       {
                         if (frame_comparison != 0x0)
-                          cht_register[cht_reg_no] = 0;
+                          s_locals.registers[cht_reg_no] = 0;
                         conditions_check &= false;
                       }
                       break;
@@ -4075,9 +4078,9 @@ void Cheats::GamesharkCheatCode::Apply() const
                           (bit_comparison_type == true && check_value != (value & check_value))) // Check Bits are clear
                       {
                         if (frame_comparison != 0x0) // Only count frames when comparing them
-                          cht_register[cht_reg_no] += 1;
+                          s_locals.registers[cht_reg_no] += 1;
 
-                        const u32 cht_register_value = cht_register[cht_reg_no];
+                        const u32 cht_register_value = s_locals.registers[cht_reg_no];
                         switch (frame_comparison)
                         {
                           case 0x0: // No comparison on frame count, just do it
@@ -4103,7 +4106,7 @@ void Cheats::GamesharkCheatCode::Apply() const
                       else
                       {
                         if (frame_comparison != 0x0)
-                          cht_register[cht_reg_no] = 0;
+                          s_locals.registers[cht_reg_no] = 0;
                         conditions_check |= false;
                       }
                       break;
@@ -4219,23 +4222,23 @@ void Cheats::GamesharkCheatCode::Apply() const
             || (bit_comparison_type == true && check_value != (value & check_value))) // Check Bits are clear
         {
           if (frame_comparison != 0x0) // Only count frames when comparing them
-            cht_register[cht_reg_no] += 1;
+            s_locals.registers[cht_reg_no] += 1;
           switch (frame_comparison)
           {
             case 0x0: // No comparison on frame count, just do it
               activate_codes = true;
               break;
             case 0x1: // Check if frame_compare_value == current count
-              activate_codes = (cht_register[cht_reg_no] == frame_compare_value);
+              activate_codes = (s_locals.registers[cht_reg_no] == frame_compare_value);
               break;
             case 0x2: // Check if current count < frame_compare_value
-              activate_codes = (cht_register[cht_reg_no] < frame_compare_value);
+              activate_codes = (s_locals.registers[cht_reg_no] < frame_compare_value);
               break;
             case 0x3: // Check if current count > frame_compare_value
-              activate_codes = (cht_register[cht_reg_no] > frame_compare_value);
+              activate_codes = (s_locals.registers[cht_reg_no] > frame_compare_value);
               break;
             case 0x4: // Check if frame_compare_value != current count
-              activate_codes = (cht_register[cht_reg_no] != frame_compare_value);
+              activate_codes = (s_locals.registers[cht_reg_no] != frame_compare_value);
               break;
             default:
               activate_codes = false;
@@ -4245,7 +4248,7 @@ void Cheats::GamesharkCheatCode::Apply() const
         else
         {
           if (frame_comparison != 0x0)
-            cht_register[cht_reg_no] = 0;
+            s_locals.registers[cht_reg_no] = 0;
           activate_codes = false;
         }
 
@@ -4281,472 +4284,478 @@ void Cheats::GamesharkCheatCode::Apply() const
         switch (sub_type)
         {
           case 0x00:
-            activate_codes =
-              (Truncate8(cht_register[cht_reg_no2] & 0xFFu) == Truncate8(cht_register[cht_reg_no1] & 0xFFu));
+            activate_codes = (Truncate8(s_locals.registers[cht_reg_no2] & 0xFFu) ==
+                              Truncate8(s_locals.registers[cht_reg_no1] & 0xFFu));
             break;
           case 0x01:
-            activate_codes =
-              (Truncate8(cht_register[cht_reg_no2] & 0xFFu) != Truncate8(cht_register[cht_reg_no1] & 0xFFu));
+            activate_codes = (Truncate8(s_locals.registers[cht_reg_no2] & 0xFFu) !=
+                              Truncate8(s_locals.registers[cht_reg_no1] & 0xFFu));
             break;
           case 0x02:
             activate_codes =
-              (Truncate8(cht_register[cht_reg_no2] & 0xFFu) > Truncate8(cht_register[cht_reg_no1] & 0xFFu));
+              (Truncate8(s_locals.registers[cht_reg_no2] & 0xFFu) > Truncate8(s_locals.registers[cht_reg_no1] & 0xFFu));
             break;
           case 0x03:
-            activate_codes =
-              (Truncate8(cht_register[cht_reg_no2] & 0xFFu) >= Truncate8(cht_register[cht_reg_no1] & 0xFFu));
+            activate_codes = (Truncate8(s_locals.registers[cht_reg_no2] & 0xFFu) >=
+                              Truncate8(s_locals.registers[cht_reg_no1] & 0xFFu));
             break;
           case 0x04:
             activate_codes =
-              (Truncate8(cht_register[cht_reg_no2] & 0xFFu) < Truncate8(cht_register[cht_reg_no1] & 0xFFu));
+              (Truncate8(s_locals.registers[cht_reg_no2] & 0xFFu) < Truncate8(s_locals.registers[cht_reg_no1] & 0xFFu));
             break;
           case 0x05:
-            activate_codes =
-              (Truncate8(cht_register[cht_reg_no2] & 0xFFu) <= Truncate8(cht_register[cht_reg_no1] & 0xFFu));
+            activate_codes = (Truncate8(s_locals.registers[cht_reg_no2] & 0xFFu) <=
+                              Truncate8(s_locals.registers[cht_reg_no1] & 0xFFu));
             break;
           case 0x06:
-            activate_codes =
-              ((Truncate8(cht_register[cht_reg_no2] & 0xFFu) & Truncate8(cht_register[cht_reg_no1] & 0xFFu)) ==
-               (Truncate8(cht_register[cht_reg_no1] & 0xFFu)));
+            activate_codes = ((Truncate8(s_locals.registers[cht_reg_no2] & 0xFFu) &
+                               Truncate8(s_locals.registers[cht_reg_no1] & 0xFFu)) ==
+                              (Truncate8(s_locals.registers[cht_reg_no1] & 0xFFu)));
             break;
           case 0x07:
-            activate_codes =
-              ((Truncate8(cht_register[cht_reg_no2] & 0xFFu) & Truncate8(cht_register[cht_reg_no1] & 0xFFu)) !=
-               (Truncate8(cht_register[cht_reg_no1] & 0xFFu)));
+            activate_codes = ((Truncate8(s_locals.registers[cht_reg_no2] & 0xFFu) &
+                               Truncate8(s_locals.registers[cht_reg_no1] & 0xFFu)) !=
+                              (Truncate8(s_locals.registers[cht_reg_no1] & 0xFFu)));
             break;
           case 0x0A:
-            activate_codes =
-              ((Truncate8(cht_register[cht_reg_no2] & 0xFFu) & Truncate8(cht_register[cht_reg_no1] & 0xFFu)) ==
-               (Truncate8(cht_register[cht_reg_no2] & 0xFFu)));
+            activate_codes = ((Truncate8(s_locals.registers[cht_reg_no2] & 0xFFu) &
+                               Truncate8(s_locals.registers[cht_reg_no1] & 0xFFu)) ==
+                              (Truncate8(s_locals.registers[cht_reg_no2] & 0xFFu)));
             break;
           case 0x0B:
-            activate_codes =
-              ((Truncate8(cht_register[cht_reg_no2] & 0xFFu) & Truncate8(cht_register[cht_reg_no1] & 0xFFu)) !=
-               (Truncate8(cht_register[cht_reg_no2] & 0xFFu)));
+            activate_codes = ((Truncate8(s_locals.registers[cht_reg_no2] & 0xFFu) &
+                               Truncate8(s_locals.registers[cht_reg_no1] & 0xFFu)) !=
+                              (Truncate8(s_locals.registers[cht_reg_no2] & 0xFFu)));
             break;
           case 0x10:
-            activate_codes = (Truncate8(cht_register[cht_reg_no1] & 0xFFu) == inst.value8);
+            activate_codes = (Truncate8(s_locals.registers[cht_reg_no1] & 0xFFu) == inst.value8);
             break;
           case 0x11:
-            activate_codes = (Truncate8(cht_register[cht_reg_no1] & 0xFFu) != inst.value8);
+            activate_codes = (Truncate8(s_locals.registers[cht_reg_no1] & 0xFFu) != inst.value8);
             break;
           case 0x12:
-            activate_codes = (Truncate8(cht_register[cht_reg_no1] & 0xFFu) > inst.value8);
+            activate_codes = (Truncate8(s_locals.registers[cht_reg_no1] & 0xFFu) > inst.value8);
             break;
           case 0x13:
-            activate_codes = (Truncate8(cht_register[cht_reg_no1] & 0xFFu) >= inst.value8);
+            activate_codes = (Truncate8(s_locals.registers[cht_reg_no1] & 0xFFu) >= inst.value8);
             break;
           case 0x14:
-            activate_codes = (Truncate8(cht_register[cht_reg_no1] & 0xFFu) < inst.value8);
+            activate_codes = (Truncate8(s_locals.registers[cht_reg_no1] & 0xFFu) < inst.value8);
             break;
           case 0x15:
-            activate_codes = (Truncate8(cht_register[cht_reg_no1] & 0xFFu) <= inst.value8);
+            activate_codes = (Truncate8(s_locals.registers[cht_reg_no1] & 0xFFu) <= inst.value8);
             break;
           case 0x16:
-            activate_codes = ((Truncate8(cht_register[cht_reg_no1] & 0xFFu) & inst.value8) == inst.value8);
+            activate_codes = ((Truncate8(s_locals.registers[cht_reg_no1] & 0xFFu) & inst.value8) == inst.value8);
             break;
           case 0x17:
-            activate_codes = ((Truncate8(cht_register[cht_reg_no1] & 0xFFu) & inst.value8) != inst.value8);
+            activate_codes = ((Truncate8(s_locals.registers[cht_reg_no1] & 0xFFu) & inst.value8) != inst.value8);
             break;
           case 0x18:
             activate_codes =
-              ((Truncate8(cht_register[cht_reg_no1] & 0xFFu) > inst.value8) &&
-               (Truncate8(cht_register[cht_reg_no1] & 0xFFu) < Truncate8((inst.value32 & 0xFF0000u) >> 16)));
+              ((Truncate8(s_locals.registers[cht_reg_no1] & 0xFFu) > inst.value8) &&
+               (Truncate8(s_locals.registers[cht_reg_no1] & 0xFFu) < Truncate8((inst.value32 & 0xFF0000u) >> 16)));
             break;
           case 0x19:
             activate_codes =
-              ((Truncate8(cht_register[cht_reg_no1] & 0xFFu) >= inst.value8) &&
-               (Truncate8(cht_register[cht_reg_no1] & 0xFFu) <= Truncate8((inst.value32 & 0xFF0000u) >> 16)));
+              ((Truncate8(s_locals.registers[cht_reg_no1] & 0xFFu) >= inst.value8) &&
+               (Truncate8(s_locals.registers[cht_reg_no1] & 0xFFu) <= Truncate8((inst.value32 & 0xFF0000u) >> 16)));
             break;
           case 0x1A:
-            activate_codes = ((Truncate8(cht_register[cht_reg_no1] & 0xFFu) & inst.value8) ==
-                              Truncate8(cht_register[cht_reg_no1] & 0xFFu));
+            activate_codes = ((Truncate8(s_locals.registers[cht_reg_no1] & 0xFFu) & inst.value8) ==
+                              Truncate8(s_locals.registers[cht_reg_no1] & 0xFFu));
             break;
           case 0x1B:
-            activate_codes = ((Truncate8(cht_register[cht_reg_no1] & 0xFFu) & inst.value8) !=
-                              Truncate8(cht_register[cht_reg_no1] & 0xFFu));
+            activate_codes = ((Truncate8(s_locals.registers[cht_reg_no1] & 0xFFu) & inst.value8) !=
+                              Truncate8(s_locals.registers[cht_reg_no1] & 0xFFu));
             break;
           case 0x20:
             activate_codes =
-              (DoMemoryRead<u8>(cht_register[cht_reg_no2]) == DoMemoryRead<u8>(cht_register[cht_reg_no1]));
+              (DoMemoryRead<u8>(s_locals.registers[cht_reg_no2]) == DoMemoryRead<u8>(s_locals.registers[cht_reg_no1]));
             break;
           case 0x21:
             activate_codes =
-              (DoMemoryRead<u8>(cht_register[cht_reg_no2]) != DoMemoryRead<u8>(cht_register[cht_reg_no1]));
+              (DoMemoryRead<u8>(s_locals.registers[cht_reg_no2]) != DoMemoryRead<u8>(s_locals.registers[cht_reg_no1]));
             break;
           case 0x22:
             activate_codes =
-              (DoMemoryRead<u8>(cht_register[cht_reg_no2]) > DoMemoryRead<u8>(cht_register[cht_reg_no1]));
+              (DoMemoryRead<u8>(s_locals.registers[cht_reg_no2]) > DoMemoryRead<u8>(s_locals.registers[cht_reg_no1]));
             break;
           case 0x23:
             activate_codes =
-              (DoMemoryRead<u8>(cht_register[cht_reg_no2]) >= DoMemoryRead<u8>(cht_register[cht_reg_no1]));
+              (DoMemoryRead<u8>(s_locals.registers[cht_reg_no2]) >= DoMemoryRead<u8>(s_locals.registers[cht_reg_no1]));
             break;
           case 0x24:
             activate_codes =
-              (DoMemoryRead<u8>(cht_register[cht_reg_no2]) < DoMemoryRead<u8>(cht_register[cht_reg_no1]));
+              (DoMemoryRead<u8>(s_locals.registers[cht_reg_no2]) < DoMemoryRead<u8>(s_locals.registers[cht_reg_no1]));
             break;
           case 0x25:
             activate_codes =
-              (DoMemoryRead<u8>(cht_register[cht_reg_no2]) <= DoMemoryRead<u8>(cht_register[cht_reg_no1]));
+              (DoMemoryRead<u8>(s_locals.registers[cht_reg_no2]) <= DoMemoryRead<u8>(s_locals.registers[cht_reg_no1]));
             break;
           case 0x26:
-            activate_codes = ((DoMemoryRead<u8>(cht_register[cht_reg_no1]) & inst.value8) == inst.value8);
+            activate_codes = ((DoMemoryRead<u8>(s_locals.registers[cht_reg_no1]) & inst.value8) == inst.value8);
             break;
           case 0x27:
-            activate_codes = ((DoMemoryRead<u8>(cht_register[cht_reg_no1]) & inst.value8) != inst.value8);
+            activate_codes = ((DoMemoryRead<u8>(s_locals.registers[cht_reg_no1]) & inst.value8) != inst.value8);
             break;
           case 0x28:
             activate_codes =
-              ((DoMemoryRead<u8>(cht_register[cht_reg_no1]) > inst.value8) &&
-               (DoMemoryRead<u8>(cht_register[cht_reg_no1]) < Truncate8((inst.value32 & 0xFF0000u) >> 16)));
+              ((DoMemoryRead<u8>(s_locals.registers[cht_reg_no1]) > inst.value8) &&
+               (DoMemoryRead<u8>(s_locals.registers[cht_reg_no1]) < Truncate8((inst.value32 & 0xFF0000u) >> 16)));
             break;
           case 0x29:
             activate_codes =
-              ((DoMemoryRead<u8>(cht_register[cht_reg_no1]) >= inst.value8) &&
-               (DoMemoryRead<u8>(cht_register[cht_reg_no1]) <= Truncate8((inst.value32 & 0xFF0000u) >> 16)));
+              ((DoMemoryRead<u8>(s_locals.registers[cht_reg_no1]) >= inst.value8) &&
+               (DoMemoryRead<u8>(s_locals.registers[cht_reg_no1]) <= Truncate8((inst.value32 & 0xFF0000u) >> 16)));
             break;
           case 0x2A:
-            activate_codes = ((DoMemoryRead<u8>(cht_register[cht_reg_no1]) & inst.value8) ==
-                              DoMemoryRead<u8>(cht_register[cht_reg_no1]));
+            activate_codes = ((DoMemoryRead<u8>(s_locals.registers[cht_reg_no1]) & inst.value8) ==
+                              DoMemoryRead<u8>(s_locals.registers[cht_reg_no1]));
             break;
           case 0x2B:
-            activate_codes = ((DoMemoryRead<u8>(cht_register[cht_reg_no1]) & inst.value8) !=
-                              DoMemoryRead<u8>(cht_register[cht_reg_no1]));
+            activate_codes = ((DoMemoryRead<u8>(s_locals.registers[cht_reg_no1]) & inst.value8) !=
+                              DoMemoryRead<u8>(s_locals.registers[cht_reg_no1]));
             break;
           case 0x30:
-            activate_codes = (Truncate8(cht_register[cht_reg_no1] & 0xFFu) == DoMemoryRead<u8>(inst.value32));
+            activate_codes = (Truncate8(s_locals.registers[cht_reg_no1] & 0xFFu) == DoMemoryRead<u8>(inst.value32));
             break;
           case 0x31:
-            activate_codes = (Truncate8(cht_register[cht_reg_no1] & 0xFFu) != DoMemoryRead<u8>(inst.value32));
+            activate_codes = (Truncate8(s_locals.registers[cht_reg_no1] & 0xFFu) != DoMemoryRead<u8>(inst.value32));
             break;
           case 0x32:
-            activate_codes = (Truncate8(cht_register[cht_reg_no1] & 0xFFu) > DoMemoryRead<u8>(inst.value32));
+            activate_codes = (Truncate8(s_locals.registers[cht_reg_no1] & 0xFFu) > DoMemoryRead<u8>(inst.value32));
             break;
           case 0x33:
-            activate_codes = (Truncate8(cht_register[cht_reg_no1] & 0xFFu) >= DoMemoryRead<u8>(inst.value32));
+            activate_codes = (Truncate8(s_locals.registers[cht_reg_no1] & 0xFFu) >= DoMemoryRead<u8>(inst.value32));
             break;
           case 0x34:
-            activate_codes = (Truncate8(cht_register[cht_reg_no1] & 0xFFu) < DoMemoryRead<u8>(inst.value32));
+            activate_codes = (Truncate8(s_locals.registers[cht_reg_no1] & 0xFFu) < DoMemoryRead<u8>(inst.value32));
             break;
           case 0x35:
-            activate_codes = (Truncate8(cht_register[cht_reg_no1] & 0xFFu) <= DoMemoryRead<u8>(inst.value32));
+            activate_codes = (Truncate8(s_locals.registers[cht_reg_no1] & 0xFFu) <= DoMemoryRead<u8>(inst.value32));
             break;
           case 0x36:
-            activate_codes = ((Truncate8(cht_register[cht_reg_no1] & 0xFFu) & DoMemoryRead<u8>(inst.value32)) ==
+            activate_codes = ((Truncate8(s_locals.registers[cht_reg_no1] & 0xFFu) & DoMemoryRead<u8>(inst.value32)) ==
                               DoMemoryRead<u8>(inst.value32));
             break;
           case 0x37:
-            activate_codes = ((Truncate8(cht_register[cht_reg_no1] & 0xFFu) & DoMemoryRead<u8>(inst.value32)) !=
+            activate_codes = ((Truncate8(s_locals.registers[cht_reg_no1] & 0xFFu) & DoMemoryRead<u8>(inst.value32)) !=
                               DoMemoryRead<u8>(inst.value32));
             break;
           case 0x3A:
-            activate_codes = ((Truncate8(cht_register[cht_reg_no1] & 0xFFu) & DoMemoryRead<u8>(inst.value32)) ==
-                              Truncate8(cht_register[cht_reg_no1] & 0xFFu));
+            activate_codes = ((Truncate8(s_locals.registers[cht_reg_no1] & 0xFFu) & DoMemoryRead<u8>(inst.value32)) ==
+                              Truncate8(s_locals.registers[cht_reg_no1] & 0xFFu));
             break;
           case 0x3B:
-            activate_codes = ((Truncate8(cht_register[cht_reg_no1] & 0xFFu) & DoMemoryRead<u8>(inst.value32)) !=
-                              Truncate8(cht_register[cht_reg_no1] & 0xFFu));
+            activate_codes = ((Truncate8(s_locals.registers[cht_reg_no1] & 0xFFu) & DoMemoryRead<u8>(inst.value32)) !=
+                              Truncate8(s_locals.registers[cht_reg_no1] & 0xFFu));
             break;
           case 0x40:
-            activate_codes =
-              (Truncate16(cht_register[cht_reg_no2] & 0xFFFFu) == Truncate16(cht_register[cht_reg_no1] & 0xFFFFu));
+            activate_codes = (Truncate16(s_locals.registers[cht_reg_no2] & 0xFFFFu) ==
+                              Truncate16(s_locals.registers[cht_reg_no1] & 0xFFFFu));
             break;
           case 0x41:
-            activate_codes =
-              (Truncate16(cht_register[cht_reg_no2] & 0xFFFFu) != Truncate16(cht_register[cht_reg_no1] & 0xFFFFu));
+            activate_codes = (Truncate16(s_locals.registers[cht_reg_no2] & 0xFFFFu) !=
+                              Truncate16(s_locals.registers[cht_reg_no1] & 0xFFFFu));
             break;
           case 0x42:
-            activate_codes =
-              (Truncate16(cht_register[cht_reg_no2] & 0xFFFFu) > Truncate16(cht_register[cht_reg_no1] & 0xFFFFu));
+            activate_codes = (Truncate16(s_locals.registers[cht_reg_no2] & 0xFFFFu) >
+                              Truncate16(s_locals.registers[cht_reg_no1] & 0xFFFFu));
             break;
           case 0x43:
-            activate_codes =
-              (Truncate16(cht_register[cht_reg_no2] & 0xFFFFu) >= Truncate16(cht_register[cht_reg_no1] & 0xFFFFu));
+            activate_codes = (Truncate16(s_locals.registers[cht_reg_no2] & 0xFFFFu) >=
+                              Truncate16(s_locals.registers[cht_reg_no1] & 0xFFFFu));
             break;
           case 0x44:
-            activate_codes =
-              (Truncate16(cht_register[cht_reg_no2] & 0xFFFFu) < Truncate16(cht_register[cht_reg_no1] & 0xFFFFu));
+            activate_codes = (Truncate16(s_locals.registers[cht_reg_no2] & 0xFFFFu) <
+                              Truncate16(s_locals.registers[cht_reg_no1] & 0xFFFFu));
             break;
           case 0x45:
-            activate_codes =
-              (Truncate16(cht_register[cht_reg_no2] & 0xFFFFu) <= Truncate16(cht_register[cht_reg_no1] & 0xFFFFu));
+            activate_codes = (Truncate16(s_locals.registers[cht_reg_no2] & 0xFFFFu) <=
+                              Truncate16(s_locals.registers[cht_reg_no1] & 0xFFFFu));
             break;
           case 0x46:
-            activate_codes =
-              ((Truncate16(cht_register[cht_reg_no2] & 0xFFFFu) & Truncate16(cht_register[cht_reg_no1] & 0xFFFFu)) ==
-               Truncate16(cht_register[cht_reg_no1] & 0xFFFFu));
+            activate_codes = ((Truncate16(s_locals.registers[cht_reg_no2] & 0xFFFFu) &
+                               Truncate16(s_locals.registers[cht_reg_no1] & 0xFFFFu)) ==
+                              Truncate16(s_locals.registers[cht_reg_no1] & 0xFFFFu));
             break;
           case 0x47:
-            activate_codes =
-              ((Truncate16(cht_register[cht_reg_no2] & 0xFFFFu) & Truncate16(cht_register[cht_reg_no1] & 0xFFFFu)) !=
-               Truncate16(cht_register[cht_reg_no1] & 0xFFFFu));
+            activate_codes = ((Truncate16(s_locals.registers[cht_reg_no2] & 0xFFFFu) &
+                               Truncate16(s_locals.registers[cht_reg_no1] & 0xFFFFu)) !=
+                              Truncate16(s_locals.registers[cht_reg_no1] & 0xFFFFu));
             break;
           case 0x4A:
-            activate_codes =
-              ((Truncate16(cht_register[cht_reg_no2] & 0xFFFFu) & Truncate16(cht_register[cht_reg_no1] & 0xFFFFu)) ==
-               Truncate16(cht_register[cht_reg_no2] & 0xFFFFu));
+            activate_codes = ((Truncate16(s_locals.registers[cht_reg_no2] & 0xFFFFu) &
+                               Truncate16(s_locals.registers[cht_reg_no1] & 0xFFFFu)) ==
+                              Truncate16(s_locals.registers[cht_reg_no2] & 0xFFFFu));
             break;
           case 0x4B:
-            activate_codes =
-              ((Truncate16(cht_register[cht_reg_no2] & 0xFFFFu) & Truncate16(cht_register[cht_reg_no1] & 0xFFFFu)) !=
-               Truncate16(cht_register[cht_reg_no2] & 0xFFFFu));
+            activate_codes = ((Truncate16(s_locals.registers[cht_reg_no2] & 0xFFFFu) &
+                               Truncate16(s_locals.registers[cht_reg_no1] & 0xFFFFu)) !=
+                              Truncate16(s_locals.registers[cht_reg_no2] & 0xFFFFu));
             break;
           case 0x50:
-            activate_codes = (Truncate16(cht_register[cht_reg_no1] & 0xFFFFu) == inst.value16);
+            activate_codes = (Truncate16(s_locals.registers[cht_reg_no1] & 0xFFFFu) == inst.value16);
             break;
           case 0x51:
-            activate_codes = (Truncate16(cht_register[cht_reg_no1] & 0xFFFFu) != inst.value16);
+            activate_codes = (Truncate16(s_locals.registers[cht_reg_no1] & 0xFFFFu) != inst.value16);
             break;
           case 0x52:
-            activate_codes = (Truncate16(cht_register[cht_reg_no1] & 0xFFFFu) > inst.value16);
+            activate_codes = (Truncate16(s_locals.registers[cht_reg_no1] & 0xFFFFu) > inst.value16);
             break;
           case 0x53:
-            activate_codes = (Truncate16(cht_register[cht_reg_no1] & 0xFFFFu) >= inst.value16);
+            activate_codes = (Truncate16(s_locals.registers[cht_reg_no1] & 0xFFFFu) >= inst.value16);
             break;
           case 0x54:
-            activate_codes = (Truncate16(cht_register[cht_reg_no1] & 0xFFFFu) < inst.value16);
+            activate_codes = (Truncate16(s_locals.registers[cht_reg_no1] & 0xFFFFu) < inst.value16);
             break;
           case 0x55:
-            activate_codes = (Truncate16(cht_register[cht_reg_no1] & 0xFFFFu) <= inst.value16);
+            activate_codes = (Truncate16(s_locals.registers[cht_reg_no1] & 0xFFFFu) <= inst.value16);
             break;
           case 0x56:
-            activate_codes = ((Truncate16(cht_register[cht_reg_no1] & 0xFFFFu) & inst.value16) == inst.value16);
+            activate_codes = ((Truncate16(s_locals.registers[cht_reg_no1] & 0xFFFFu) & inst.value16) == inst.value16);
             break;
           case 0x57:
-            activate_codes = ((Truncate16(cht_register[cht_reg_no1] & 0xFFFFu) & inst.value16) != inst.value16);
+            activate_codes = ((Truncate16(s_locals.registers[cht_reg_no1] & 0xFFFFu) & inst.value16) != inst.value16);
             break;
           case 0x58:
-            activate_codes =
-              ((Truncate16(cht_register[cht_reg_no1] & 0xFFFFu) > inst.value16) &&
-               (Truncate16(cht_register[cht_reg_no1] & 0xFFFFu) < Truncate16((inst.value32 & 0xFFFF0000u) >> 16)));
+            activate_codes = ((Truncate16(s_locals.registers[cht_reg_no1] & 0xFFFFu) > inst.value16) &&
+                              (Truncate16(s_locals.registers[cht_reg_no1] & 0xFFFFu) <
+                               Truncate16((inst.value32 & 0xFFFF0000u) >> 16)));
             break;
           case 0x59:
-            activate_codes =
-              ((Truncate16(cht_register[cht_reg_no1] & 0xFFFFu) >= inst.value16) &&
-               (Truncate16(cht_register[cht_reg_no1] & 0xFFFFu) <= Truncate16((inst.value32 & 0xFFFF0000u) >> 16)));
+            activate_codes = ((Truncate16(s_locals.registers[cht_reg_no1] & 0xFFFFu) >= inst.value16) &&
+                              (Truncate16(s_locals.registers[cht_reg_no1] & 0xFFFFu) <=
+                               Truncate16((inst.value32 & 0xFFFF0000u) >> 16)));
             break;
           case 0x5A:
-            activate_codes = ((Truncate16(cht_register[cht_reg_no1] & 0xFFFFu) & inst.value16) ==
-                              Truncate16(cht_register[cht_reg_no1] & 0xFFFFu));
+            activate_codes = ((Truncate16(s_locals.registers[cht_reg_no1] & 0xFFFFu) & inst.value16) ==
+                              Truncate16(s_locals.registers[cht_reg_no1] & 0xFFFFu));
             break;
           case 0x5B:
-            activate_codes = ((Truncate16(cht_register[cht_reg_no1] & 0xFFFFu) & inst.value16) !=
-                              Truncate16(cht_register[cht_reg_no1] & 0xFFFFu));
+            activate_codes = ((Truncate16(s_locals.registers[cht_reg_no1] & 0xFFFFu) & inst.value16) !=
+                              Truncate16(s_locals.registers[cht_reg_no1] & 0xFFFFu));
             break;
           case 0x60:
-            activate_codes =
-              (DoMemoryRead<u16>(cht_register[cht_reg_no2]) == DoMemoryRead<u16>(cht_register[cht_reg_no1]));
+            activate_codes = (DoMemoryRead<u16>(s_locals.registers[cht_reg_no2]) ==
+                              DoMemoryRead<u16>(s_locals.registers[cht_reg_no1]));
             break;
           case 0x61:
-            activate_codes =
-              (DoMemoryRead<u16>(cht_register[cht_reg_no2]) != DoMemoryRead<u16>(cht_register[cht_reg_no1]));
+            activate_codes = (DoMemoryRead<u16>(s_locals.registers[cht_reg_no2]) !=
+                              DoMemoryRead<u16>(s_locals.registers[cht_reg_no1]));
             break;
           case 0x62:
             activate_codes =
-              (DoMemoryRead<u16>(cht_register[cht_reg_no2]) > DoMemoryRead<u16>(cht_register[cht_reg_no1]));
+              (DoMemoryRead<u16>(s_locals.registers[cht_reg_no2]) > DoMemoryRead<u16>(s_locals.registers[cht_reg_no1]));
             break;
           case 0x63:
-            activate_codes =
-              (DoMemoryRead<u16>(cht_register[cht_reg_no2]) >= DoMemoryRead<u16>(cht_register[cht_reg_no1]));
+            activate_codes = (DoMemoryRead<u16>(s_locals.registers[cht_reg_no2]) >=
+                              DoMemoryRead<u16>(s_locals.registers[cht_reg_no1]));
             break;
           case 0x64:
             activate_codes =
-              (DoMemoryRead<u16>(cht_register[cht_reg_no2]) < DoMemoryRead<u16>(cht_register[cht_reg_no1]));
+              (DoMemoryRead<u16>(s_locals.registers[cht_reg_no2]) < DoMemoryRead<u16>(s_locals.registers[cht_reg_no1]));
             break;
           case 0x65:
-            activate_codes =
-              (DoMemoryRead<u16>(cht_register[cht_reg_no2]) <= DoMemoryRead<u16>(cht_register[cht_reg_no1]));
+            activate_codes = (DoMemoryRead<u16>(s_locals.registers[cht_reg_no2]) <=
+                              DoMemoryRead<u16>(s_locals.registers[cht_reg_no1]));
             break;
           case 0x66:
-            activate_codes = ((DoMemoryRead<u16>(cht_register[cht_reg_no1]) & inst.value16) == inst.value16);
+            activate_codes = ((DoMemoryRead<u16>(s_locals.registers[cht_reg_no1]) & inst.value16) == inst.value16);
             break;
           case 0x67:
-            activate_codes = ((DoMemoryRead<u16>(cht_register[cht_reg_no1]) & inst.value16) != inst.value16);
+            activate_codes = ((DoMemoryRead<u16>(s_locals.registers[cht_reg_no1]) & inst.value16) != inst.value16);
             break;
           case 0x68:
             activate_codes =
-              ((DoMemoryRead<u16>(cht_register[cht_reg_no1]) > inst.value16) &&
-               (DoMemoryRead<u16>(cht_register[cht_reg_no1]) < Truncate16((inst.value32 & 0xFFFF0000u) >> 16)));
+              ((DoMemoryRead<u16>(s_locals.registers[cht_reg_no1]) > inst.value16) &&
+               (DoMemoryRead<u16>(s_locals.registers[cht_reg_no1]) < Truncate16((inst.value32 & 0xFFFF0000u) >> 16)));
             break;
           case 0x69:
             activate_codes =
-              ((DoMemoryRead<u16>(cht_register[cht_reg_no1]) >= inst.value16) &&
-               (DoMemoryRead<u16>(cht_register[cht_reg_no1]) <= Truncate16((inst.value32 & 0xFFFF0000u) >> 16)));
+              ((DoMemoryRead<u16>(s_locals.registers[cht_reg_no1]) >= inst.value16) &&
+               (DoMemoryRead<u16>(s_locals.registers[cht_reg_no1]) <= Truncate16((inst.value32 & 0xFFFF0000u) >> 16)));
             break;
           case 0x6A:
-            activate_codes = ((DoMemoryRead<u16>(cht_register[cht_reg_no1]) & inst.value16) ==
-                              DoMemoryRead<u16>(cht_register[cht_reg_no1]));
+            activate_codes = ((DoMemoryRead<u16>(s_locals.registers[cht_reg_no1]) & inst.value16) ==
+                              DoMemoryRead<u16>(s_locals.registers[cht_reg_no1]));
             break;
           case 0x6B:
-            activate_codes = ((DoMemoryRead<u16>(cht_register[cht_reg_no1]) & inst.value16) !=
-                              DoMemoryRead<u16>(cht_register[cht_reg_no1]));
+            activate_codes = ((DoMemoryRead<u16>(s_locals.registers[cht_reg_no1]) & inst.value16) !=
+                              DoMemoryRead<u16>(s_locals.registers[cht_reg_no1]));
             break;
           case 0x70:
-            activate_codes = (Truncate16(cht_register[cht_reg_no1] & 0xFFFFu) == DoMemoryRead<u16>(inst.value32));
+            activate_codes = (Truncate16(s_locals.registers[cht_reg_no1] & 0xFFFFu) == DoMemoryRead<u16>(inst.value32));
             break;
           case 0x71:
-            activate_codes = (Truncate16(cht_register[cht_reg_no1] & 0xFFFFu) != DoMemoryRead<u16>(inst.value32));
+            activate_codes = (Truncate16(s_locals.registers[cht_reg_no1] & 0xFFFFu) != DoMemoryRead<u16>(inst.value32));
             break;
           case 0x72:
-            activate_codes = (Truncate16(cht_register[cht_reg_no1] & 0xFFFFu) > DoMemoryRead<u16>(inst.value32));
+            activate_codes = (Truncate16(s_locals.registers[cht_reg_no1] & 0xFFFFu) > DoMemoryRead<u16>(inst.value32));
             break;
           case 0x73:
-            activate_codes = (Truncate16(cht_register[cht_reg_no1] & 0xFFFFu) >= DoMemoryRead<u16>(inst.value32));
+            activate_codes = (Truncate16(s_locals.registers[cht_reg_no1] & 0xFFFFu) >= DoMemoryRead<u16>(inst.value32));
             break;
           case 0x74:
-            activate_codes = (Truncate16(cht_register[cht_reg_no1] & 0xFFFFu) < DoMemoryRead<u16>(inst.value32));
+            activate_codes = (Truncate16(s_locals.registers[cht_reg_no1] & 0xFFFFu) < DoMemoryRead<u16>(inst.value32));
             break;
           case 0x75:
-            activate_codes = (Truncate16(cht_register[cht_reg_no1] & 0xFFFFu) <= DoMemoryRead<u16>(inst.value32));
+            activate_codes = (Truncate16(s_locals.registers[cht_reg_no1] & 0xFFFFu) <= DoMemoryRead<u16>(inst.value32));
             break;
           case 0x76:
-            activate_codes = ((Truncate16(cht_register[cht_reg_no1] & 0xFFFFu) & DoMemoryRead<u16>(inst.value32)) ==
-                              DoMemoryRead<u16>(inst.value32));
+            activate_codes = ((Truncate16(s_locals.registers[cht_reg_no1] & 0xFFFFu) &
+                               DoMemoryRead<u16>(inst.value32)) == DoMemoryRead<u16>(inst.value32));
             break;
           case 0x77:
-            activate_codes = ((Truncate16(cht_register[cht_reg_no1] & 0xFFFFu) & DoMemoryRead<u16>(inst.value32)) !=
-                              DoMemoryRead<u16>(inst.value32));
+            activate_codes = ((Truncate16(s_locals.registers[cht_reg_no1] & 0xFFFFu) &
+                               DoMemoryRead<u16>(inst.value32)) != DoMemoryRead<u16>(inst.value32));
             break;
           case 0x7A:
-            activate_codes = ((Truncate16(cht_register[cht_reg_no1] & 0xFFFFu) & DoMemoryRead<u16>(inst.value32)) ==
-                              Truncate16(cht_register[cht_reg_no1] & 0xFFFFu));
+            activate_codes =
+              ((Truncate16(s_locals.registers[cht_reg_no1] & 0xFFFFu) & DoMemoryRead<u16>(inst.value32)) ==
+               Truncate16(s_locals.registers[cht_reg_no1] & 0xFFFFu));
             break;
           case 0x7B:
-            activate_codes = ((Truncate16(cht_register[cht_reg_no1] & 0xFFFFu) & DoMemoryRead<u16>(inst.value32)) !=
-                              Truncate16(cht_register[cht_reg_no1] & 0xFFFFu));
+            activate_codes =
+              ((Truncate16(s_locals.registers[cht_reg_no1] & 0xFFFFu) & DoMemoryRead<u16>(inst.value32)) !=
+               Truncate16(s_locals.registers[cht_reg_no1] & 0xFFFFu));
             break;
           case 0x80:
-            activate_codes = (cht_register[cht_reg_no2] == cht_register[cht_reg_no1]);
+            activate_codes = (s_locals.registers[cht_reg_no2] == s_locals.registers[cht_reg_no1]);
             break;
           case 0x81:
-            activate_codes = (cht_register[cht_reg_no2] != cht_register[cht_reg_no1]);
+            activate_codes = (s_locals.registers[cht_reg_no2] != s_locals.registers[cht_reg_no1]);
             break;
           case 0x82:
-            activate_codes = (cht_register[cht_reg_no2] > cht_register[cht_reg_no1]);
+            activate_codes = (s_locals.registers[cht_reg_no2] > s_locals.registers[cht_reg_no1]);
             break;
           case 0x83:
-            activate_codes = (cht_register[cht_reg_no2] >= cht_register[cht_reg_no1]);
+            activate_codes = (s_locals.registers[cht_reg_no2] >= s_locals.registers[cht_reg_no1]);
             break;
           case 0x84:
-            activate_codes = (cht_register[cht_reg_no2] < cht_register[cht_reg_no1]);
+            activate_codes = (s_locals.registers[cht_reg_no2] < s_locals.registers[cht_reg_no1]);
             break;
           case 0x85:
-            activate_codes = (cht_register[cht_reg_no2] <= cht_register[cht_reg_no1]);
+            activate_codes = (s_locals.registers[cht_reg_no2] <= s_locals.registers[cht_reg_no1]);
             break;
           case 0x86:
-            activate_codes = ((cht_register[cht_reg_no2] & cht_register[cht_reg_no1]) == cht_register[cht_reg_no1]);
+            activate_codes =
+              ((s_locals.registers[cht_reg_no2] & s_locals.registers[cht_reg_no1]) == s_locals.registers[cht_reg_no1]);
             break;
           case 0x87:
-            activate_codes = ((cht_register[cht_reg_no2] & cht_register[cht_reg_no1]) != cht_register[cht_reg_no1]);
+            activate_codes =
+              ((s_locals.registers[cht_reg_no2] & s_locals.registers[cht_reg_no1]) != s_locals.registers[cht_reg_no1]);
             break;
           case 0x8A:
-            activate_codes = ((cht_register[cht_reg_no2] & cht_register[cht_reg_no1]) == cht_register[cht_reg_no2]);
+            activate_codes =
+              ((s_locals.registers[cht_reg_no2] & s_locals.registers[cht_reg_no1]) == s_locals.registers[cht_reg_no2]);
             break;
           case 0x8B:
-            activate_codes = ((cht_register[cht_reg_no2] & cht_register[cht_reg_no1]) != cht_register[cht_reg_no2]);
+            activate_codes =
+              ((s_locals.registers[cht_reg_no2] & s_locals.registers[cht_reg_no1]) != s_locals.registers[cht_reg_no2]);
             break;
           case 0x90:
-            activate_codes = (cht_register[cht_reg_no1] == inst.value32);
+            activate_codes = (s_locals.registers[cht_reg_no1] == inst.value32);
             break;
           case 0x91:
-            activate_codes = (cht_register[cht_reg_no1] != inst.value32);
+            activate_codes = (s_locals.registers[cht_reg_no1] != inst.value32);
             break;
           case 0x92:
-            activate_codes = (cht_register[cht_reg_no1] > inst.value32);
+            activate_codes = (s_locals.registers[cht_reg_no1] > inst.value32);
             break;
           case 0x93:
-            activate_codes = (cht_register[cht_reg_no1] >= inst.value32);
+            activate_codes = (s_locals.registers[cht_reg_no1] >= inst.value32);
             break;
           case 0x94:
-            activate_codes = (cht_register[cht_reg_no1] < inst.value32);
+            activate_codes = (s_locals.registers[cht_reg_no1] < inst.value32);
             break;
           case 0x95:
-            activate_codes = (cht_register[cht_reg_no1] <= inst.value32);
+            activate_codes = (s_locals.registers[cht_reg_no1] <= inst.value32);
             break;
           case 0x96:
-            activate_codes = ((cht_register[cht_reg_no1] & inst.value32) == inst.value32);
+            activate_codes = ((s_locals.registers[cht_reg_no1] & inst.value32) == inst.value32);
             break;
           case 0x97:
-            activate_codes = ((cht_register[cht_reg_no1] & inst.value32) != inst.value32);
+            activate_codes = ((s_locals.registers[cht_reg_no1] & inst.value32) != inst.value32);
             break;
           case 0x9A:
-            activate_codes = ((cht_register[cht_reg_no1] & inst.value32) == cht_register[cht_reg_no1]);
+            activate_codes = ((s_locals.registers[cht_reg_no1] & inst.value32) == s_locals.registers[cht_reg_no1]);
             break;
           case 0x9B:
-            activate_codes = ((cht_register[cht_reg_no1] & inst.value32) != cht_register[cht_reg_no1]);
+            activate_codes = ((s_locals.registers[cht_reg_no1] & inst.value32) != s_locals.registers[cht_reg_no1]);
             break;
           case 0xA0:
-            activate_codes =
-              (DoMemoryRead<u32>(cht_register[cht_reg_no2]) == DoMemoryRead<u32>(cht_register[cht_reg_no1]));
+            activate_codes = (DoMemoryRead<u32>(s_locals.registers[cht_reg_no2]) ==
+                              DoMemoryRead<u32>(s_locals.registers[cht_reg_no1]));
             break;
           case 0xA1:
-            activate_codes =
-              (DoMemoryRead<u32>(cht_register[cht_reg_no2]) != DoMemoryRead<u32>(cht_register[cht_reg_no1]));
+            activate_codes = (DoMemoryRead<u32>(s_locals.registers[cht_reg_no2]) !=
+                              DoMemoryRead<u32>(s_locals.registers[cht_reg_no1]));
             break;
           case 0xA2:
             activate_codes =
-              (DoMemoryRead<u32>(cht_register[cht_reg_no2]) > DoMemoryRead<u32>(cht_register[cht_reg_no1]));
+              (DoMemoryRead<u32>(s_locals.registers[cht_reg_no2]) > DoMemoryRead<u32>(s_locals.registers[cht_reg_no1]));
             break;
           case 0xA3:
-            activate_codes =
-              (DoMemoryRead<u32>(cht_register[cht_reg_no2]) >= DoMemoryRead<u32>(cht_register[cht_reg_no1]));
+            activate_codes = (DoMemoryRead<u32>(s_locals.registers[cht_reg_no2]) >=
+                              DoMemoryRead<u32>(s_locals.registers[cht_reg_no1]));
             break;
           case 0xA4:
             activate_codes =
-              (DoMemoryRead<u32>(cht_register[cht_reg_no2]) < DoMemoryRead<u32>(cht_register[cht_reg_no1]));
+              (DoMemoryRead<u32>(s_locals.registers[cht_reg_no2]) < DoMemoryRead<u32>(s_locals.registers[cht_reg_no1]));
             break;
           case 0xA5:
-            activate_codes =
-              (DoMemoryRead<u32>(cht_register[cht_reg_no2]) <= DoMemoryRead<u32>(cht_register[cht_reg_no1]));
+            activate_codes = (DoMemoryRead<u32>(s_locals.registers[cht_reg_no2]) <=
+                              DoMemoryRead<u32>(s_locals.registers[cht_reg_no1]));
             break;
           case 0xA6:
-            activate_codes = ((DoMemoryRead<u32>(cht_register[cht_reg_no1]) & inst.value32) == inst.value32);
+            activate_codes = ((DoMemoryRead<u32>(s_locals.registers[cht_reg_no1]) & inst.value32) == inst.value32);
             break;
           case 0xA7:
-            activate_codes = ((DoMemoryRead<u32>(cht_register[cht_reg_no1]) & inst.value32) != inst.value32);
+            activate_codes = ((DoMemoryRead<u32>(s_locals.registers[cht_reg_no1]) & inst.value32) != inst.value32);
             break;
           case 0xAA:
-            activate_codes = ((DoMemoryRead<u32>(cht_register[cht_reg_no1]) & inst.value32) ==
-                              DoMemoryRead<u32>(cht_register[cht_reg_no1]));
+            activate_codes = ((DoMemoryRead<u32>(s_locals.registers[cht_reg_no1]) & inst.value32) ==
+                              DoMemoryRead<u32>(s_locals.registers[cht_reg_no1]));
             break;
           case 0xAB:
-            activate_codes = ((DoMemoryRead<u32>(cht_register[cht_reg_no1]) & inst.value32) !=
-                              DoMemoryRead<u32>(cht_register[cht_reg_no1]));
+            activate_codes = ((DoMemoryRead<u32>(s_locals.registers[cht_reg_no1]) & inst.value32) !=
+                              DoMemoryRead<u32>(s_locals.registers[cht_reg_no1]));
             break;
           case 0xB0:
-            activate_codes = (cht_register[cht_reg_no1] == DoMemoryRead<u32>(inst.value32));
+            activate_codes = (s_locals.registers[cht_reg_no1] == DoMemoryRead<u32>(inst.value32));
             break;
           case 0xB1:
-            activate_codes = (cht_register[cht_reg_no1] != DoMemoryRead<u32>(inst.value32));
+            activate_codes = (s_locals.registers[cht_reg_no1] != DoMemoryRead<u32>(inst.value32));
             break;
           case 0xB2:
-            activate_codes = (cht_register[cht_reg_no1] > DoMemoryRead<u32>(inst.value32));
+            activate_codes = (s_locals.registers[cht_reg_no1] > DoMemoryRead<u32>(inst.value32));
             break;
           case 0xB3:
-            activate_codes = (cht_register[cht_reg_no1] >= DoMemoryRead<u32>(inst.value32));
+            activate_codes = (s_locals.registers[cht_reg_no1] >= DoMemoryRead<u32>(inst.value32));
             break;
           case 0xB4:
-            activate_codes = (cht_register[cht_reg_no1] < DoMemoryRead<u32>(inst.value32));
+            activate_codes = (s_locals.registers[cht_reg_no1] < DoMemoryRead<u32>(inst.value32));
             break;
           case 0xB5:
-            activate_codes = (cht_register[cht_reg_no1] <= DoMemoryRead<u32>(inst.value32));
+            activate_codes = (s_locals.registers[cht_reg_no1] <= DoMemoryRead<u32>(inst.value32));
             break;
           case 0xB6:
             activate_codes =
-              ((cht_register[cht_reg_no1] & DoMemoryRead<u32>(inst.value32)) == DoMemoryRead<u32>(inst.value32));
+              ((s_locals.registers[cht_reg_no1] & DoMemoryRead<u32>(inst.value32)) == DoMemoryRead<u32>(inst.value32));
             break;
           case 0xB7:
             activate_codes =
-              ((cht_register[cht_reg_no1] & DoMemoryRead<u32>(inst.value32)) != DoMemoryRead<u32>(inst.value32));
+              ((s_locals.registers[cht_reg_no1] & DoMemoryRead<u32>(inst.value32)) != DoMemoryRead<u32>(inst.value32));
             break;
           case 0xBA:
             activate_codes =
-              ((cht_register[cht_reg_no1] & DoMemoryRead<u32>(inst.value32)) == cht_register[cht_reg_no1]);
+              ((s_locals.registers[cht_reg_no1] & DoMemoryRead<u32>(inst.value32)) == s_locals.registers[cht_reg_no1]);
             break;
           case 0xBB:
             activate_codes =
-              ((cht_register[cht_reg_no1] & DoMemoryRead<u32>(inst.value32)) != cht_register[cht_reg_no1]);
+              ((s_locals.registers[cht_reg_no1] & DoMemoryRead<u32>(inst.value32)) != s_locals.registers[cht_reg_no1]);
             break;
           default:
             activate_codes = false;

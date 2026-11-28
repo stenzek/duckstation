@@ -740,7 +740,7 @@ protected:
     code->Apply();
   }
 
-  // The cheat registers are global and never reset, so tests set every register they read.
+  // The cheat registers are global and only reset on shutdown, so tests set every register they read.
   static void SetCheatRegister(u8 reg, u32 value) { Run(fmt::format("518500{:02X} {:08X}\n", reg, value)); }
   static u32 GetCheatRegister(u8 reg)
   {
@@ -2588,6 +2588,15 @@ TEST_F(CheatsApply, CheatRegisters)
     EXPECT_EQ(GetCheatRegister(reg), 0xCCCCCCCCu) << static_cast<u32>(reg);
   EXPECT_EQ(GetCheatRegister(0x10), 0x5000u);
   EXPECT_EQ(ReadWord(0x5000), 0u);
+}
+
+TEST_F(CheatsApply, CheatRegistersResetOnUnload)
+{
+  SetCheatRegister(0x40, 0x12345678);
+  SetCheatRegister(0xFF, 0x12345678);
+  Cheats::UnloadAll();
+  EXPECT_EQ(GetCheatRegister(0x40), 0u);
+  EXPECT_EQ(GetCheatRegister(0xFF), 0u);
 }
 
 TEST_F(CheatsApply, CheatRegisterCompare)
