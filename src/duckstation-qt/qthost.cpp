@@ -1959,34 +1959,7 @@ void CoreThread::saveScreenshot()
 
 void CoreThread::applicationStateChanged(Qt::ApplicationState state)
 {
-  const bool background = (state != Qt::ApplicationActive);
-  InputManager::OnApplicationBackgroundStateChanged(background);
-
-  if (!System::IsValid())
-    return;
-
-  if (background)
-  {
-    if (g_settings.pause_on_focus_loss && !m_was_paused_by_focus_loss && !System::IsPaused())
-    {
-      setSystemPaused(true);
-      m_was_paused_by_focus_loss = true;
-    }
-
-    // Clear the state of all keyboard binds.
-    // That way, if we had a key held down, and lost focus, the bind won't be stuck enabled because we never
-    // got the key release message, because it happened in another window which "stole" the event.
-    InputManager::ClearBindStateFromSource(InputManager::MakeHostKeyboardKey(0));
-  }
-  else
-  {
-    if (m_was_paused_by_focus_loss)
-    {
-      if (System::IsPaused())
-        setSystemPaused(false);
-      m_was_paused_by_focus_loss = false;
-    }
-  }
+  Core::OnApplicationBackgroundStateChanged(state != Qt::ApplicationActive);
 }
 
 void Host::OnAchievementsLoginRequested(Achievements::LoginRequestReason reason)

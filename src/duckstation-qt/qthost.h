@@ -215,7 +215,6 @@ private:
   bool m_http_downloader_active = false;
   bool m_video_thread_run_idle = false;
   bool m_is_fullscreen_ui_started = false;
-  bool m_was_paused_by_focus_loss = false;
 
   RenderAPI m_last_render_api = RenderAPI::None;
   bool m_last_hardware_renderer = false;

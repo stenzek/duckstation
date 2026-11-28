@@ -5349,6 +5349,9 @@ void System::CheckForSettingsChanges(const Settings& old_settings)
   if (g_settings.disable_background_input != old_settings.disable_background_input)
     InputManager::UpdateInputIgnoreState();
 
+  if (g_settings.reduce_idle_frame_rate != old_settings.reduce_idle_frame_rate)
+    VideoThread::UpdateThrottleIdle();
+
   if (g_settings.audio_sound_effect_volume != old_settings.audio_sound_effect_volume)
     SoundEffectManager::SetVolume(g_settings.audio_sound_effect_volume);
 

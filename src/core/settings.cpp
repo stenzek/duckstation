@@ -292,6 +292,7 @@ void Settings::Load(const SettingsInterface& si, const SettingsInterface& contro
   sync_to_host_refresh_rate = si.GetBoolValue(INTERFACE_SECTION_NAME, "SyncToHostRefreshRate", false);
   inhibit_screensaver = si.GetBoolValue(INTERFACE_SECTION_NAME, "InhibitScreensaver", true);
   pause_on_focus_loss = si.GetBoolValue(INTERFACE_SECTION_NAME, "PauseOnFocusLoss", false);
+  reduce_idle_frame_rate = si.GetBoolValue(INTERFACE_SECTION_NAME, "ReduceIdleFrameRate", true);
   pause_on_controller_disconnection = si.GetBoolValue(INTERFACE_SECTION_NAME, "PauseOnControllerDisconnection", false);
   disable_background_input = si.GetBoolValue(INTERFACE_SECTION_NAME, "DisableBackgroundInput", false);
   save_state_on_exit = si.GetBoolValue(INTERFACE_SECTION_NAME, "SaveStateOnExit", true);
@@ -698,6 +699,7 @@ void Settings::Save(SettingsInterface& si, bool for_copy) const
     si.SetBoolValue(INTERFACE_SECTION_NAME, "SyncToHostRefreshRate", sync_to_host_refresh_rate);
     si.SetBoolValue(INTERFACE_SECTION_NAME, "InhibitScreensaver", inhibit_screensaver);
     si.SetBoolValue(INTERFACE_SECTION_NAME, "PauseOnFocusLoss", pause_on_focus_loss);
+    si.SetBoolValue(INTERFACE_SECTION_NAME, "ReduceIdleFrameRate", reduce_idle_frame_rate);
     si.SetBoolValue(INTERFACE_SECTION_NAME, "PauseOnControllerDisconnection", pause_on_controller_disconnection);
     si.SetBoolValue(INTERFACE_SECTION_NAME, "SaveStateOnExit", save_state_on_exit);
     si.SetBoolValue(INTERFACE_SECTION_NAME, "CreateSaveStateBackups", create_save_state_backups);

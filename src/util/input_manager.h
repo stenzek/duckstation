@@ -429,6 +429,7 @@ bool IsUsingRawInput();
 
 /// Called when the application window gains or loses focus.
 void OnApplicationBackgroundStateChanged(bool in_background);
+bool IsApplicationInBackground();
 void UpdateInputIgnoreState();
 
 /// Restores default configuration.

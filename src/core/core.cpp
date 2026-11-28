@@ -77,6 +77,8 @@ struct CoreLocals
   INISettingsInterface base_settings_interface;
 
   Timer::Value process_start_time = 0;
+
+  bool was_paused_by_focus_loss = false;
 };
 } // namespace
 
@@ -800,4 +802,38 @@ void Core::IdleUpdate()
   HTTPDownloader::PollRequests();
 
   Achievements::IdleUpdate();
+}
+
+void Core::OnApplicationBackgroundStateChanged(bool in_background)
+{
+  DebugAssert(Host::IsOnCoreThread());
+
+  InputManager::OnApplicationBackgroundStateChanged(in_background);
+  VideoThread::UpdateThrottleIdle();
+
+  if (!System::IsValid())
+    return;
+
+  if (in_background)
+  {
+    if (g_settings.pause_on_focus_loss && !s_locals.was_paused_by_focus_loss && !System::IsPaused())
+    {
+      System::PauseSystem(true);
+      s_locals.was_paused_by_focus_loss = true;
+    }
+
+    // Clear the state of all keyboard binds.
+    // That way, if we had a key held down, and lost focus, the bind won't be stuck enabled because we never
+    // got the key release message, because it happened in another window which "stole" the event.
+    InputManager::ClearBindStateFromSource(InputManager::MakeHostKeyboardKey(0));
+  }
+  else
+  {
+    if (s_locals.was_paused_by_focus_loss)
+    {
+      if (System::IsPaused())
+        System::PauseSystem(false);
+      s_locals.was_paused_by_focus_loss = false;
+    }
+  }
 }

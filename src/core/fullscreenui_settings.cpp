@@ -3363,6 +3363,10 @@ void FullscreenUI::DrawInterfaceSettingsPage()
   DrawToggleSetting(bsi, FSUI_ICONVSTR(ICON_FA_TV, "Start In Big Picture Mode"),
                     FSUI_VSTR("Starts the application in Big Picture Mode instead of the desktop interface."),
                     Settings::INTERFACE_SECTION_NAME, "StartFullscreenUI", false);
+  DrawToggleSetting(
+    bsi, FSUI_ICONVSTR(ICON_FA_BATTERY_HALF, "Reduce Idle Frame Rate"),
+    FSUI_VSTR("Reduces the frame rate of the interface when you switch to another application, to save power."),
+    Settings::INTERFACE_SECTION_NAME, "ReduceIdleFrameRate", true);
   DrawToggleSetting(bsi, FSUI_ICONVSTR(ICON_FA_CIRCLE_USER, "Enable Discord Presence"),
                     FSUI_VSTR("Shows the game you are currently playing as part of your profile in Discord."),
                     Settings::INTERFACE_SECTION_NAME, "EnableDiscordPresence", false);

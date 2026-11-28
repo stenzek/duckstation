@@ -1687,6 +1687,11 @@ void InputManager::OnApplicationBackgroundStateChanged(bool in_background)
   UpdateInputIgnoreState();
 }
 
+bool InputManager::IsApplicationInBackground()
+{
+  return s_state.application_in_background;
+}
+
 void InputManager::UpdateInputIgnoreState()
 {
   // Threading: Called on core thread.

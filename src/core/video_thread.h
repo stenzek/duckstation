@@ -99,6 +99,9 @@ void SetVSync(GPUVSyncMode mode, PresentSkipMode present_throttle_mode);
 bool GetRunIdleReason(RunIdleReason reason);
 void SetRunIdleReason(RunIdleReason reason, bool enabled);
 bool IsRunningIdle();
+
+/// Updates whether the idle frame rate is reduced, based on the application background state and settings.
+void UpdateThrottleIdle();
 bool IsSystemPaused();
 const std::string& GetGameTitle();
 const std::string& GetGameSerial();

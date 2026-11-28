@@ -50,6 +50,9 @@ void CoreThreadShutdown();
 /// Called to poll input when the session is not running.
 void IdleUpdate();
 
+/// Called when the application moves to or from the background (loses or gains focus).
+void OnApplicationBackgroundStateChanged(bool in_background);
+
 } // namespace Core
 
 namespace Host {
