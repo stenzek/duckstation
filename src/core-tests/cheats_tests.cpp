@@ -2526,9 +2526,23 @@ TEST_F(CheatsApply, CheatRegisters)
     EXPECT_EQ(GetCheatRegister(0x14), (amount == 31) ? 1u : 0u);
   }
 
+  // Immediate AND/OR/XOR into R1.
+  setup({{0x11, 0x12345678}});
+  Run("51D01110 0F0F00FF\n51D01112 FFFFFFFF\n");
+  EXPECT_EQ(GetCheatRegister(0x10), 0x02040078u);
+  EXPECT_EQ(GetCheatRegister(0x12), 0x12345678u);
+  EXPECT_EQ(GetCheatRegister(0x11), 0x12345678u);
+  Run("51D11110 0F0F00FF\n");
+  EXPECT_EQ(GetCheatRegister(0x10), 0x1F3F56FFu);
+  Run("51D21110 0F0F00FF\n");
+  EXPECT_EQ(GetCheatRegister(0x10), 0x1D3B5687u);
+  Run("51D21010 FFFFFFFF\n");
+  EXPECT_EQ(GetCheatRegister(0x10), 0xE2C4A978u);
+
   // Unknown sub-types do nothing.
   setup({{0x10, 0x5000}, {0x11, 0x5000}});
-  Run("51081110 00005000\n513F1110 00005000\n51871110 00005000\n51CB1110 00000012\n51FF1110 00005000\n");
+  Run("51081110 00005000\n513F1110 00005000\n51871110 00005000\n51CB1110 00000012\n51D31110 00005000\n"
+      "51FF1110 00005000\n");
   for (u8 reg = 0x12; reg < 0x20; reg++)
     EXPECT_EQ(GetCheatRegister(reg), 0xCCCCCCCCu) << static_cast<u32>(reg);
   EXPECT_EQ(GetCheatRegister(0x10), 0x5000u);
