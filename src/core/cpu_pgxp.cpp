@@ -2117,9 +2117,14 @@ void CPU::PGXP::CPU_SRAV(Instruction instr, u32 rsVal, u32 rtVal)
   CPU_SRx(instr, rtVal, sh, true, true);
 }
 
-void CPU::PGXP::CPU_MFC0(Instruction instr, u32 rdVal)
+void CPU::PGXP::CPU_MFC0(Instruction instr)
 {
   const u32 idx = static_cast<u8>(instr.r.rd.GetValue());
+  const u32* rdValPtr = GetCop0RegPtr(static_cast<Cop0Reg>(idx));
+  if (!rdValPtr) [[unlikely]]
+    return;
+
+  const u32 rdVal = *rdValPtr;
   LOG_VALUES_1(TinyString::from_format("cop0_{}", idx).c_str(), rdVal, &g_state.pgxp_cop0[idx]);
 
   // CPU[Rt] = CP0[Rd]

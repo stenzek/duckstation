@@ -103,7 +103,7 @@ void CPU_SRA(Instruction instr, u32 rtVal);
 void CPU_SLLV(Instruction instr, u32 rsVal, u32 rtVal);
 void CPU_SRLV(Instruction instr, u32 rsVal, u32 rtVal);
 void CPU_SRAV(Instruction instr, u32 rsVal, u32 rtVal);
-void CPU_MFC0(Instruction instr, u32 rdVal);
+void CPU_MFC0(Instruction instr);
 void CPU_MTC0(Instruction instr, u32 rtVal);
 
 // Utility functions.

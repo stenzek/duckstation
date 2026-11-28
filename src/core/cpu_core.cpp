@@ -1956,7 +1956,7 @@ restart_instruction:
               if constexpr (pgxp_mode == PGXPMode::CPU)
               {
                 if (inst.r.rt != Reg::zero) [[likely]]
-                  PGXP::CPU_MFC0(inst, *value);
+                  PGXP::CPU_MFC0(inst);
               }
             }
             else
