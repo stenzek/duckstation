@@ -1025,10 +1025,18 @@ void InputManager::AddPadBindings(const SettingsInterface& si, const std::string
             vib_binding.last_update_time = 0;
 
             // If we're reloading bindings due to e.g. device connection, sync the vibration state.
-            if (Controller* controller = System::GetController(pad_index))
+            // When the controller type changes, the bindings are reloaded before the old controller is replaced, so
+            // the bind index would read an unrelated input of the old type and could start vibrating. The new
+            // controller's motors start off, so leave it at zero.
+            if (Controller* controller = System::GetController(pad_index);
+                controller && controller->GetType() == cinfo.type)
+            {
               vib_binding.last_intensity = controller->GetBindState(bi.bind_index);
+            }
             else
+            {
               vib_binding.last_intensity = 0.0f;
+            }
 
             s_state.pad_vibration_array.push_back(vib_binding);
           }
@@ -1049,10 +1057,18 @@ void InputManager::AddPadBindings(const SettingsInterface& si, const std::string
             led_binding.pad_index = pad_index;
 
             // If we're reloading bindings due to e.g. device connection, sync the LED state.
-            if (Controller* controller = System::GetController(pad_index))
+            // When the controller type changes, the bindings are reloaded before the old controller is replaced, so
+            // the bind index would read an unrelated input of the old type. The new controller starts in digital mode,
+            // and sets the LED if it switches to analog mode on reset.
+            if (Controller* controller = System::GetController(pad_index);
+                controller && controller->GetType() == cinfo.type)
+            {
               led_binding.last_intensity = controller->GetBindState(bi.bind_index);
+            }
             else
+            {
               led_binding.last_intensity = 0.0f;
+            }
 
             // Need to pass it through unconditionally, otherwise if the LED was on it'll stay on.
             led_binding.source->UpdateLEDState(led_binding.binding, led_binding.last_intensity);
