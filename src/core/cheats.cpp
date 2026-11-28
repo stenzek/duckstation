@@ -4125,36 +4125,39 @@ void Cheats::GamesharkCheatCode::Apply() const
                   index += GetPayloadLength(skipped);
                   if (bits == separator_value)
                   {
-                    if (index >= count) [[unlikely]]
-                      break;
-
-                    const u64 bits_ahead = instructions[index].bits;
-                    if ((bits_ahead & 0xFFFFFF00u) == elseif_value)
+                    // Continue after the separator, unless an else-if or else follows, which is consumed.
+                    activate_codes = true;
+                    if (index < count && instructions[index].code == InstructionCode::ExtMultiConditionals)
                     {
-                      break;
+                      const u64 bits_ahead = instructions[index].bits;
+                      if ((bits_ahead & 0xFFFFFF00u) == elseif_value)
+                      {
+                        index++;
+                        activate_codes = false;
+                      }
+                      else if ((bits_ahead & 0xFFFF0000u) == else_value)
+                      {
+                        index++;
+                      }
                     }
-                    if ((bits_ahead & 0xFFFF0000u) == else_value)
-                    {
-                      // index++;
-                      activate_codes = true;
-                      break;
-                    }
-                    index--;
                     break;
                   }
-                  if ((bits & 0xFFFFFF00u) == elseif_value)
+                  // Only F6 lines are else-if/else, a write could have the same value.
+                  if (skipped.code == InstructionCode::ExtMultiConditionals && (bits & 0xFFFFFF00u) == elseif_value)
                   {
                     // index--;
                     break;
                   }
-                  if ((bits & 0xFFFFFFFFu) == else_value)
+                  if (skipped.code == InstructionCode::ExtMultiConditionals && (bits & 0xFFFFFFFFu) == else_value)
                   {
                     // index++;
                     activate_codes = true;
                     break;
                   }
                 }
-                if (activate_codes == true)
+
+                // Nothing left to evaluate.
+                if (activate_codes == true || index >= count)
                   break;
               }
             }

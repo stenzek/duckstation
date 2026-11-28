@@ -1946,8 +1946,7 @@ TEST_F(CheatsApply, MultiConditionals)
     {"D7000000 E2000000", "D7100000 E2000000"}, // no buttons, check value 0
   }};
 
-  // AND alongside a passing condition, OR alongside a failing one. Nothing follows the separator, since a failing F6
-  // doesn't stop there (see DISABLED_MultiConditionalFalseContinuesAfterSeparator).
+  // AND alongside a passing condition, OR alongside a failing one. Either way, the code continues after the separator.
   for (const auto& [type, other] : {std::pair{0u, "D0003100 00000000"}, std::pair{1u, "D0003100 00000001"}})
   {
     for (const auto& [pass, fail] : conditions)
@@ -1957,15 +1956,19 @@ TEST_F(CheatsApply, MultiConditionals)
         const std::string_view condition = expected ? pass : fail;
         SCOPED_TRACE(fmt::format("{} {}", type, condition));
         WriteWord(0x1000, 0);
-        Run(
-          fmt::format("F60000{:02X} 1F000002\n{}\n{}\n90001000 00000001\n00000000 0000FFFF\n", type, other, condition));
+        WriteWord(0x1010, 0);
+        Run(fmt::format("F60000{:02X} 1F000002\n{}\n{}\n90001000 00000001\n00000000 0000FFFF\n90001010 00000002\n",
+                        type, other, condition));
         EXPECT_EQ(ReadWord(0x1000), expected ? 1u : 0u);
+        EXPECT_EQ(ReadWord(0x1010), 2u);
 
         // Swapping the order makes no difference.
         WriteWord(0x1000, 0);
-        Run(
-          fmt::format("F60000{:02X} 1F000002\n{}\n{}\n90001000 00000001\n00000000 0000FFFF\n", type, condition, other));
+        WriteWord(0x1010, 0);
+        Run(fmt::format("F60000{:02X} 1F000002\n{}\n{}\n90001000 00000001\n00000000 0000FFFF\n90001010 00000002\n",
+                        type, condition, other));
         EXPECT_EQ(ReadWord(0x1000), expected ? 1u : 0u);
+        EXPECT_EQ(ReadWord(0x1010), 2u);
       }
     }
   }
@@ -2024,6 +2027,38 @@ TEST_F(CheatsApply, MultiConditionalElseIf)
     EXPECT_EQ(ReadWord(0x1010), expected[1]);
     EXPECT_EQ(ReadWord(0x1020), expected[2]);
     EXPECT_EQ(ReadWord(0x1030), expected[3]);
+  }
+}
+
+TEST_F(CheatsApply, MultiConditionalWritesLikeElse)
+{
+  // Only F6 lines are else/else-if, so writes of the same values are skipped in a false body, and run after it.
+  for (const u32 marker : {0xE15E0000u, 0xE15E1F01u})
+  {
+    SCOPED_TRACE(marker);
+    std::memset(&g_bus.unprotected_ram[0x1000], 0, 0x100);
+    Run(fmt::format("F6000000 1F000001\n"
+                    "D0003000 00001234\n"
+                    "90001000 {0:08X}\n"
+                    "90001010 00000002\n"
+                    "00000000 0000FFFF\n"
+                    "90001020 00000003\n",
+                    marker));
+    EXPECT_EQ(ReadWord(0x1000), 0u);
+    EXPECT_EQ(ReadWord(0x1010), 0u);
+    EXPECT_EQ(ReadWord(0x1020), 3u);
+
+    std::memset(&g_bus.unprotected_ram[0x1000], 0, 0x100);
+    Run(fmt::format("F6000000 1F000001\n"
+                    "D0003000 00001234\n"
+                    "90001000 00000001\n"
+                    "00000000 0000FFFF\n"
+                    "90001010 {0:08X}\n"
+                    "90001020 00000003\n",
+                    marker));
+    EXPECT_EQ(ReadWord(0x1000), 0u);
+    EXPECT_EQ(ReadWord(0x1010), marker);
+    EXPECT_EQ(ReadWord(0x1020), 3u);
   }
 }
 
@@ -2806,9 +2841,8 @@ TEST_F(CheatsApply, ApplyOnDisableSkipsOtherInstructions)
 
 // Suspected bugs. These test the intended behaviour, and currently fail.
 
-TEST_F(CheatsApply, DISABLED_MultiConditionalFalseContinuesAfterSeparator)
+TEST_F(CheatsApply, MultiConditionalFalseContinuesAfterSeparator)
 {
-  // A failing F6 re-evaluates the line before the separator as an F6 header, which stops the code.
   Run("F6000000 1F000001\n"
       "D0003000 00001234\n"
       "90001000 00000001\n"
@@ -2818,19 +2852,17 @@ TEST_F(CheatsApply, DISABLED_MultiConditionalFalseContinuesAfterSeparator)
   EXPECT_EQ(ReadWord(0x1010), 2u);
 }
 
-TEST_F(CheatsApply, DISABLED_MultiConditionalFalseWithoutSeparator)
+TEST_F(CheatsApply, MultiConditionalFalseWithoutSeparator)
 {
-  // WARNING: currently hangs. A failing F6 with no separator re-evaluates the last line as an F6 header, and an
-  // OR header with no lines left to read never exits the loop.
+  // The last line looks like an OR header, which used to be re-evaluated forever.
   Run("F6000001 1F000001\n"
       "D0003000 00001234\n"
       "90001001 00000005\n");
   EXPECT_EQ(ReadWord(0x1000), 0u);
 }
 
-TEST_F(CheatsApply, DISABLED_MultiConditionalElseAfterSeparator)
+TEST_F(CheatsApply, MultiConditionalElseAfterSeparator)
 {
-  // An else after the separator isn't consumed, so it runs as a stray else and skips its own body.
   static constexpr std::string_view code = "F6000000 1F000001\n"
                                            "D0003000 00001234\n"
                                            "90001000 00000001\n"
@@ -2852,9 +2884,8 @@ TEST_F(CheatsApply, DISABLED_MultiConditionalElseAfterSeparator)
   }
 }
 
-TEST_F(CheatsApply, DISABLED_MultiConditionalElseIfAfterSeparator)
+TEST_F(CheatsApply, MultiConditionalElseIfAfterSeparator)
 {
-  // An else-if after the separator reads the separator as its header (255 AND conditions), which stops the code.
   static constexpr std::string_view code = "F6000000 1F000001\n"
                                            "D0003000 00001234\n"
                                            "90001000 00000001\n"
