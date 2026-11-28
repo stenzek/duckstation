@@ -114,7 +114,8 @@ TEST(NeGconInputs, DefaultAxisModifiers)
   ASSERT_TRUE(negcon.GetAnalogInputBytes().has_value());
   ASSERT_TRUE(rumble.GetAnalogInputBytes().has_value());
   EXPECT_EQ(negcon.GetAnalogInputBytes(), rumble.GetAnalogInputBytes());
-  EXPECT_EQ(negcon.GetAnalogInputBytes().value(), UINT32_C(0x000080FF));
+  EXPECT_EQ(negcon.GetAnalogInputBytes().value(), UINT32_C(0x808080FF));
+  EXPECT_EQ(TransferCommand(negcon, LONG_POLL), NegReply(NO_BUTTONS, 0xFF, 0x80, 0x00, 0x00));
   EXPECT_EQ(negcon.GetBindState(negcon_axis_start + static_cast<u32>(NeGcon::HalfAxis::SteeringRight)), 1.0f);
   EXPECT_EQ(rumble.GetBindState(rumble_axis_start + static_cast<u32>(NeGconRumble::HalfAxis::SteeringRight)), 1.0f);
 }
@@ -154,7 +155,8 @@ TEST(NeGconInputs, ConfiguredAxisModifiers)
   ASSERT_TRUE(negcon.GetAnalogInputBytes().has_value());
   ASSERT_TRUE(rumble.GetAnalogInputBytes().has_value());
   EXPECT_EQ(negcon.GetAnalogInputBytes(), rumble.GetAnalogInputBytes());
-  EXPECT_EQ(negcon.GetAnalogInputBytes().value(), UINT32_C(0x408020A0));
+  EXPECT_EQ(negcon.GetAnalogInputBytes().value(), UINT32_C(0x808080A0));
+  EXPECT_EQ(TransferCommand(negcon, LONG_POLL), NegReply(NO_BUTTONS, 0xA0, 0x20, 0x80, 0x40));
 }
 
 TEST(NeGconInputs, RumbleSettings)
@@ -217,7 +219,7 @@ TEST(NeGcon, Poll)
 
   // Steering is centred at 80h, the others are released at 00h.
   EXPECT_EQ(TransferCommand(*negcon, LONG_POLL), NegReply(NO_BUTTONS));
-  EXPECT_EQ(negcon->GetAnalogInputBytes(), 0x00000080u);
+  EXPECT_EQ(negcon->GetAnalogInputBytes(), 0x80808080u);
 
   // The axes are sent as steering, I, II, L.
   negcon->SetBindState(static_cast<u32>(NeGconButton::A), 1.0f);
@@ -228,7 +230,8 @@ TEST(NeGcon, Poll)
   negcon->SetBindState(NeGconHalfAxis(NeGcon::HalfAxis::L), 0.25f);
   const u16 buttons = NegPressed({NeGconButton::A, NeGconButton::Start});
   EXPECT_EQ(TransferCommand(*negcon, LONG_POLL), NegReply(buttons, 0x00, 0x80, 0xFF, 0x40));
-  EXPECT_EQ(negcon->GetAnalogInputBytes(), 0x40FF8000u);
+  // Only steering is reported as analog input, the others are centred.
+  EXPECT_EQ(negcon->GetAnalogInputBytes(), 0x80808000u);
 
   // Back-to-back polls don't need a reset, and the bytes after 42h are ignored.
   EXPECT_EQ(TransferCommand(*negcon, {0x01, 0x42, 0xFF, 0x5A, 0x01, 0x02, 0x03, 0x04, 0x05}),
@@ -434,7 +437,7 @@ TEST_F(NeGconRumbleTest, AnalogModePoll)
   m_rumble.SetBindState(RumbleHalfAxis(NeGconRumble::HalfAxis::L), 1.0f);
   const u16 buttons = NegPressed({RumbleButton::B});
   EXPECT_EQ(Transfer(LONG_POLL), RumbleReply(buttons, 0xFF, 0x80, 0x00, 0xFF));
-  EXPECT_EQ(m_rumble.GetAnalogInputBytes(), 0xFF0080FFu);
+  EXPECT_EQ(m_rumble.GetAnalogInputBytes(), 0x808080FFu);
 
   // 43h outside config mode polls too.
   EXPECT_EQ(Transfer({0x01, 0x43, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}),

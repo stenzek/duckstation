@@ -7,6 +7,7 @@
 #include "core/cpu_code_cache.h"
 #include "core/cpu_core_private.h"
 #include "core/digital_controller.h"
+#include "core/negcon.h"
 #include "core/pad.h"
 #include "core/settings.h"
 #include "core/system.h"
@@ -1929,6 +1930,11 @@ TEST_F(CheatsApply, BitCompareButtonsAnalogSticks)
   pad->SetBindState(static_cast<u32>(AnalogController::Button::Count) + static_cast<u32>(HalfAxis::LUp), 1.0f);
   EXPECT_TRUE(run(0x100040));
   EXPECT_FALSE(run(0x200040));
+
+  // A neGcon at rest sets no bits, since only its steering is reported.
+  Pad::SetController(0, NeGcon::Create(0));
+  for (const auto& [axis, bit] : directions)
+    EXPECT_FALSE(run(bit)) << bit;
 }
 
 TEST_F(CheatsApply, MultiConditionals)

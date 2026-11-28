@@ -106,8 +106,8 @@ u32 NeGconInputs::GetButtonStateBits() const
 
 std::optional<u32> NeGconInputs::GetAnalogInputBytes() const
 {
-  return m_axis_state[static_cast<size_t>(Axis::L)] << 24 | m_axis_state[static_cast<size_t>(Axis::II)] << 16 |
-         m_axis_state[static_cast<size_t>(Axis::I)] << 8 | m_axis_state[static_cast<size_t>(Axis::Steering)];
+  // Only steering is a stick axis. Report the other sticks as centred, so I/II/L don't read as directions (D7 codes).
+  return 0x80808000u | m_axis_state[static_cast<u8>(Axis::Steering)];
 }
 
 void NeGconInputs::LoadSettings(const SettingsInterface& si, const char* section)
