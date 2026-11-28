@@ -4807,11 +4807,12 @@ void Cheats::GamesharkCheatCode::Apply() const
         }
         else if (write_type == InstructionCode::ExtConstantWrite32)
         {
+          u32 value32 = inst2.value32;
           for (u32 i = 0; i < slide_count; i++)
           {
-            DoMemoryWrite<u32>(address, value);
+            DoMemoryWrite<u32>(address, value32);
             address += address_increment;
-            value += value_increment;
+            value32 += value_increment;
           }
         }
         else

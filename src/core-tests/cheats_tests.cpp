@@ -2846,8 +2846,6 @@ TEST_F(CheatsApply, ApplyOnDisableSkipsOtherInstructions)
   EXPECT_EQ(rollback[0].address, 0x1020u);
 }
 
-// Suspected bugs. These test the intended behaviour, and currently fail.
-
 TEST_F(CheatsApply, MultiConditionalFalseContinuesAfterSeparator)
 {
   Run("F6000000 1F000001\n"
@@ -2935,9 +2933,8 @@ TEST_F(CheatsApply, FindAndReplaceAdjacentMatch)
   EXPECT_EQ(ReadByte(0x4010), 0xA0u);
 }
 
-TEST_F(CheatsApply, DISABLED_Slide32BitValue)
+TEST_F(CheatsApply, Slide32BitValue)
 {
-  // A 50 slide of a 90 write only uses the low 16 bits of the value.
   Run("50000204 00000001\n90001000 1234FFFF\n");
   EXPECT_EQ(ReadWord(0x1000), 0x1234FFFFu);
   EXPECT_EQ(ReadWord(0x1004), 0x12350000u);
