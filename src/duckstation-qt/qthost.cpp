@@ -3031,7 +3031,7 @@ const QFont& QtHost::GetFixedFont()
     }
 
     s_state.fixed_font.setFamilies(families);
-    s_state.fixed_font.setWeight(QFont::Medium);
+    s_state.fixed_font.setWeight(QFont::Normal);
     s_state.fixed_font.setPixelSize(12);
     s_state.fixed_font.setHintingPreference(QFont::PreferNoHinting);
   });
