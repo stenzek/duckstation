@@ -310,6 +310,9 @@ public:
   void Wait();
   bool TryWait();
 
+  /// Returns false if the timeout elapsed without the semaphore being signaled.
+  bool TimedWait(u64 timeout_ns);
+
 private:
 #if defined(_WIN32) || defined(__APPLE__)
   void* m_data = nullptr;

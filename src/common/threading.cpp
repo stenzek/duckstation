@@ -25,6 +25,7 @@
 #include <cerrno>
 #include <pthread.h>
 #if !defined(__APPLE__)
+#include <ctime>
 #include <semaphore.h>
 #endif
 #include <unistd.h>
@@ -1068,6 +1069,30 @@ bool Threading::KernelSemaphore::TryWait()
   return (res != KERN_OPERATION_TIMED_OUT);
 #else
   return sem_trywait(NATIVE_SEMAPHORE(m_data)) == 0;
+#endif
+}
+
+bool Threading::KernelSemaphore::TimedWait(u64 timeout_ns)
+{
+#ifdef _WIN32
+  return WaitForSingleObject(m_data, static_cast<DWORD>((timeout_ns + 999999) / 1000000)) == WAIT_OBJECT_0;
+#elif defined(__APPLE__)
+  const mach_timespec_t time = {static_cast<unsigned int>(timeout_ns / 1000000000),
+                                static_cast<clock_res_t>(timeout_ns % 1000000000)};
+  return (semaphore_timedwait(NATIVE_SEMAPHORE(m_data), time) == KERN_SUCCESS);
+#else
+  // Use a monotonic deadline, so that wall clock changes don't affect the timeout.
+  struct timespec ts;
+  clock_gettime(CLOCK_MONOTONIC, &ts);
+  const u64 deadline_ns = static_cast<u64>(ts.tv_sec) * 1000000000 + static_cast<u64>(ts.tv_nsec) + timeout_ns;
+  ts.tv_sec = static_cast<time_t>(deadline_ns / 1000000000);
+  ts.tv_nsec = static_cast<long>(deadline_ns % 1000000000);
+  do
+  {
+    if (sem_clockwait(NATIVE_SEMAPHORE(m_data), CLOCK_MONOTONIC, &ts) == 0) [[likely]]
+      return true;
+  } while (errno == EINTR);
+  return false;
 #endif
 }
 
