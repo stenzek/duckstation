@@ -2539,6 +2539,7 @@ TEST_F(CheatsApply, CheatRegisterCompare)
     bool expected;
   };
   static constexpr std::array cases = {
+    // Register vs register.
     Case{0x00, 5, 5, 0, 0, true},
     Case{0x00, 5, 6, 0, 0, false},
     Case{0x01, 5, 6, 0, 0, true},
@@ -2560,6 +2561,7 @@ TEST_F(CheatsApply, CheatRegisterCompare)
     Case{0x0B, 0x0F, 0x05, 0, 0, true},
     Case{0x0B, 0x05, 0x0F, 0, 0, false},
 
+    // Register vs immediate.
     Case{0x10, 5, 0, 5, 0, true},
     Case{0x10, 5, 0, 6, 0, false},
     Case{0x11, 5, 0, 6, 0, true},
@@ -2588,6 +2590,7 @@ TEST_F(CheatsApply, CheatRegisterCompare)
     Case{0x1B, 0x0F, 0, 0x05, 0, true},
     Case{0x1B, 0x05, 0, 0x0F, 0, false},
 
+    // Memory vs memory.
     Case{0x20, 5, 5, 0, 0, true},
     Case{0x20, 5, 6, 0, 0, false},
     Case{0x21, 5, 6, 0, 0, true},
@@ -2613,6 +2616,7 @@ TEST_F(CheatsApply, CheatRegisterCompare)
     Case{0x2B, 0, 0x0F, 0x05, 0, true},
     Case{0x2B, 0, 0x05, 0x0F, 0, false},
 
+    // Register vs memory.
     Case{0x30, 5, 5, 0, 0, true},
     Case{0x30, 5, 6, 0, 0, false},
     Case{0x31, 5, 6, 0, 0, true},
@@ -2623,7 +2627,9 @@ TEST_F(CheatsApply, CheatRegisterCompare)
     Case{0x33, 4, 5, 0, 0, false},
     Case{0x34, 4, 5, 0, 0, true},
     Case{0x34, 5, 5, 0, 0, false},
-    // 35 is in DISABLED_CheatRegisterCompareLessEqualMemory.
+    Case{0x35, 5, 5, 0, 0, true},
+    Case{0x35, 4, 5, 0, 0, true},
+    Case{0x35, 6, 5, 0, 0, false},
     Case{0x36, 0x0F, 0x05, 0, 0, true},
     Case{0x36, 0x0A, 0x05, 0, 0, false},
     Case{0x37, 0x0A, 0x05, 0, 0, true},
@@ -2927,23 +2933,6 @@ TEST_F(CheatsApply, FindAndReplaceAdjacentMatch)
       "A8A9AAAB ACADAEAF\n");
   EXPECT_EQ(ReadByte(0x4000), 0xA0u);
   EXPECT_EQ(ReadByte(0x4010), 0xA0u);
-}
-
-TEST_F(CheatsApply, DISABLED_CheatRegisterCompareLessEqualMemory)
-{
-  // 35/75/B5 (R1 <= memory) are missing, while every other compare has a <= sub-type.
-  for (const u8 sub_type : {0x35, 0x75, 0xB5})
-  {
-    SCOPED_TRACE(static_cast<u32>(sub_type));
-    for (const auto& [r1, expected] : {std::pair{5u, true}, std::pair{4u, true}, std::pair{6u, false}})
-    {
-      SetCheatRegister(0x20, r1);
-      WriteWord(0x6020, 5);
-      WriteWord(0x7000, 0);
-      Run(fmt::format("52{:02X}0020 00006020\n90007000 00000001\n00000000 0000FFFF\n", sub_type));
-      EXPECT_EQ(ReadWord(0x7000), expected ? 1u : 0u) << r1;
-    }
-  }
 }
 
 TEST_F(CheatsApply, DISABLED_Slide32BitValue)

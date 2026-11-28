@@ -4415,6 +4415,9 @@ void Cheats::GamesharkCheatCode::Apply() const
           case 0x34:
             activate_codes = (Truncate8(cht_register[cht_reg_no1] & 0xFFu) < DoMemoryRead<u8>(inst.value32));
             break;
+          case 0x35:
+            activate_codes = (Truncate8(cht_register[cht_reg_no1] & 0xFFu) <= DoMemoryRead<u8>(inst.value32));
+            break;
           case 0x36:
             activate_codes = ((Truncate8(cht_register[cht_reg_no1] & 0xFFu) & DoMemoryRead<u8>(inst.value32)) ==
                               DoMemoryRead<u8>(inst.value32));
@@ -4580,6 +4583,9 @@ void Cheats::GamesharkCheatCode::Apply() const
           case 0x74:
             activate_codes = (Truncate16(cht_register[cht_reg_no1] & 0xFFFFu) < DoMemoryRead<u16>(inst.value32));
             break;
+          case 0x75:
+            activate_codes = (Truncate16(cht_register[cht_reg_no1] & 0xFFFFu) <= DoMemoryRead<u16>(inst.value32));
+            break;
           case 0x76:
             activate_codes = ((Truncate16(cht_register[cht_reg_no1] & 0xFFFFu) & DoMemoryRead<u16>(inst.value32)) ==
                               DoMemoryRead<u16>(inst.value32));
@@ -4708,6 +4714,9 @@ void Cheats::GamesharkCheatCode::Apply() const
             break;
           case 0xB4:
             activate_codes = (cht_register[cht_reg_no1] < DoMemoryRead<u32>(inst.value32));
+            break;
+          case 0xB5:
+            activate_codes = (cht_register[cht_reg_no1] <= DoMemoryRead<u32>(inst.value32));
             break;
           case 0xB6:
             activate_codes =
