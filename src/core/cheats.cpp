@@ -5107,7 +5107,9 @@ void Cheats::GamesharkCheatCode::ApplyOnDisable(RollbackLog* rollback_list) cons
       case InstructionCode::CompareNotEqual8:
       case InstructionCode::CompareLess8:
       case InstructionCode::CompareGreater8:
-      case InstructionCode::CompareButtons: // D4
+      case InstructionCode::CompareButtons:       // D4
+      case InstructionCode::ExtCompareBitsSet8:   // E4, inside F6
+      case InstructionCode::ExtCompareBitsClear8: // E5, inside F6
         index++;
         break;
 

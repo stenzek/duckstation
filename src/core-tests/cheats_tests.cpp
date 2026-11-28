@@ -12,6 +12,7 @@
 #include "core/system.h"
 
 #include "common/error.h"
+#include "common/log.h"
 #include "common/scoped_guard.h"
 
 #include "fmt/format.h"
@@ -2886,6 +2887,9 @@ TEST_F(CheatsApply, ApplyOnDisableSkipsOtherInstructions)
                                                            "D7000000 E3000000\n"
                                                            "F6000000 1F000001\n"
                                                            "D0001100 00000000\n"
+                                                           "F6000001 1F000002\n"
+                                                           "E4001100 00000000\n"
+                                                           "E5001100 00000000\n"
                                                            "52002120 00000000\n"
                                                            "00000000 0000FFFF\n"
                                                            "A7001020 1111AAAA\n");
@@ -2895,8 +2899,19 @@ TEST_F(CheatsApply, ApplyOnDisableSkipsOtherInstructions)
   WriteWord(0x1100, 0x12345678);
   SetCheatRegister(0x30, 0);
 
+  // Every instruction is known, so nothing is logged as an error.
+  u32 errors = 0;
+  const Log::CallbackFunctionType count_errors = [](void* param, Log::MessageCategory category, const char*,
+                                                    std::string_view) {
+    if (Log::UnpackLevel(category) == Log::Level::Error)
+      (*static_cast<u32*>(param))++;
+  };
+  Log::RegisterCallback(count_errors, &errors);
+  const ScopedGuard unregister([count_errors, &errors]() { Log::UnregisterCallback(count_errors, &errors); });
+
   Cheats::RollbackLog rollback;
   code->ApplyOnDisable(&rollback);
+  EXPECT_EQ(errors, 0u);
   EXPECT_EQ(ReadWord(0x1010), 0x5555AAAAu);
   EXPECT_EQ(ReadWord(0x1020), 0x55551111u);
   EXPECT_EQ(ReadWord(0x1100), 0x12345678u);
