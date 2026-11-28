@@ -85,10 +85,34 @@ ControllerBindingWidget::ControllerBindingWidget(QWidget* parent, ControllerSett
 
 ControllerBindingWidget::~ControllerBindingWidget() = default;
 
+static QIcon getIconForControllerType(ControllerType type)
+{
+  switch (type)
+  {
+    case ControllerType::None:
+      return QIcon(u":/icons/monochrome/svg/controller-strike-line.svg"_s);
+    case ControllerType::AnalogJoystick:
+      return QIcon(u":/icons/monochrome/svg/joystick-line.svg"_s);
+    case ControllerType::DigitalController:
+      return QIcon(u":/icons/monochrome/svg/controller-digital-line.svg"_s);
+    case ControllerType::GunCon:
+    case ControllerType::Justifier:
+      return QIcon(u":/icons/monochrome/svg/guncon-line.svg"_s);
+    case ControllerType::NeGcon:
+    case ControllerType::NeGconRumble:
+      return QIcon(u":/icons/monochrome/svg/negcon-line.svg"_s);
+    case ControllerType::PlayStationMouse:
+      return QIcon(u":/icons/monochrome/svg/mouse-line.svg"_s);
+    default:
+      return QIcon(u":/icons/monochrome/svg/controller-line.svg"_s);
+  }
+}
+
 void ControllerBindingWidget::populateControllerTypes()
 {
   for (const Controller::ControllerInfo* cinfo : Controller::GetControllerInfoList())
-    m_ui.controllerType->addItem(QtUtils::StringViewToQString(cinfo->GetDisplayName()),
+    m_ui.controllerType->addItem(getIconForControllerType(cinfo->type),
+                                 QtUtils::StringViewToQString(cinfo->GetDisplayName()),
                                  QVariant(static_cast<int>(cinfo->type)));
 
   m_controller_info = Controller::GetControllerInfo(
@@ -137,6 +161,7 @@ void ControllerBindingWidget::populateWidgets()
 
   m_image_widget = nullptr;
   m_bindings_widget = new QWidget(this);
+  m_icon = getIconForControllerType(m_controller_info->type);
   switch (m_controller_info->type)
   {
     case ControllerType::AnalogController:
@@ -144,7 +169,6 @@ void ControllerBindingWidget::populateWidgets()
       Ui::ControllerBindingWidget_AnalogController ui;
       ui.setupUi(m_bindings_widget);
       bindBindingWidgets(m_bindings_widget);
-      m_icon = QIcon(u":/icons/monochrome/svg/controller-line.svg"_s);
       m_image_widget = ui.image;
     }
     break;
@@ -154,7 +178,6 @@ void ControllerBindingWidget::populateWidgets()
       Ui::ControllerBindingWidget_AnalogJoystick ui;
       ui.setupUi(m_bindings_widget);
       bindBindingWidgets(m_bindings_widget);
-      m_icon = QIcon(u":/icons/monochrome/svg/joystick-line.svg"_s);
       m_image_widget = ui.image;
     }
     break;
@@ -164,7 +187,6 @@ void ControllerBindingWidget::populateWidgets()
       Ui::ControllerBindingWidget_DigitalController ui;
       ui.setupUi(m_bindings_widget);
       bindBindingWidgets(m_bindings_widget);
-      m_icon = QIcon(u":/icons/monochrome/svg/controller-digital-line.svg"_s);
       m_image_widget = ui.image;
     }
     break;
@@ -174,7 +196,6 @@ void ControllerBindingWidget::populateWidgets()
       Ui::ControllerBindingWidget_GunCon ui;
       ui.setupUi(m_bindings_widget);
       bindBindingWidgets(m_bindings_widget);
-      m_icon = QIcon(u":/icons/monochrome/svg/guncon-line.svg"_s);
       m_image_widget = ui.image;
     }
     break;
@@ -184,7 +205,6 @@ void ControllerBindingWidget::populateWidgets()
       Ui::ControllerBindingWidget_NeGcon ui;
       ui.setupUi(m_bindings_widget);
       bindBindingWidgets(m_bindings_widget);
-      m_icon = QIcon(u":/icons/monochrome/svg/negcon-line.svg"_s);
       m_image_widget = ui.image;
     }
     break;
@@ -194,7 +214,6 @@ void ControllerBindingWidget::populateWidgets()
       Ui::ControllerBindingWidget_NeGconRumble ui;
       ui.setupUi(m_bindings_widget);
       bindBindingWidgets(m_bindings_widget);
-      m_icon = QIcon(u":/icons/monochrome/svg/negcon-line.svg"_s);
       m_image_widget = ui.image;
     }
     break;
@@ -204,7 +223,6 @@ void ControllerBindingWidget::populateWidgets()
       Ui::ControllerBindingWidget_Mouse ui;
       ui.setupUi(m_bindings_widget);
       bindBindingWidgets(m_bindings_widget);
-      m_icon = QIcon(u":/icons/monochrome/svg/mouse-line.svg"_s);
       m_image_widget = ui.image;
     }
     break;
@@ -214,7 +232,6 @@ void ControllerBindingWidget::populateWidgets()
       Ui::ControllerBindingWidget_Justifier ui;
       ui.setupUi(m_bindings_widget);
       bindBindingWidgets(m_bindings_widget);
-      m_icon = QIcon(u":/icons/monochrome/svg/guncon-line.svg"_s);
       m_image_widget = ui.image;
     }
     break;
@@ -224,7 +241,6 @@ void ControllerBindingWidget::populateWidgets()
       Ui::ControllerBindingWidget_JogCon ui;
       ui.setupUi(m_bindings_widget);
       bindBindingWidgets(m_bindings_widget);
-      m_icon = QIcon(u":/icons/monochrome/svg/controller-line.svg"_s);
       m_image_widget = ui.image;
     }
     break;
@@ -234,7 +250,6 @@ void ControllerBindingWidget::populateWidgets()
       Ui::ControllerBindingWidget_DDGo ui;
       ui.setupUi(m_bindings_widget);
       bindBindingWidgets(m_bindings_widget);
-      m_icon = QIcon(u":/icons/monochrome/svg/controller-line.svg"_s);
       m_image_widget = ui.image;
     }
     break;
@@ -244,21 +259,16 @@ void ControllerBindingWidget::populateWidgets()
       Ui::ControllerBindingWidget_Popn ui;
       ui.setupUi(m_bindings_widget);
       bindBindingWidgets(m_bindings_widget);
-      m_icon = QIcon(u":/icons/monochrome/svg/controller-line.svg"_s);
       m_image_widget = ui.image;
     }
     break;
 
     case ControllerType::None:
-    {
-      m_icon = QIcon(u":/icons/monochrome/svg/controller-strike-line.svg"_s);
-    }
     break;
 
     default:
     {
       createBindingWidgets(m_bindings_widget);
-      m_icon = QIcon(u":/icons/monochrome/svg/controller-line.svg"_s);
     }
     break;
   }
