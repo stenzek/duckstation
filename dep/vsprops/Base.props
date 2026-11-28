@@ -51,6 +51,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories);$(DepsLibDir)</AdditionalLibraryDirectories>
       <AdditionalOptions Condition="$(Configuration.Contains(ReleaseLTCG))">/PDBALTPATH:%_PDB% /Brepro %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="$(Configuration.Contains(Clang)) And $(Configuration.Contains(ReleaseLTCG))">/pdbsourcepath:C:\duckstation\ %(AdditionalOptions)</AdditionalOptions>
     </Link>
     <Lib>
       <AdditionalOptions Condition="!$(Configuration.Contains(Clang)) And $(Configuration.Contains(ReleaseLTCG))">/Brepro %(AdditionalOptions)</AdditionalOptions>
