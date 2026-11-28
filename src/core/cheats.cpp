@@ -3312,8 +3312,8 @@ void Cheats::GamesharkCheatCode::Apply() const
         const u8 max = Truncate8((inst.value32 & 0x0000FF00u) >> 8);
         const u8 overmin = Truncate8((inst.value32 & 0x00FF0000u) >> 16);
         const u8 overmax = Truncate8((inst.value32 & 0xFF000000u) >> 24);
-        if ((value < min) || (value < min && min == 0x00u && max < 0xFEu))
-          DoMemoryWrite<u8>(inst.address, overmin); // also handles a min value of 0x00
+        if (value < min)
+          DoMemoryWrite<u8>(inst.address, overmin);
         else if (value > max)
           DoMemoryWrite<u8>(inst.address, overmax);
         index++;
@@ -3325,8 +3325,8 @@ void Cheats::GamesharkCheatCode::Apply() const
         const u16 value = DoMemoryRead<u16>(inst.address);
         const u16 min = Truncate16(inst.value32 & 0x0000FFFFu);
         const u16 max = Truncate16((inst.value32 & 0xFFFF0000u) >> 16);
-        if ((value < min) || (value < min && min == 0x0000u && max < 0xFFFEu))
-          DoMemoryWrite<u16>(inst.address, min); // also handles a min value of 0x0000
+        if (value < min)
+          DoMemoryWrite<u16>(inst.address, min);
         else if (value > max)
           DoMemoryWrite<u16>(inst.address, max);
         index++;
@@ -3338,8 +3338,8 @@ void Cheats::GamesharkCheatCode::Apply() const
         const u16 value = DoMemoryRead<u16>(inst.address);
         const u16 min = Truncate16(inst.value32 & 0x0000FFFFu);
         const u16 max = Truncate16((inst.value32 & 0xFFFF0000u) >> 16);
-        if ((value < min) || (value < min && min == 0x0000u && max < 0xFFFEu))
-          DoMemoryWrite<u16>(inst.address, max); // also handles a min value of 0x0000
+        if (value < min)
+          DoMemoryWrite<u16>(inst.address, max);
         else if (value > max)
           DoMemoryWrite<u16>(inst.address, min);
         index++;
@@ -3361,8 +3361,8 @@ void Cheats::GamesharkCheatCode::Apply() const
         const u16 overmin = Truncate16(inst2.value32 & 0x0000FFFFu);
         const u16 overmax = Truncate16((inst2.value32 & 0xFFFF0000u) >> 16);
 
-        if ((value < min) || (value < min && min == 0x0000u && max < 0xFFFEu))
-          DoMemoryWrite<u16>(inst.address, overmin); // also handles a min value of 0x0000
+        if (value < min)
+          DoMemoryWrite<u16>(inst.address, overmin);
         else if (value > max)
           DoMemoryWrite<u16>(inst.address, overmax);
         index += 2;
