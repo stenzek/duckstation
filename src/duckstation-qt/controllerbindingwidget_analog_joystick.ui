@@ -554,6 +554,37 @@
        </layout>
       </widget>
      </item>
+     <item row="1" column="1" colspan="2">
+      <widget class="QGroupBox" name="groupBox_1">
+       <property name="title">
+        <string>Mode LED</string>
+       </property>
+       <layout class="QGridLayout" name="gridLayout_1">
+        <property name="leftMargin">
+         <number>6</number>
+        </property>
+        <property name="topMargin">
+         <number>6</number>
+        </property>
+        <property name="rightMargin">
+         <number>6</number>
+        </property>
+        <property name="bottomMargin">
+         <number>6</number>
+        </property>
+        <item row="0" column="0">
+         <widget class="InputBindingWidget" name="ModeLED">
+          <property name="maximumSize">
+           <size>
+            <width>150</width>
+            <height>16777215</height>
+           </size>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+     </item>
     </layout>
    </item>
    <item row="0" column="2" rowspan="3">
